@@ -7,4 +7,4 @@ Pre.js -:
 	- UserCookie
 	- UserLogin
 	- Form Identifying functions
-	- Initialize form/Openform
+	- Initialize form/Openform function
