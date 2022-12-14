@@ -4,6 +4,7 @@ Post.js -:
 	- More Details
 
 Pre.js -:
+	- Global variables
 	- UserCookie
 	- UserLogin
 	- Form Identifying functions
