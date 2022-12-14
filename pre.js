@@ -2846,6 +2846,71 @@ function initializeForm(formArray) {
   };
 // ulscreen
 
+//form seq screen switch prototypes
+
+
+FormSeq.prototype.screenSequence = function (tmpId, typeOfForm) {
+  var _that = this;
+  _that._whichScreen(tmpId, typeOfForm);
+};
+FormSeq.prototype._objectSequence = function (tmpId, classObj) {
+  var _that = this;
+  var loop = classObj.numberOfClassCalled;
+  if (loop > 0) {
+    _that._stepCounter += 1;
+    if (_that._stepCounter === 1 && isEnq(tmpId)) subsequentKeyUI(tmpId);
+    for (var i = 0; i < loop; i++) {
+      toShowBuyerInfo(tmpId, classObj.classArray[i]);
+      _that.MakeSeq(
+        _that.returnClassObjects(i, classObj.classArray[i], classObj)
+      );
+      if (
+        isSet(classObj.leadServiceObj) &&
+        isSet(classObj.leadServiceObj[i + 1]) &&
+        classObj.leadServiceObj[i + 1] !== ""
+      ) {
+        var type = classObj.leadServiceObj[i + 1] === "intent" ? 1 : 0;
+        var _hooks =
+          isSet(classObj.copyhooks) && classObj.copyhooks === true
+            ? classObj.hooks[i + 1]
+            : { pre: [], post: [] };
+        _that.MakeSeq(
+          returnGenObject(tmpId, classObj.array[i + 1], _hooks, _that, type)
+        );
+      }
+    }
+  }
+};
+FormSeq.prototype._switchNext = function (tmpId, typeOfForm) {
+  var _that = this;
+  _that._screenCounter += 1;
+  _that.screenSequence(tmpId, typeOfForm);
+};
+FormSeq.prototype._whichScreen = function (tmpId, typeOfForm) {
+  var _that = this;
+  switch (_that._screenCounter) {
+    case 0:
+      return _that._screen0(tmpId, typeOfForm);
+    case 1:
+      return _that._screen1(tmpId, typeOfForm);
+    case 2:
+      return _that._screen2(tmpId, typeOfForm);
+    case 3:
+      return _that._screen3(tmpId, typeOfForm);
+    case 4:
+      return _that._screen4(tmpId, typeOfForm);
+    case 5:
+      return _that._screen5(tmpId, typeOfForm);
+    case 6:
+      return _that._screen6(tmpId, typeOfForm);
+    default:
+      return _that._screen7(tmpId, typeOfForm);
+  }
+};
+
+//form seq screen switch prototypes
+
+
 // screen 0  and screen 1 
 
 FormSeq.prototype._screen0 = function (tmpId, typeOfForm) {
