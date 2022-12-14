@@ -6013,35 +6013,8 @@
         $("#t" + tmpId + "country").removeClass("eHcnty");
       }
     }
-  }
+  }  
   
-  function FormCloseEnqBL(tmpId, event) {
-    var form_type = ReqObj.Form[tmpId].formType === "Enq" ? "Send Enquiry" : (pdpInactiveBL(tmpId)) ? "Post Buy Leads New" : "Post Buy Leads";
-    var that = ReqObj.Form[tmpId].FormSequence || {};
-    var ClassesforTracking = "CloseStep:";
-    ClassesforTracking += that.StepCounter + 1 + ":";
-    var constructor = "";
-    if (isSet(ReqObj.Form[tmpId].UiArray[that.StepCounter])) {
-      for (
-        var i = 0;
-        i < ReqObj.Form[tmpId].UiArray[that.StepCounter].length;
-        i++
-      ) {
-        constructor += ConstructorName(
-          ReqObj.Form[tmpId].UiArray[that.StepCounter][i].Obj
-        );
-        if (i < ReqObj.Form[tmpId].UiArray[that.StepCounter].length && i > 0)
-          ClassesforTracking += "-";
-        ClassesforTracking += ConstructorName(
-          ReqObj.Form[tmpId].UiArray[that.StepCounter][i].Obj
-        );
-      }
-    }
-    blenqGATracking(form_type,ClassesforTracking,getEventLabel(),0,tmpId);
-    if (constructor.toLowerCase() === "userverification" && Enq09(tmpId))
-      blenqGATracking(form_type, "OTP1NotFilled", getEventLabel(), 1, tmpId);
-    CloseForm(tmpId); // check !
-  }
   
   function FormCloseStep(tmpId, event) {
     var form_type =ReqObj.Form[tmpId].formType === "Enq" ? "Send Enquiry" : (pdpInactiveBL(tmpId))? "Post Buy Leads New" : "Post Buy Leads";

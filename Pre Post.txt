@@ -2,7 +2,9 @@ Post.js -:
 
 	- Thank You Prototypes	
 	- More Details
-	screen 2- screen 7
+	- screen 2- screen 7
+	- form seq screen switch
+	- form close on click function
 
 Pre.js -:
 	- Global variables
