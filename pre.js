@@ -2845,3 +2845,233 @@ function initializeForm(formArray) {
     }
   };
 // ulscreen
+
+// screen 0  and screen 1 
+
+FormSeq.prototype._screen0 = function (tmpId, typeOfForm) {
+  dirimgscreencount = 0;
+  var _that = this;
+  typeOfForm = returnTypeForSeq(tmpId).toLowerCase();
+  var _classObj = null;
+  var data = {
+    iso: currentISO(),
+    imeshcookie: imeshExist(),
+    array: { UiArray: [], ServiceArray: [] },
+    emptyHook: { pre: [], post: [] },
+  };
+  var code = _that._returnClassCode(tmpId, typeOfForm, data);
+  var _afterService = returnPostBlEnqObject(
+    tmpId,
+    data.array,
+    data.emptyHook,
+    _that,
+    ""
+  );
+  var _rclassObj = _that._reqbox(tmpId, data);
+  var _fallback =
+    typeOfForm === "inenquiry"
+      ? null
+      : _that.returnClassObjects(0, _rclassObj.classArray[0], _rclassObj);
+  if (Bl09(tmpId)) {
+    _fallback = [];
+    _fallback[0] = _that.returnClassObjects(
+      0,
+      _rclassObj.classArray[0],
+      _rclassObj
+    );
+  }
+  if (code.code !== "") {
+    _classObj = {
+      numberOfClassCalled: code.classArray.length,
+      hooks:
+        code.code === "e"
+          ? { 1: { pre: [_that._screen1], post: [] } }
+          : {
+              1:
+                code.code === "ur" ||
+                code.code === "ucr" ||
+                code.code === "pc" ||
+                code.code === "p"
+                  ? { pre: [], post: [_that.InlineOpenForm, _that._screen1] }
+                  : code.code === "pu" || code.code === "puc"
+                  ? data.emptyHook
+                  : { pre: [_that.InlineOpenForm, _that._screen1], post: [] },
+              2:
+                code.code === "pu" || code.code === "puc"
+                  ? { pre: [], post: [_that.InlineOpenForm, _that._screen1] }
+                  : data.emptyHook,
+              3: data.emptyHook,
+            },
+      classArray: code.classArray,
+      array: _makeDataAndServiceArr(code.classArray, data.array, 1),
+      that: _that,
+      tmpId: tmpId,
+      afterService: _makeDataAndServiceArr(code.classArray, _afterService, 2),
+      extraKeys: _makeExtraKey(code.classArray, _fallback),
+      leadServiceObj:
+        code.code === "e"
+          ? isSecondEnq(tmpId) === false ||
+            (isSecondEnq(tmpId) && ReqObj.UserDetail.uv !== "")
+            ? { 1: "generate" }
+            : null
+          : code.code === "puc" || code.code == "pu"
+          ? { 2: "generate" }
+          : { 1: "generate" },
+      type: isSet(code.type) ? { code: code.type } : null,
+      nonMandatory: isSet(code.nonMandatory) ? code.nonMandatory : null,
+    };
+    if (Bl04(tmpId)) {
+      //ff_here
+      ReqObj.Form[tmpId].IsqStep1 = ReturnCorrectVal(
+        ReqObj.Form[tmpId].IsqStep1,
+        3
+      );
+      ReqObj.Form[tmpId].IsqStepN = ReturnCorrectVal(
+        ReqObj.Form[tmpId].IsqStepN,
+        3
+      );
+      _classObj.hooks = {
+        1: { pre: [], post: [_that.InlineOpenForm, _that._screen2] },
+        2: { pre: [], post: [] },
+        3: { pre: [], post: [] },
+      };
+    }
+
+    if (isBl(tmpId) && !Bl04(tmpId)) {
+      ReqObj.Form[tmpId].IsqStep1 = ReturnCorrectVal(ReqObj.Form[tmpId].IsqStep1,3);
+      ReqObj.Form[tmpId].IsqStepN = ReturnCorrectVal(ReqObj.Form[tmpId].IsqStepN,3);
+
+      if(pdpInactiveBL(tmpId) && ReqObj.Form[tmpId].FormSequence._stepCounter==-1 && currentISO()=='IN' && !NEC()){
+        ReqObj.Form[tmpId].IsqStep1=1;
+        ReqObj.Form[tmpId].IsqStepN=4;
+      }
+      _classObj.hooks = Bl01(tmpId)
+        ? {
+            1: { pre: [], post: [_that.InlineOpenForm, _that._screen2] },
+            2: { pre: [], post: [] },
+            3: { pre: [], post: [] },
+          }
+        : { 1: { pre: [], post: [_that._screen2] }, 2: { pre: [], post: [] } };
+      _classObj.leadServiceObj =
+        isSecondBl(tmpId) === false ||
+        (isSecondBl(tmpId) && ReqObj.UserDetail.uv !== "")
+          ? { 1: "generate" }
+          : { 1: "generate" };
+    }
+    _that.updateNumberOfClassCalled(_classObj.numberOfClassCalled);
+    _that._objectSequence(tmpId, _classObj);
+  } else _that._switchNext(tmpId, typeOfForm);
+};
+
+FormSeq.prototype._screen1 = function (tmpId, typeOfForm) {
+  dirimgscreencount = 1;
+  var _that = this;
+  typeOfForm = returnTypeForSeq(tmpId).toLowerCase();
+  var _classObj = null;
+  var data = {
+    iso: currentISO(),
+    imeshcookie: imeshExist(),
+    array: { UiArray: [], ServiceArray: [] },
+  };
+  var _case = !data.imeshcookie && isSet(data.iso) && data.iso === "IN" ? 0 : !data.imeshcookie && isSet(data.iso) && data.iso !== "IN" ? 1 : -1;
+  var _rclassObj = _that._reqbox(tmpId, data);
+  var _fallback = !Bl01(tmpId) && !Bl04(tmpId) ? null : _that.returnClassObjects(0, _rclassObj.classArray[0], _rclassObj); //ff_here
+  var classObj = ReqObj.Form[tmpId].typeofform === "image" && isEcomProduct(tmpId) ? { classArray: ["UserLogin"] } : Bl09(tmpId) ? 
+    {
+      classArray:
+        _case === 0
+          ? ["ProductName", "UserLogin"]
+          : ["ProductName", "UserLogin", "ContactDetail"],
+    }
+    : Bl01(tmpId) || Bl04(tmpId)
+      ? {
+          classArray: isBlInlineFr(tmpId)
+            ? ["ProductName", "UserLogin", "ContactDetail", "RequirementDtl"]
+            : ["ProductName", "UserLogin", "ContactDetail", "Isq"],
+        }
+      : {
+          classArray:
+            _case === 0 ? ["UserLogin"] : ["UserLogin", "ContactDetail"],
+        }; //ff_here
+  if ( ReqObj.UserDetail.mb1 != "" && checkblockedUser() && (Bl04(tmpId) || Enq04(tmpId)))
+    _case = -1;
+  if (_case !== -1) {
+    var _afterService = returnPostBlEnqObject( tmpId, data.array, { pre: [], post: [] }, _that, "");
+    _classObj = {
+      numberOfClassCalled: classObj.classArray.length,
+      hooks: _case === 0 ? { 1: { pre: [], post: [_that._screen2] } }
+          : {
+              1: { pre: [], post: [_that._screen2] },
+              2: { pre: [], post: [] },
+            },
+      classArray: classObj.classArray,
+      array: _makeDataAndServiceArr(classObj.classArray, data.array, 1),
+      that: _that,
+      tmpId: tmpId,
+      afterService: _makeDataAndServiceArr(
+        classObj.classArray,
+        _afterService,
+        2
+      ),
+      extraKeys: _makeExtraKey(classObj.classArray, _fallback),
+      leadServiceObj: _case === 0 ? { 1: "generate" } : { 1: "generate" },
+      nonMandatory: { name: false },
+    };
+    if (typeOfForm === "bl") {
+      var nonm = currentISO() !== "IN" ? false : true;
+      ReqObj.Form[tmpId].IsqStep1 = ReturnCorrectVal(
+        ReqObj.Form[tmpId].IsqStep1,
+        3
+      );
+      ReqObj.Form[tmpId].IsqStepN = ReturnCorrectVal(
+        ReqObj.Form[tmpId].IsqStepN,
+        3
+      );
+      _classObj.hooks = Bl01(tmpId)
+        ? {
+            1: { pre: [], post: [] },
+            2: { pre: [], post: [_that.InlineOpenForm, _that._screen2] },
+            3: { pre: [], post: [] },
+            4: { pre: [], post: [] },
+            5: { pre: [], post: [] },
+          }
+        : _case === 0
+        ? { 1: { pre: [], post: [] }, 2: { pre: [], post: [_that._screen2] } }
+        : {
+            1: { pre: [], post: [] },
+            2: { pre: [], post: [_that._screen2] },
+            3: { pre: [], post: [] },
+          };
+      _classObj.leadServiceObj = { 2: "generate" };
+      _classObj.type = { code: Bl01(tmpId) ? "name" : "" };
+      if (Bl01(tmpId)) _classObj.nonMandatory = { name: nonm };
+    }
+    if (typeOfForm === "blfirstfold") {
+      //ff_here
+      var nonm = currentISO() !== "IN" ? false : true;
+      ReqObj.Form[tmpId].IsqStep1 = ReturnCorrectVal(
+        ReqObj.Form[tmpId].IsqStep1,
+        3
+      );
+      ReqObj.Form[tmpId].IsqStepN = ReturnCorrectVal(
+        ReqObj.Form[tmpId].IsqStepN,
+        3
+      );
+      _classObj.hooks = {
+        1: { pre: [], post: [] },
+        2: { pre: [], post: [_that.InlineOpenForm, _that._screen2] },
+        3: { pre: [], post: [] },
+        4: { pre: [], post: [] },
+        5: { pre: [], post: [] },
+      };
+      _classObj.leadServiceObj = { 2: "generate" };
+      _classObj.type = { code: "name" };
+      _classObj.nonMandatory = { name: nonm };
+    }
+    if (currentISO() !== "IN") _classObj.type = { code: "name" };
+    _that.updateNumberOfClassCalled(_classObj.numberOfClassCalled);
+    _that._objectSequence(tmpId, _classObj);
+  } else _that._switchNext(tmpId, typeOfForm);
+};  
+
+// screen 0  and screen 1 

@@ -1,3 +1,479 @@
+// screen2-7
+
+//please correct this code for ecom product
+FormSeq.prototype._screen2 = function (tmpId, typeOfForm) {
+  dirimgscreencount = 2;
+  var _that = this;
+  typeOfForm = returnTypeForSeq(tmpId).toLowerCase();
+  var data = {
+    iso: currentISO(),
+    imeshcookie: imeshExist(),
+    array: { UiArray: [], ServiceArray: [] },
+  };
+  var _classObj = null;
+  var _case = data.imeshcookie && isSet(data.iso) && _contactScreen(data.iso) && (data.iso === "IN" || (data.iso !== "IN" && (ReqObj.Form[tmpId].FormSequence._stepCounter < 0 || (Enq04(tmpId) && ReqObj.Form[tmpId].FormSequence._stepCounter < 1)))) ? 0 : -1;
+
+  if ( !Bl09(tmpId) && ((!isImageVidEnq(tmpId) && _that._stepCounter === -1) || ((isImageVidEnq(tmpId) || Enq04(tmpId) || Bl01(tmpId) || Bl04(tmpId)) && _that._stepCounter === 0)) && isSet(data.iso) && data.iso === "IN" && _mandatDetailsFilled() && ((isEnq(tmpId) && isSecondEnq(tmpId)) || ((Bl01(tmpId) || Bl04(tmpId)) && isSecondBl())) && ReqObj.UserDetail.uv === "" )
+    _case = -1;
+  if ( (Enq04(tmpId) || Bl04(tmpId)) && isSet(data.iso) && data.iso !== "IN" && isSet(ReqObj.UserDetail.fn) && ReqObj.UserDetail.fn !== "")
+    _case = -1;
+  if (currentISO() !== "IN" && ReqObj.UserDetail.mb1 === "") _case = 0;
+  if ( !(checkblockedUser() && im_issExist() === "") && _case !== -1 && ReqObj.Form[tmpId].flags.isNECShown === false) {
+    classObj = isBl(tmpId) && data.imeshcookie !== "" && ReqObj.Form[tmpId].FormSequence._stepCounter < 0
+        ? isImageVidEnq(tmpId) && isEcomProduct(tmpId)
+          ? { classArray: ["ProductName"] }
+          : { classArray: ["ProductName", "ContactDetail"] }
+        : isImageVidEnq(tmpId) && isEcomProduct(tmpId)
+        ? { classArray: ["enquirenow"] }
+        : { classArray: ["ContactDetail"] };
+    _classObj = {
+      numberOfClassCalled: classObj.classArray.length,
+      hooks: { 1: { pre: [_that._screen3], post: [] } },
+      classArray: classObj.classArray,
+      array: _makeDataAndServiceArr(classObj.classArray, data.array, 1),
+      that: _that,
+      tmpId: tmpId,
+      afterService: _makeDataAndServiceArr(classObj.classArray, [], 2),
+      extraKeys: _makeExtraKey(classObj.classArray, null),
+      leadServiceObj:
+        isImageVidEnq(tmpId) &&
+        ReqObj.UserDetail.uv === "" &&
+        isSecondEnq(tmpId) &&
+        _that._stepCounter === -1 &&
+        _mandatDetailsFilled()
+          ? null
+          : { 1: "generate" },
+      nonMandatory: { name: false },
+      additionalkey: { onlastscreen: false },
+    };
+    if (typeOfForm === "bl" &&!Bl04(tmpId) &&data.imeshcookie !== "" &&ReqObj.Form[tmpId].FormSequence._stepCounter < 0 ) {
+      _classObj.hooks = {
+        1: { pre: [], post: [_that._screen3] },
+        2: { pre: [], post: [] },
+      };
+      _classObj.leadServiceObj = isSecondBl(tmpId) === false || (isSecondBl(tmpId) && ReqObj.UserDetail.uv !== "") ? { 1: "generate" } : { 1: "generate" };
+    }
+    _that.updateNumberOfClassCalled(_classObj.numberOfClassCalled);
+    _that._objectSequence(tmpId, _classObj);
+  } else _that._switchNext(tmpId, typeOfForm);
+};
+FormSeq.prototype._screen3 = function (tmpId, typeOfForm) {
+  dirimgscreencount = 3;
+  var _that = this;
+  typeOfForm = returnTypeForSeq(tmpId).toLowerCase();
+  var data = {
+    iso: currentISO(),
+    imeshcookie: imeshExist(),
+    array: { UiArray: [], ServiceArray: [] },
+  };
+  var _classObj = null;
+  var message = currentISO() === "IN" && ((isEnq(tmpId) && isSecondEnq()) || (isBl(tmpId) && isSecondBl())) && usercookie.getParameterValue(imeshExist(), "uv") !== "V" && ReqObj.Form[tmpId].isOtpShownOnFirstStep ? "second" : "";
+  var _case = checkblockedUser() && im_issExist() === "" ? 2 : data.imeshcookie && isSet(data.iso) && data.iso === "IN" && usercookie.getParameterValue(data.imeshcookie, "uv") === "" ? 0 : -1;
+  if (_case !== -1 && ReqObj.Form[tmpId].flags.isOtpShown === false) {
+    _classObj = {
+      numberOfClassCalled: 1,
+      hooks: _case === 2 ? { 1: { pre: [], post: [_that._screen2] } } : { 1: { pre: [], post: [_that._screen4] } },
+      classArray: ["UserVerification"],
+      array: { 1: data.array },
+      that: _that,
+      tmpId: tmpId,
+      afterService: { 1: [] },
+      extraKeys: { 1: { tr: false, is: false, hf: false, fobj: null } },
+      leadServiceObj: { 1: "generate" },
+      message: { 1: message },
+    };
+    _that.updateNumberOfClassCalled(_classObj.numberOfClassCalled);
+    _that._objectSequence(tmpId, _classObj);
+  } else _that._switchNext(tmpId, typeOfForm);
+};
+FormSeq.prototype._screen4 = function (tmpId, typeOfForm) {
+  
+  dirimgscreencount = 4;
+  if(direnqImage(tmpId)){
+    $("#t" + tmpId + "_isqdetails" + "0R").addClass("bedsnone");
+  }
+  var _that = this;
+  typeOfForm = returnTypeForSeq(tmpId).toLowerCase();
+  var data = {
+    iso: currentISO(),
+    imeshcookie: imeshExist(),
+    array: { UiArray: [], ServiceArray: [] },
+    md: { ask: true, what: "Company Name", key: 0, ui: "old", suffix: "ocbx" },
+  };
+  ReqObj.Form[tmpId].IsqStep1 = ReturnCorrectVal(
+    ReqObj.Form[tmpId].IsqStep1,
+    3
+  );
+  ReqObj.Form[tmpId].IsqStepN = ReturnCorrectVal(
+    ReqObj.Form[tmpId].IsqStepN,
+    3
+  );
+  var toask = toAskCname(tmpId);
+  var _classObj = null;
+  var _rclassObj = {
+    numberOfClassCalled: 1,
+    hooks: { 1: { pre: [_that._screen5], post: [] }, 2: { pre: [], post: [] } },
+    classArray: ["RequirementDtl", "MoreDetails", "BlStaticQues"],
+    array: { 1: data.array, 2: data.array },
+    that: _that,
+    tmpId: tmpId,
+    afterService: { 1: [], 2: [] },
+    extraKeys: {
+      1: { tr: true, is: false, hf: false, fobj: null },
+      2: { tr: true, is: false, hf: false, fobj: null },
+    },
+    copyhooks: true,
+    leadServiceObj: { 1: "generate" },
+    md: { 2: data.md },
+  };
+  var _fallback =
+    typeOfForm === "inenquiry"
+      ? null
+      : _that.returnClassObjects(0, _rclassObj.classArray[0], _rclassObj);
+  if (Bl04(tmpId) || Bl09(tmpId)) {
+    _fallback = [];
+    _fallback[0] = _that.returnClassObjects(
+      0,
+      _rclassObj.classArray[0],
+      _rclassObj
+    );
+    if (currentISO() !== "IN") {
+      for (i = 1; i < _rclassObj.classArray.length; i++) {
+        if (toask)
+          _fallback[i] = _that.returnClassObjects(
+            1,
+            _rclassObj.classArray[i],
+            _rclassObj
+          );
+        else {
+          _fallback[i] = _that.returnClassObjects(
+            1,
+            _rclassObj.classArray[2],
+            _rclassObj
+          );
+          break;
+        }
+      }
+    }
+  }
+  var toCheckIsq =
+    typeOfForm === "bl" &&
+    ReqObj.Form[tmpId].flags.isEnrichShown.isStaticShown === true
+      ? false
+      : true;
+  if (
+    toCheckIsq &&
+    ShowIsq(tmpId) &&
+    parseInt(ReqObj.Form[tmpId].disableIsq) !== 1 &&
+    parseInt(ReqObj.Form[tmpId].isqMcat) !== -1
+  ) {
+    var specialCase =
+      isImageVidEnq(tmpId) && _that._stepCounter === -1 ? true : false;
+    var _case = data.imeshcookie && isSet(data.iso) && data.iso !== "IN" ? 1 : 0;
+    var classObj = {
+      classArray:
+        specialCase === true
+          ? ["EnquireNow"]
+          : _case === 0
+          ? pdpenq(tmpId) && !Enq04(tmpId)
+            ? ["Isq", "RequirementDtl"]
+            : ["Isq"]
+          : isBl(tmpId)
+          ? _case === 1 && ReqObj.Form[tmpId].isProdNameChanged
+            ? ["Isq"]
+            : toask
+            ? ShowReqBox(tmpId)
+              ? ["Isq", "RequirementDtl", "MoreDetails", "BlStaticQues"]
+              : ["Isq", "MoreDetails", "BlStaticQues"]
+            : ShowReqBox(tmpId)
+            ? ["Isq", "RequirementDtl", "BlStaticQues"]
+            : ["Isq", "BlStaticQues"]
+          : typeOfForm !== "inenquiry"
+          ? toask
+            ? ["Isq", "RequirementDtl", "MoreDetails"]
+            : ["Isq", "RequirementDtl"]
+          : toask
+          ? ["Isq", "MoreDetails"]
+          : ["Isq"],
+    };
+    _classObj = {
+      numberOfClassCalled: classObj.classArray.length,
+      hooks:
+        (_case === 0 && !pdpenq(tmpId)) || specialCase === true
+          ? { 1: { pre: [_that._screen5], post: [] } }
+          : {
+              1: { pre: [_that._screen5], post: [] },
+              2: { pre: [], post: [] },
+              3: { pre: [], post: [] },
+              4: { pre: [], post: [] },
+            },
+      classArray: classObj.classArray,
+      array: _makeDataAndServiceArr(classObj.classArray, data.array, 1),
+      that: _that,
+      tmpId: tmpId,
+      afterService: { 1: [], 2: [], 3: [] },
+      extraKeys: _makeExtraKey(classObj.classArray, _fallback),
+      copyhooks: true,
+      leadServiceObj: { 1: "generate" },
+      md:
+        _case === 1 &&
+        toask &&
+        !(
+          typeOfForm === "inenquiry" ||
+          (typeOfForm == "bl" && ReqObj.Form[tmpId].isFrInline == 1)
+        )
+          ? { 3: data.md }
+          : _case === 1 &&
+            toask &&
+            (typeOfForm === "inenquiry" ||
+              (typeOfForm == "bl" && ReqObj.Form[tmpId].isFrInline == 1))
+          ? { 2: data.md }
+          : null,
+    };
+    _that.updateNumberOfClassCalled(_classObj.numberOfClassCalled);
+    _that._objectSequence(tmpId, _classObj);
+  } else {
+    _that._switchNext(tmpId, typeOfForm);
+  }
+};
+FormSeq.prototype._screen5 = function (tmpId, typeOfForm) {
+  dirimgscreencount = 5;
+  var _that = this;
+  typeOfForm = returnTypeForSeq(tmpId).toLowerCase();
+  var data = {
+    iso: currentISO(),
+    imeshcookie: imeshExist(),
+    array: { UiArray: [], ServiceArray: [] },
+  };
+
+  var totalisqlength = ReqObj.Form[tmpId].IsqLength;
+
+  if (
+    showQuantityUnit((tmpId, ReqObj.Form[tmpId].IsqArray, 2) || displayedisq) &&
+    isNewInlineBl(tmpId)
+  ) {
+    totalisqlength -= 1;
+  }
+
+  if (
+    !pdpenq(tmpId) &&
+    !(isBl(tmpId) && ReqObj.Form[tmpId].flags.isEnrichShown.isStaticShown) &&
+    parseInt(ReqObj.Form[tmpId].disableIsq) !== 1 &&
+    isSet(data.iso) && data.iso === "IN" &&
+    ReqObj.Form[tmpId].IsqArray !== null &&
+    ReqObj.Form[tmpId].prevCount < totalisqlength
+  )
+    _that._screen4(tmpId, typeOfForm);
+  else if (ShowReqBox(tmpId)) {
+    var toask = toAskCname(tmpId) && currentISO() !== "IN" ? true : false;
+    var classObj = isBl(tmpId)
+      ? {
+          classArray: toask
+            ? ["RequirementDtl", "MoreDetails", "BlStaticQues"]
+            : ["RequirementDtl", "BlStaticQues"],
+        }
+      : {
+          classArray: toask
+            ? ["RequirementDtl", "MoreDetails"]
+            : ["RequirementDtl"],
+        };
+    var _classObj = {
+      numberOfClassCalled: classObj.classArray.length,
+      hooks: {
+        1: { pre: [_that._screen6], post: [] },
+        2: { pre: [], post: [] },
+        3: { pre: [], post: [] },
+      },
+      classArray: classObj.classArray,
+      array: _makeDataAndServiceArr(classObj.classArray, data.array, 1),
+      that: _that,
+      tmpId: tmpId,
+      afterService: { 1: [], 2: [], 3: [] },
+      extraKeys: _makeExtraKey(classObj.classArray, null),
+      leadServiceObj: { 1: "generate" },
+      md: toask
+        ? {
+            2: {
+              ask: true,
+              what: "Company Name",
+              key: 0,
+              ui: "old",
+              suffix: "ocbx",
+            },
+          }
+        : null,
+    };
+    _that.updateNumberOfClassCalled(_classObj.numberOfClassCalled);
+    _that._objectSequence(tmpId, _classObj);
+  } else if (
+    isBl(tmpId) &&
+    !ReqObj.Form[tmpId].flags.isEnrichShown.isStaticShown
+  ) {
+    if (
+      currentISO() !== "IN" &&
+      (Bl04(tmpId) || Bl01(tmpId)) &&
+      ReqObj.Form[tmpId].isAttachmentShown === true
+    )
+      _that._switchNext(tmpId, typeOfForm);
+    else {
+      var toask = toAskCname(tmpId) && currentISO() !== "IN" ? true : false;
+      var _classObj = {
+        numberOfClassCalled: currentISO() !== "IN" && toask ? 2 : 1,
+        hooks:
+          currentISO() !== "IN" && toask
+            ? {
+                1: { pre: [_that._screen6], post: [] },
+                2: { pre: [], post: [] },
+              }
+            : { 1: { pre: [_that._screen6], post: [] } },
+        classArray:
+          currentISO() !== "IN" && toask
+            ? ["MoreDetails", "BlStaticQues"]
+            : ["BlStaticQues"],
+        array:
+          currentISO() !== "IN" && toask
+            ? { 1: data.array, 2: data.array }
+            : { 1: data.array },
+        that: _that,
+        tmpId: tmpId,
+        afterService:
+          currentISO() !== "IN" && toask ? { 1: [], 2: [] } : { 1: [] },
+        extraKeys:
+          currentISO() !== "IN" && toask
+            ? {
+                1: { tr: true, is: false, hf: false, fobj: null },
+                2: { tr: true, is: false, hf: false, fobj: null },
+              }
+            : { 1: { tr: true, is: false, hf: false, fobj: null } },
+        leadServiceObj: { 1: "generate" },
+        md:
+          currentISO() !== "IN" && toask
+            ? {
+                1: {
+                  ask: true,
+                  what: "Company Name",
+                  key: 0,
+                  ui: "old",
+                  suffix: "ocbx",
+                },
+              }
+            : null,
+      };
+      _that.updateNumberOfClassCalled(_classObj.numberOfClassCalled);
+      _that._objectSequence(tmpId, _classObj);
+    }
+  } else _that._switchNext(tmpId, typeOfForm);
+};
+FormSeq.prototype._screen6 = function (tmpId, typeOfForm) {
+  dirimgscreencount = 6;
+  var _that = this;
+  typeOfForm = returnTypeForSeq(tmpId).toLowerCase();
+  var LastScreen = _that._returnLastScreen(tmpId);
+  var contactScreen = false;
+  var _extraDefault = { tr: false, is: false, hf: false, fobj: null };
+  var data = {
+    iso: currentISO(),
+    imeshcookie: imeshExist(),
+    array: { UiArray: [], ServiceArray: [] },
+    emptyHook: { pre: [], post: [] },
+  };
+  var _classObj = {
+    numberOfClassCalled: 0,
+    hooks: {
+      1: { pre: [_that._screen7], post: {} },
+      2: data.emptyHook,
+      3: data.emptyHook,
+    },
+    classArray: [],
+    array: { 1: data.array, 2: data.array, 3: data.array },
+    that: _that,
+    tmpId: tmpId,
+    afterService: {},
+    extraKeys: { 1: _extraDefault, 2: _extraDefault, 3: _extraDefault },
+    md: {},
+    nonMandatory: {},
+  };
+  if (isSet(data.iso) && _contactScreen(data.iso)) {
+    contactScreen = true;
+    _classObj.numberOfClassCalled += 1;
+    _classObj.classArray.push("ContactDetail");
+    _classObj.afterService[_classObj.numberOfClassCalled] = [
+      returnPostBlEnqObject(tmpId, data.array, data.emptyHook, _that, ""),
+    ];
+    _classObj.md[_classObj.numberOfClassCalled] = null;
+    _classObj.nonMandatory = isSet(ReqObj.UserDetail.fn) && ReqObj.UserDetail.fn === "" ? { name: false } : null;
+    _classObj.additionalkey = { onlastscreen: true };
+  }
+  if ( toAskCname(tmpId) && (typeof ReqObj.Form[tmpId].companyName === "undefined" || (isSet(ReqObj.Form[tmpId].companyName) && ReqObj.Form[tmpId].companyName === "")) ) {
+    _classObj.numberOfClassCalled += 1;
+    _classObj.classArray.push("MoreDetails");
+    _classObj.afterService[_classObj.numberOfClassCalled] = [];
+    _classObj.md[_classObj.numberOfClassCalled] = {
+      ask: true,
+      what: "Company Name",
+      key: 0,
+      ui: "new",
+      suffix: "ncbx",
+    };
+  }
+  if (isSet(data.iso) && data.iso === "IN" && ReqObj.gst.toask === true) {
+    _classObj.numberOfClassCalled += 1;
+    _classObj.classArray.push("MoreDetails");
+    _classObj.afterService[_classObj.numberOfClassCalled] = [];
+    _classObj.md[_classObj.numberOfClassCalled] = {
+      ask: true,
+      what: "GST Number",
+      key: 1,
+      ui: "new",
+      suffix: "cgst",
+    };
+  }
+  if (isSet(data.iso) && data.iso !== "IN" && ReqObj.url.toask === true) {
+    _classObj.numberOfClassCalled += 1;
+    _classObj.classArray.push("MoreDetails");
+    _classObj.afterService[_classObj.numberOfClassCalled] = [];
+    _classObj.md[_classObj.numberOfClassCalled] = {
+      ask: true,
+      what: "Website Url",
+      key: 2,
+      ui: "new",
+      suffix: "curl",
+    };
+  }
+  if ( LastScreen === "ContactDetail" && contactScreen === true && _classObj.numberOfClassCalled === 1)
+    _classObj.numberOfClassCalled = 0;
+  if (_classObj.numberOfClassCalled !== 0) {
+    _that.updateNumberOfClassCalled(_classObj.numberOfClassCalled);
+    _that._objectSequence(tmpId, _classObj);
+  } else _that._switchNext(tmpId, typeOfForm);
+};
+
+FormSeq.prototype._screen7 = function (tmpId, typeOfForm) {
+  dirimgscreencount = 7;
+  var _that = this;
+  typeOfForm = returnTypeForSeq(tmpId).toLowerCase();
+  var data = {
+    iso: currentISO(),
+    imeshcookie: imeshExist(),
+    array: { UiArray: [], ServiceArray: [] },
+  };
+  var _classObj = {
+    numberOfClassCalled: 1,
+    hooks: { 1: { pre: [], post: [] } },
+    classArray: ["ThankYou"],
+    array: { 1: data.array },
+    that: _that,
+    tmpId: tmpId,
+    afterService: { 1: [] },
+    extraKeys: { 1: { tr: false, is: false, hf: false, fobj: null } },
+  };
+  _that.updateNumberOfClassCalled(_classObj.numberOfClassCalled);
+  _that._objectSequence(tmpId, _classObj);
+};
+
+// screen2-7
+
+
 function get_message() {
     return {
       msg: "Become a verified free seller in 2 min & <br>Connect with 100+ Buyers from your city",
