@@ -1,17 +1,5 @@
 
-// var webAddressLocation = location.hostname;
-  // var userNameList = (webAddressLocation.match(/^dev/) || webAddressLocation.match(/^stg/)) ?  ["9839932616","9490340610"] : ["9811829818" , "8765471607","9618837669"];
-  function getTimeZone() {
-    if (ReqObj.ipLoc.zoneISO == "") {
-      var zdate = new Date();
-      var zgmt = -zdate.getTimezoneOffset() / 60;
-      if (zgmt != 5.5) ReqObj.ipLoc.zoneISO = "OTHER";
-      else ReqObj.ipLoc.zoneISO = "IN";
-    }
-    //ReqObj.ipLoc.zoneISO = 'OTHER'; // remove later
-  }
-  getTimeZone();
-  
+
   /**
    *
    * @description
