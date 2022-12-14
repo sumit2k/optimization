@@ -2,3 +2,4 @@
 1.  What forms to load completely. Bl-inline?
 2.  percent of pre post
 3.  single page bl?
+4.  On entering name like validation
