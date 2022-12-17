@@ -6,13 +6,13 @@ Post.js -:
 	- form seq screen switch
 	- form close on click function
 	- BLEnqPopUpDefault, OpenChatBLPopup
+	- Generation
 
 Pre.js -:
 	- Global variables
-	- UserCookie
+	- UserCookie, iploc
 	- UserLogin
 	- Form Identifying functions
 	- Initialize form/Openform function
-	- FormDefaultsFromProperty function 
-	- CreateFormObject, setIplocCookie, addTemplates, updateKeyTypeOfForm, SetBLEnqDefaultFlags, PropertyDefault, SetBLEnqDefaultKeys
+	- FormDefaultsFromProperty function (nested)
 	- screen 0 screen 1

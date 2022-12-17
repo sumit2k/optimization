@@ -657,6 +657,20 @@ function isSticky(tmpId) {
   function IsChatbl(tmpId) {
     return isSet(tmpId) && tmpId.substr(0, 2) === "08" ? true : false;
   }
+  function isSet(checkVar) {
+    return typeof checkVar !== "undefined" && checkVar !== null ? true : false;
+  }
+  function isSSB(tmpId) {
+    return tmpId.substr(0, 2) === "06" ? true : false;
+  }
+  function isImageVidEnq(tmpId) {
+    return ReqObj.Form[tmpId].formType.toLowerCase() === "enq" &&
+      isSet(ReqObj.Form[tmpId].typeofform) &&
+      (ReqObj.Form[tmpId].typeofform.toLowerCase() === "image" ||
+        ReqObj.Form[tmpId].typeofform.toLowerCase() === "video")
+      ? true
+      : false;
+  }
   
 function initializeForm(formArray) {
     createGlobalObject();
@@ -754,7 +768,7 @@ function initializeForm(formArray) {
         !IsChatbl(tmpId)
       ) {
         if (trimVal(ReqObj.Form[tmpId].reqSent.toLowerCase()) !== "no")
-          new Generation(1).onSubmit(tmpId);
+          new Generation(1).onSubmit(tmpId);  //tocheck
       } else {
         if (
           isSet(ReqObj.Form[tmpId].formType) &&
@@ -765,6 +779,18 @@ function initializeForm(formArray) {
           toFireBLIntent(tmpId, "i");
       }
     }
+  }
+  function toFireBLIntent(tmpId, src) {
+    var _case = IsChatbl(tmpId) && ReqObj.Form[tmpId].mcatId === "-1" && ReqObj.Form[tmpId].catId === "-1" ? 0 : 1;
+    if ( _case === 1 && ((isSet(src) && src === "i") || (isSet(ReqObj.Form[tmpId].FormSequence.StepCounter) && ReqObj.Form[tmpId].FormSequence.StepCounter > -2 && ReqObj.Form[tmpId].FormSequence.StepCounter < 2))) {
+      new Generation(1, 1).onSubmit(tmpId); //tocheck
+      ReqObj.Form[tmpId].intentCalled = true;
+    } else ReqObj.Form[tmpId].intentCalled = false;
+  }
+  function trimVal(val) {
+    var trimmedVal = "";
+    if (isSet(val) && typeof val === "string") trimmedVal = val.trim();
+    return trimmedVal;
   }
   function isEcomProduct(tmpId) {
     return isSet(ReqObj.Form[tmpId].isEcom) && ReqObj.Form[tmpId].isEcom === 1
@@ -781,6 +807,92 @@ function initializeForm(formArray) {
       }
       return true;
     } else return false;
+  }
+  function isSecondBlEnq(tmpId) {
+    if (isSet(tmpId)) {
+      if (isSet(ReqObj.Form[tmpId].formType)) {
+        if (ReqObj.Form[tmpId].formType.toLowerCase() === "bl" && isSecondBl())
+          return true;
+        else if (
+          ReqObj.Form[tmpId].formType.toLowerCase() === "enq" &&
+          isSecondEnq()
+        )
+          return true;
+        return false;
+      } else {
+        return false;
+      }
+    } else return false;
+  }
+  function isSecondBl() {
+    var imEqgl = usercookie.getCookie("imEqGl");
+    if (isSet(imEqgl) && trimVal(imEqgl) !== "" && imEqgl !== "undef") {
+      var arr = imEqgl.split(",");
+      for (var s = 0; s < arr.length; s++) {
+        if (isSet(arr[s]) && trimVal(arr[s]) !== "") {
+          if (arr[s].substring(0, 2) === "BL") return true;
+        }
+      }
+      return false;
+    } else return false;
+  }  
+  function isSecondEnq() {
+    var imEqgl = usercookie.getCookie("imEqGl");
+    if (isSet(imEqgl) && trimVal(imEqgl) !== "" && imEqgl !== "undef") {
+      var arr = imEqgl.split(",");
+      for (var s = 0; s < arr.length; s++) {
+        if (isSet(arr[s]) && trimVal(arr[s]) !== "") {
+          if (arr[s].substring(0, 6) === "dispid") return true;
+        }
+      }
+      return false;
+    } else return false;
+  }
+  function UserFilledIsq(tmpId) {
+    if (
+      isSet(ReqObj.Form[tmpId].userFilledIsq) &&
+      ReqObj.Form[tmpId].userFilledIsq instanceof Array
+    ) {
+      var userFilledIsq = ReqObj.Form[tmpId].userFilledIsq;
+      var flag = true;
+      if (userFilledIsq.length === 2) {
+        for (var j = 0; j < userFilledIsq.length; j++) {
+          if (
+            notEmpty(userFilledIsq[j].questionsId) &&
+            notEmpty(userFilledIsq[j].questionsDesc) &&
+            notEmpty(userFilledIsq[j].optionsId) &&
+            notEmpty(userFilledIsq[j].optionsValue)
+          ) {
+            flag = true;
+          } else {
+            flag = false;
+            break;
+          }
+        }
+      } else flag = false;
+  
+      return flag;
+    } else return false;
+  }
+  function notEmpty(val) {
+    if (isSet(val) && val !== "") {
+      return true;
+    } else return false;
+  }
+  function GenerationOnClick(tmpId) {
+    if (
+      isSet(tmpId) &&
+      isSet(ReqObj.Form[tmpId].genOnClick) &&
+      ReqObj.Form[tmpId].genOnClick.toLowerCase() === "yes" &&
+      tmpId.substring(0, 2) === "09" &&
+      isSet(ReqObj.Form[tmpId].formType) &&
+      (ReqObj.Form[tmpId].formType.toLowerCase() === "enq" ||
+        ReqObj.Form[tmpId].formType.toLowerCase() === "bl") &&
+      !isImageVidEnq(tmpId) &&
+      usercookie.getParameterValue(imeshExist(), "iso") === "IN"
+    )
+      return true;
+    else return false;
   }
   function MakeRefText(tmpId) {
     ReqObj.Form[tmpId].refText =
@@ -815,7 +927,6 @@ function initializeForm(formArray) {
     ReqObj.Form[tmpId].generationCalled = false;
     ReqObj.userType = "";
     SetDefaultUserInputKeys(tmpId);
-  
     ReqObj.Form[tmpId].generationId =
       isSet(ReqObj.Form[tmpId].generationId) &&
       ReqObj.Form[tmpId].generationId !== "" &&
@@ -829,6 +940,24 @@ function initializeForm(formArray) {
     ReqObj.Form[tmpId].IsbackClicked = false;
     ReqObj.Form[tmpId].IsqUnitArray = [];
     ReqObj.Form[tmpId].IsProdNameChanged = false;
+  }
+  function SetDefaultUserInputKeys(tmpId) {
+    ReqObj.Form[tmpId].UserInputs = {
+      CountryName: "",
+      IsCountry: "",
+      IsProduct: "",
+      ProductName: "",
+      PrimaryInfo: "",
+      Name: "",
+      Mobile: "",
+      Email: "",
+      City: "",
+      CityId: "",
+      Requirement: "",
+      OTP: "",
+      ChangeCountry: "",
+      toChange: "",
+    };
   }
   function PropertyDefault(tmpId, templateDefaults) {
     ReqObj.Form[tmpId].mcatName = ReturnCorrectVal(templateDefaults.mcatName, "");
@@ -916,6 +1045,25 @@ function initializeForm(formArray) {
   
     ReqObj.Form[tmpId].insert = ReturnCorrectVal(templateDefaults.insert, "I");
   }
+  function ReturnCorrectVal(val, defaultvalue) {
+    if (isSet(val) && val !== "") {
+      return val;
+    } else {
+      return isSet(defaultvalue) ? (defaultvalue !== "" ? defaultvalue : "") : "";
+    }
+  }
+  function updateToFireEscTrackingKey(tmpId) {
+    if (tmpId.substring(0, 2) === "09") {
+      return true;
+    } else if (IsChatbl(tmpId)) {
+      return true;
+    } else if (
+      tmpId.substring(0, 2) !== "09" &&
+      $("#t" + tmpId + "_enrichform_maindiv").html() === ""
+    ) {
+      return false;
+    } else return true;
+  }
   function SetBLEnqDefaultFlags(tempId, instId) {
     if (isSet(tempId) && isSet(instId))
       ReqObj.Form[tempId + instId].flags = CopyObject(Templateconfig[tempId]);
@@ -962,6 +1110,16 @@ function initializeForm(formArray) {
     ReqObj.Original[tmpId] = CopyObject(ReceivedReqObj);
     if (isSSB(tmpId) && isSet(ReqObj.Original[tmpId]["loginv"]))
       ReqObj.Form[tmpId]["savevalue"] = ReqObj.Original[tmpId]["loginv"];
+  }
+  function CopyObject(Obj) {
+    var CopyObj = Obj || {};
+    var returnObj = {};
+    for (var prop in CopyObj) {
+      if (CopyObj.hasOwnProperty(prop)) {
+        returnObj[prop] = CopyObj[prop];
+      }
+    }
+    return returnObj;
   }
   function OpenForm(LocalReqObj, flagsugg) {
     // don't change the sequence of functions
@@ -3409,5 +3567,185 @@ FormSeq.prototype._screen1 = function (tmpId, typeOfForm) {
     _that._objectSequence(tmpId, _classObj);
   } else _that._switchNext(tmpId, typeOfForm);
 };  
-
 // screen 0  and screen 1 
+
+//iploc
+function IpLoc(tmpId) {
+  var tempipLoc = usercookie.getCookie("iploc");
+  if (
+    (tempipLoc === "" ||
+      (tempipLoc !== "" &&
+        usercookie.getParameterValue(tempipLoc, "gip") === "")) &&
+    !navigator.userAgent.match(/googlebot|mediapartners/)
+  ) {
+    this.getIp(tmpId);
+  } else {
+    this.captureDetailsOfIploc();
+  }
+}
+IpLoc.prototype.getIp = function (tmpId) {
+  var that = this;
+  //var form_type = ReqObj.Form[tmpId].formType === "Enq" ? "Send Enquiry" : "Post Buy Leads";
+  var appSName = location.hostname.match(/^dev/)
+    ? "//geoip.imimg.com/"
+    : location.hostname.match(/^stg/)
+    ? "//geoip.imimg.com/"
+    : "//geoip.imimg.com/";
+  if (typeof glmodid !== "undefined" && glmodid !== null && glmodid !== "") {
+    $.ajax({
+      cache: false,
+      url: appSName + "api/location.php",
+      //url: 'https://geoip.imimg.com/api/location.php',
+      timeout: 3000,
+      data: {
+        modid: glmodid,
+        token: "imobile@15061981",
+      },
+      type: "POST",
+      dataType: "json",
+      success: function (s) {
+        ReqObj.ipLoc.response = true;
+        if (isSet(s) && isSet(s.Response)) {
+          if (
+            isSet(s.Response.Code) &&
+            parseInt(s.Response.Code) === 200 &&
+            isSet(s.Response.Status) &&
+            s.Response.Status === "Success"
+          ) {
+            //s={"Response":{"Data":{"geoip_countryiso":"JP","geoip_countryname":"Japan","geoip_stateiso":"13","geoip_statename":"Tokyo","geoip_accuracy":1000,"geoip_ipaddress":"84.17.34.18"},"Code":200,"Status":"Success","Message":"Successfully returning data"}};
+            var resp = s.Response.Data;
+            if (isSet(resp)) {
+              ReqObj.IPDetails = [];
+              resp.geoip_cityname = isSet(resp.geoip_cityname)
+                ? resp.geoip_cityname
+                : "";
+              resp.geoip_cityid = isSet(resp.geoip_cityid)
+                ? resp.geoip_cityid
+                : "";
+              resp.geoip_countryiso = isSet(resp.geoip_countryiso)
+                ? resp.geoip_countryiso
+                : "";
+              resp.geoip_countryname = isSet(resp.geoip_countryname)
+                ? resp.geoip_countryname
+                : "";
+              resp.geoip_accuracy = isSet(resp.geoip_accuracy)
+                ? resp.geoip_accuracy
+                : "";
+              resp.geoip_ipaddress = isSet(resp.geoip_ipaddress)
+                ? resp.geoip_ipaddress
+                : "";
+              resp.geoip_statename = isSet(resp.geoip_statename)
+                ? resp.geoip_statename
+                : "";
+              that.setIpLoc(resp, glmodid, tmpId);
+              setIPDetails(resp);
+              if (isSet(tmpId))
+                setTimeout(function () {
+                  flagsugcall(
+                    tmpId,
+                    resp.geoip_countryname,
+                    resp.geoip_countryiso
+                  );
+                }, 1000);
+            }
+          } else {
+            blenqGATracking("iploc","service:location:failure",s.Response,1,0);
+            ReqObj.ipLoc.isFailed = true;
+            that.failSafe();
+          } /* last parameter = 0 denotes ip req */
+        } else {
+          blenqGATracking("iploc","service:location:failure","response undefined",1,0);
+          ReqObj.ipLoc.isFailed = true;
+          that.failSafe();
+        }
+      },
+      error: function (res) {
+        ReqObj.ipLoc.response = true;
+        ReqObj.ipLoc.isFailed = true;
+        that.failSafe();
+        res = isSet(res) ? res : "response undefined";
+        blenqGATracking("iploc","service:location:failure",JSON.stringify(res),1,0);
+      },
+    });
+  }
+};
+/*
+this method makes iploc cookie using setCookie() method of UserCookie class
+*/
+IpLoc.prototype.setIpLoc = function (resp, glmodid, tmpId) {
+  var tempipLoc =
+    "gcniso=" +
+    resp.geoip_countryiso +
+    "|gcnnm=" +
+    resp.geoip_countryname +
+    "|gctnm=" +
+    resp.geoip_cityname +
+    "|gctid=" +
+    resp.geoip_cityid +
+    "|gacrcy=" +
+    resp.geoip_accuracy +
+    "|gip=" +
+    resp.geoip_ipaddress +
+    "|gstnm=" +
+    resp.geoip_statename;
+  usercookie.setCookie("iploc", tempipLoc, 0.125, glmodid); /* glmodid */
+  this.captureDetailsOfIploc(tmpId);
+};
+IpLoc.prototype.captureDetailsOfIploc = function (tmpId) {
+  var iploccookie = usercookie.getCookie("iploc");
+  ReqObj.UserDetail["ipctid"] = usercookie.getParameterValue(
+    iploccookie,
+    "gctid"
+  );
+  ReqObj.UserDetail["ipcityname"] = usercookie.getParameterValue(
+    iploccookie,
+    "lg_ct"
+  );
+  if (!isSet(ReqObj.IPDetails)) {
+    ReqObj.IPDetails = [];
+    ReqObj.IPDetails["countryiso"] = usercookie.getParameterValue(
+      iploccookie,
+      "gcniso"
+    );
+    ReqObj.IPDetails["countryname"] = usercookie.getParameterValue(
+      iploccookie,
+      "gcnnm"
+    );
+    ReqObj.IPDetails["ipaddress"] = usercookie.getParameterValue(
+      iploccookie,
+      "gip"
+    );
+  }
+  if (
+    usercookie.getParameterValue(iploccookie, "gcniso") !== "IN" ||
+    (usercookie.getParameterValue(iploccookie, "gcniso") === "IN" &&
+      ReqObj.ipLoc.zoneISO === "OTHER")
+  ) {
+    if (!isSet(tmpId)) {
+      ipFlagSuggestor();
+    }
+  }
+  ReqObj.UserDetail["suggesCity"] = {
+    geoloc: [
+      usercookie.getParameterValue(iploccookie, "lg_ct"),
+      usercookie.getParameterValue(iploccookie, "lg_ctid"),
+    ],
+    hdcity: [
+      usercookie.getParameterValue(usercookie.getCookie("xnHist"), "city"),
+      "",
+    ],
+    iploc: [
+      usercookie.getParameterValue(iploccookie, "gctnm"),
+      usercookie.getParameterValue(iploccookie, "gctid"),
+    ],
+  };
+};
+IpLoc.prototype.failSafe = function () {
+  if (ReqObj.ipLoc.zoneISO !== "IN") {
+    ReqObj.ipLoc.callIpFlagSugg = true;
+    ipFlagSuggestor();
+  }
+};
+new IpLoc();
+ReqObj.ipLoc.pinged = true;
+//iploc

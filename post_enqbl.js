@@ -1760,3 +1760,467 @@ function ThankYou(tmpId) {
     }
   };
 //   tqscreen
+
+//Generation
+/*
+   * Usage : Generation : Intent and BLEnq
+   * @function : submit           - accepts argument 1 or 0 ----- 1 for IntentGeneration and 0 for BLEnqgeneration
+   * @function : cookies          - read all required cookies
+   * @function : getData          - collects data to be sent to request
+   * @function : getBlEnqData     - data for BL and Enquiry
+   * @function : getIntentData    - data for Intent
+   * @function : intentGeneration - generates intent
+   * @function : BlEnqGeneration  - generates BL or Enq
+   */
+  /* Generation Class Starts here */
+  function Generation(arg, blIntent) {
+    this.v4iilexCookie = "";
+    this.imeshCookie = "";
+    this.iplocCookie = "";
+    this.imEqGlCookie = "";
+    this.siteEntryPage = "";
+    this.adcampCookie = "";
+    this.emktgCookie = ""; /* */
+    this.geoLocCookie = "";
+    this.iso = "";
+    this.arg = arg;
+    this.className = "Generation";
+    this.blIntent = blIntent;
+  }
+  Generation.prototype.defaultEvents = function () {};
+  Generation.prototype.onSubmit = function (tmpId) {
+    this.cookies();
+    if (this.arg === 1) this.intentGeneration(tmpId);
+    if (this.arg === 0) {
+      this.blEnqGeneration(tmpId);
+    }
+  };
+  
+  Generation.prototype.cookies = function () {
+    this.imeshCookie = imeshExist();
+    this.imEqGlCookie = usercookie.getCookie("imEqGl");
+    this.iplocCookie = usercookie.getCookie("iploc");
+    this.v4iilexCookie = usercookie.getCookie("v4iilex");
+    this.geoLocCookie = usercookie.getCookie("GeoLoc");
+    this.iso = usercookie.getParameterValue(this.imeshCookie, "iso");
+  };
+  Generation.prototype.getData = function (tmpId) {
+    var data = {};
+    var loginmode =
+      ReqObj.loginMode !== 0 ? ReqObj.loginMode : new LoginMode().getLoginMode();
+  
+    var formType = IsChatbl(tmpId) ? "BL" : ReqObj.Form[tmpId].formType;
+    data =
+      this.arg === 1
+        ? this.getIntentData(tmpId)
+        : this.arg === 0
+        ? this.getBLEnqData(formType, tmpId)
+        : {};
+  
+    /* Common for both */
+    data["modid"] = ReqObj.Form[tmpId].modId;
+    data["mcatID"] = ReqObj.Form[tmpId].mcatId;
+    data["catID"] = ReqObj.Form[tmpId].catId;
+    data["login_mode"] = loginmode;
+    data["s_glusrid"] = usercookie.getParameterValue(this.imeshCookie, "glid");
+    data["s_country_iso"] = this.iso; // imesh - lead post
+  
+    data["s_ip_country"] = usercookie.getParameterValue(
+      this.iplocCookie,
+      "gcnnm"
+    );
+    data["s_ip"] = usercookie.getParameterValue(this.iplocCookie, "gip");
+    data["s_ip_country_iso"] = usercookie.getParameterValue(
+      this.iplocCookie,
+      "gcniso"
+    );
+    data["curr_page_url"] = window.location.href;
+    data["landing_ref_url"] = usercookie.getCookie("site-entry-page");
+    data["prev_page_url"] = document.referrer;
+    data["s_country_name"] =
+      typeof ReqObj.changeUserCountry !== "undefined" &&
+      ReqObj.changeUserCountry !== ""
+        ? ReqObj.changeUserCountry
+        : "";
+  
+    if (this.iplocCookie !== "") {
+      data["lat"] = usercookie.getParameterValue(this.iplocCookie, "GeoLoc_lt");
+      data["long"] = usercookie.getParameterValue(this.iplocCookie, "lg");
+      data["lt_lg_accu"] = usercookie.getParameterValue(this.iplocCookie, "accu");
+    }
+    var cefproddtype = isSet(ReqObj.Form[tmpId].CefProdType)
+      ? ReqObj.Form[tmpId].CefProdType
+      : "";
+    var prodServ = isSet(ReqObj.Form[tmpId].prodServ)
+      ? ReqObj.Form[tmpId].prodServ
+      : "";
+    var prodType =
+      isSet(cefproddtype) && cefproddtype !== ""
+        ? cefproddtype
+        : isSet(prodServ)
+        ? prodServ
+        : "P";
+  
+    var perwidget = ReqObj.Form[tmpId].perWidget;
+    var industry_ques = ReqObj.Form[tmpId].industry_ques;
+    var refText = ReqObj.Form[tmpId].refText;
+    if (isSet(perwidget)) data["rfq_query_ref_text"] = perWidget;
+    else if (isSet(industry_ques) && industry_ques !== "")
+      data["rfq_query_ref_text"] = refText + industry_ques + "|" + prodType + "|";
+    else data["rfq_query_ref_text"] = refText + "|" + prodType + "|";
+    return ObjectTrim(data);
+  };
+  Generation.prototype.getBLEnqData = function (formType, tmpId) {
+    /* Common for both Enq and BL */
+    var data = {};
+    data =
+      formType.toLowerCase() === "enq"
+        ? this.getEnqData(formType, tmpId)
+        : this.getBlData(formType, tmpId);
+    var temp = usercookie.getParameterValue(this.imeshCookie, "fn");
+    if (temp === "") {
+      data["s_name"] =
+        $("#t" + tmpId + "_q_first_nm" + ReqObj.Form[tmpId].nec.classCount)
+          .length > 0
+          ? $(
+              "#t" + tmpId + "_q_first_nm" + ReqObj.Form[tmpId].nec.classCount
+            ).val()
+          : ReqObj.UserDetail["fn"];
+      if (IsChatbl(tmpId)) data["s_name"] = ReqObj.Form[tmpId].UserInputs["Name"];
+    } else data["s_name"] = temp;
+    data["s_first_name"] = data["s_name"];
+  
+    if (formType.toLowerCase() === "bl") {
+      if (isSet(this.iso) && this.iso === "IN") {
+        temp = usercookie.getParameterValue(this.imeshCookie, "mb1");
+        data["s_mobile"] =
+          temp !== ""
+            ? temp
+            : $("#t" + tmpId + "_q_mobile").length > 0
+            ? $("#t" + tmpId + "_q_mobile").val()
+            : ReqObj.UserDetail["mb1"];
+      } else {
+        temp = usercookie.getParameterValue(this.imeshCookie, "em");
+        data["s_email"] =
+          temp !== ""
+            ? temp
+            : $("#t" + tmpId + "_q_email").length > 0
+            ? $("#t" + tmpId + "_q_email").val()
+            : ReqObj.UserDetail["em"];
+      }
+    }
+    data["rfq_search_keyword"] = ReqObj.Form[tmpId].ss; //correct
+    var adcampCookie = usercookie.getCookie("adcamp");
+    var emktgCookie = usercookie.getCookie("emktg");
+    data["source_campaign"] = "";
+    if (adcampCookie !== "") {
+      var adcmp = usercookie.getParameterValue(adcampCookie, "adcmp");
+      data["source_campaign"] = data["source_campaign"] + adcampCookie;
+      data["adcmp"] = adcmp;
+    }
+    if (emktgCookie !== "") {
+      var affl_id = usercookie.getParameterValue(emktgCookie, "Affliate_id");
+      data["source_campaign"] =
+        data["source_campaign"] === ""
+          ? "emktg" + affl_id
+          : data["source_campaign"] + "|" + "emktg" + affl_id;
+    }
+    data["city_others"] =
+      ReqObj.UserDetail["ctid"] !== "" ? "" : ReqObj.UserDetail["cityname"];
+    data["state_others"] = "";
+    data["prod_serv"] = ReqObj.Form[tmpId].prodServ;
+    data["flag"] = formType;
+    data["afflid"] = ReqObj.Form[tmpId].afflId;
+    data["s_city_name"] =
+      $("#t" + tmpId + "_q_city_oth").length > 0
+        ? $("#t" + tmpId + "_q_city_oth").val()
+        : ReqObj.UserDetail["cityname"];
+    if (currentISO() === "IN") {
+      data["s_state_name"] =
+        isSet(ReqObj.UserDetail["statename"]) &&
+        ReqObj.UserDetail["statename"] !== ""
+          ? ReqObj.UserDetail["statename"]
+          : "";
+    }
+    data["s_city_id"] = usercookie.getParameterValue(this.imeshCookie, "ctid");
+    var custtyp_paid = {
+      1399: 0,
+      1299: -1,
+      1879: 0,
+      1890: 0,
+      1999: 0,
+      4299: 0,
+      149: -1,
+      2199: -1,
+      199: -1,
+      1199: -1,
+      1899: 0,
+      3299: 0,
+      699: -1,
+      1499: -1,
+      2399: -1,
+      1869: 0,
+      179: -1,
+      700: -1,
+      750: -1,
+    };
+    var custwt = ReqObj.Form[tmpId].rcvCustType;
+    data["category_type"] =
+      typeof custtyp_paid[custwt] !== "undefined" && custtyp_paid[custwt] === 0
+        ? "f"
+        : "p";
+    if (ReqObj.Form[tmpId].insert === "R" || ReqObj.Form[tmpId].insert === "U") {
+      data["flag"] = "R";
+      data["req_id"] = ReqObj.Form[tmpId].generationId; /* passed by platform */
+    }
+    data["modref_id"] =
+      isSet(ReqObj.Form[tmpId].pDispId) && ReqObj.Form[tmpId].pDispId !== ""
+        ? ReqObj.Form[tmpId].pDispId
+        : "";
+    data["ref_mod"] =
+      isSet(ReqObj.Form[tmpId].ref_mod) && ReqObj.Form[tmpId].ref_mod !== ""
+        ? ReqObj.Form[tmpId].ref_mod
+        : "";
+    return data;
+  };
+  Generation.prototype.getEnqData = function (formType, tmpId) {
+    return {
+      r_glusrid: ReqObj.Form[tmpId].rcvGlid,
+      modref_type: ReqObj.Form[tmpId].modrefType
+        ? ReqObj.Form[tmpId].modrefType
+        : ReqObj.Form[tmpId].prodServ === "P"
+        ? 1
+        : 2,
+      s_company: ReqObj.Form[tmpId].C_S_organization,
+      s_prod_name: ReqObj.Form[tmpId].prodName,
+      s_prod_dispname:
+        typeof ReqObj.Form[tmpId].prodDispName !== "undefined" &&
+        ReqObj.Form[tmpId].prodDispName !== "" &&
+        ReqObj.Form[tmpId].prodDispName !== null &&
+        ReqObj.Form[tmpId].prodDispName !== "null"
+          ? ReqObj.Form[tmpId].prodDispName
+          : "",
+      ALTERNATE_DISPLAY_ID:
+        isSet(ReqObj.Form[tmpId].ALTERNATE_DISPLAY_ID) &&
+        ReqObj.Form[tmpId].ALTERNATE_DISPLAY_ID !== ""
+          ? ReqObj.Form[tmpId].ALTERNATE_DISPLAY_ID
+          : "",
+    };
+  };
+  
+  Generation.prototype.getBlData = function (formType, tmpId) {
+    var data = {};
+    if (
+      isSet(ReqObj.Form[tmpId].sendImageBL) &&
+      ReqObj.Form[tmpId].sendImageBL !== "" &&
+      parseInt(ReqObj.Form[tmpId].sendImageBL) === 1
+    ) {
+      data = {
+        sIdp: "1",
+        rfq_image_orig: ReqObj.Form[tmpId].rfq_image_orig,
+        rfq_ofr_img_wh: ReqObj.Form[tmpId].rfq_ofr_img_wh,
+        rfq_image_large: ReqObj.Form[tmpId].rfq_image_large,
+        rfq_ofr_limg_wh: ReqObj.Form[tmpId].rfq_ofr_limg_wh,
+        rfq_image_medium: ReqObj.Form[tmpId].rfq_image_medium,
+        rfq_ofr_mimg_wh: ReqObj.Form[tmpId].rfq_ofr_mimg_wh,
+        rfq_image_small: ReqObj.Form[tmpId].rfq_image_small,
+        rfq_ofr_simg_wh: ReqObj.Form[tmpId].rfq_ofr_simg_wh,
+      };
+    }
+  
+    var title_field = $("#t" + tmpId + "prodtitle").val();
+    data["s_prod_name"] =
+      ReqObj.Form[tmpId].prodName !== title_field &&
+      typeof title_field !== "undefined" &&
+      title_field !== ""
+        ? title_field
+        : ReqObj.Form[tmpId].prodName;
+    return data;
+  };
+  
+  Generation.prototype.getIntentData = function (tmpId) {
+    var data = {};
+    var data = {
+      modref_type: ReqObj.Form[tmpId].modrefType,
+      modref_id: ReqObj.Form[tmpId].pDispId,
+      r_glusrid: ReqObj.Form[tmpId].rcvGlid,
+      s_prod_name: ReqObj.Form[tmpId].prodName,
+      s_first_name: usercookie.getParameterValue(this.imeshCookie, "fn"),
+    };
+    var enqsent = ReqObj.Form[tmpId].reqSent;
+    if (ReqObj.Form[tmpId].formType.toLowerCase() === "enq") {
+      var enqsent = ReqObj.Form[tmpId].reqSent;
+      data["flag"] =
+        enqsent === "Yes" || enqsent === "yes" || enqsent === 1 ? 12 : 1;
+    } else if (
+      ReqObj.Form[tmpId].formType.toLowerCase() === "bl" ||
+      IsChatbl(tmpId)
+    ) {
+      var blIntent =
+        isSet(ReqObj.Form[tmpId].BLIntent) && ReqObj.Form[tmpId].BLIntent !== ""
+          ? ReqObj.Form[tmpId].BLIntent.toLowerCase()
+          : "";
+      if (
+        blIntent === "yes" &&
+        ReqObj.Form[tmpId].ctaName.toLowerCase() === "mcat video"
+      )
+        data["flag"] = 16;
+      if (this.blIntent === 1) data["flag"] = 14;
+    }
+  
+    if (isSet(this.iso) && this.iso === "IN") {
+      data["s_mobile"] = usercookie.getParameterValue(this.imeshCookie, "mb1");
+    } else {
+      data["s_email"] = usercookie.getParameterValue(this.imeshCookie, "em");
+    }
+  
+    return data;
+  };
+  Generation.prototype.intentGeneration = function (tmpId) {
+    var form_type =
+      ReqObj.Form[tmpId].formType === "Enq" ? "Send Enquiry" : "Post Buy Leads";
+    if (this.imeshCookie !== "") {
+      var data = this.getData(tmpId);
+      data["form_type"] = form_type;
+      data["tmpId"] = tmpId;
+      GenerateIntent(data);
+    }
+  };
+  Generation.prototype.blEnqGeneration = function (tmpId) {
+    if (
+      !isSSB(tmpId) &&
+      !Bl04(tmpId) &&
+      !Bl09(tmpId) &&
+      ReqObj.Form[tmpId].formType.toLowerCase() === "bl" &&
+      usercookie.getParameterValue(imeshExist(), "uv").toLowerCase() !== "v" &&
+      isSecondBl() &&
+      ReqObj.Form[tmpId].FormSequence.StepCounter < 1
+    ) {
+      return;
+    }
+    if (
+      ReqObj.Form[tmpId].mcatId === -2 ||
+      !isSet(usercookie.getParameterValue(imeshExist(), "glid")) ||
+      usercookie.getParameterValue(imeshExist(), "glid") === "" ||
+      (ReqObj.Form[tmpId].generationId > 1 &&
+        !(ReqObj.Form[tmpId].insert === "R" || ReqObj.Form[tmpId].insert === "U"))
+    ) {
+      if (
+        ReqObj.Form[tmpId].generationId > 1 &&
+        !(ReqObj.Form[tmpId].insert === "R" || ReqObj.Form[tmpId].insert === "U")
+      ) {
+        var genObject = PreAjax("Generation", tmpId);
+        PostAjax(genObject, tmpId);
+      } else {
+        SpliceObject("Generation", ReqObj.Form[tmpId].ServiceSequence);
+      }
+      return;
+    } else {
+      if (ReqObj.Form[tmpId].generationCalled) {
+        if (
+          ReqObj.Form[tmpId].insert !== "I" &&
+          isSet(ReqObj.Form[tmpId].ServiceSequence[0].cb) &&
+          ReqObj.Form[tmpId].ServiceSequence[0].cb.length > 0
+        )
+          PostAjax(ReqObj.Form[tmpId].ServiceSequence[0], tmpId);
+        SpliceObject("Generation", ReqObj.Form[tmpId].ServiceSequence);
+        return;
+      }
+      var data = this.getData(tmpId);
+      if (
+        (currentISO() !== "IN" &&
+          !isSet(data["s_first_name"]) &&
+          !data["s_first_name"]) ||
+        (currentISO() === "IN" && !toFireGeneration(tmpId))
+      ) {
+        SpliceObject("Generation", ReqObj.Form[tmpId].ServiceSequence);
+        return;
+      }
+  
+      if (
+        !isSet(data["s_prod_name"]) &&
+        !data["s_prod_name"] &&
+        (!isSet(ReqObj.Form[tmpId].modrefType) ||
+          (isSet(ReqObj.Form[tmpId].modrefType) &&
+            ReqObj.Form[tmpId].modrefType.toLowerCase() === "product"))
+      ) {
+        SpliceObject("Generation", ReqObj.Form[tmpId].ServiceSequence);
+        return;
+      }
+      termNcdata(tmpId);
+      ReqObj.Form[tmpId].generationCalled = true;
+      var genObject = PreAjax("Generation", tmpId);
+      if (
+        isSet(this.imEqGlCookie) &&
+        usercookie.getParameterValue(this.imeshCookie, "iso") === "IN" &&
+        isSet(ReqObj.Form[tmpId].insert) &&
+        ReqObj.Form[tmpId].insert === "I"
+      ) {
+        var appendedVal = appendImEqGlCookie(tmpId, "firsttimecreation");
+      }
+      if (
+        ReqObj.Form[tmpId].insert === "R" ||
+        ReqObj.Form[tmpId].insert === "U"
+      ) {
+        if (ReqObj.Form[tmpId].generationId >= 1) {
+          data["req_id"] = ReqObj.Form[tmpId].generationId;
+          data["flag"] = ReqObj.Form[tmpId].insert;
+        }
+      }
+      if (IsChatbl(tmpId)) {
+        data["flag"] = "BL";
+      }
+      if (
+        isSet(ReqObj.Form[tmpId].FenqKey) &&
+        ReqObj.Form[tmpId].FenqKey !== "" &&
+        ReqObj.Form[tmpId].FenqKey.toLowerCase() === "jobs"
+      ) {
+        data["modref_type"] = "jobs";
+      }
+      var ftype = ReqObj.Form[tmpId].formType.toLowerCase();
+      var type = "";
+      var cbsource = "";
+      if (isSet(ReqObj.Form[tmpId].insert)) {
+        if (ftype === "enq" && ReqObj.Form[tmpId].insert === "I")
+          type = "Enquiry generation";
+        else if (ftype !== "enq" && ReqObj.Form[tmpId].insert === "I") {
+          type = "BL generation";
+          cbsource =
+            IsChatbl(tmpId) && isSet(ReqObj.Form[tmpId].source) ? cbsource : "";
+        } else type = "BL Update generation";
+      }
+      fireAjaxRequest({
+        data: {
+          ga: {
+            s: true,
+            f: true,
+            gatype: type,
+            source: cbsource === "" ? "" : "source :" + cbsource,
+          },
+          tmpId: tmpId,
+          ajaxObj: {
+            obj: genObject,
+            s: {
+              ss: 1,
+              sf: {
+                af: 1,
+                pa: 0,
+              },
+              f: 1,
+            },
+            f: {
+              f: 1,
+            },
+          },
+          ajaxtimeout: 0,
+          ajaxdata: data,
+          hitfinserv: "",
+          type: 8,
+          key: {
+            appendedVal: appendedVal,
+          },
+        },
+      });
+    }
+  };
+  //Generation
