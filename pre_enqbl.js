@@ -671,6 +671,10 @@ function isSticky(tmpId) {
       ? true
       : false;
   }
+  function imeshExist() {
+    var imeshcookie = usercookie.getCookie("ImeshVisitor");
+    return imeshcookie !== "" ? imeshcookie : "";
+  }
   
 function initializeForm(formArray) {
     createGlobalObject();
@@ -757,15 +761,9 @@ function initializeForm(formArray) {
     }
   }
   function CallIntentGen(tmpId) {
-    if (
-      isSet(tmpId) &&
-      (tmpId.substring(0, 2) === "09" || isIntentBlForm(tmpId))
-    ) {
-      if (
-        isSet(ReqObj.Form[tmpId].reqSent) &&
-        isSet(ReqObj.Form[tmpId].formType) &&
-        ReqObj.Form[tmpId].formType.toLowerCase() !== "bl" &&
-        !IsChatbl(tmpId)
+    if ( isSet(tmpId) && (tmpId.substring(0, 2) === "09" || isIntentBlForm(tmpId))) {
+      if ( isSet(ReqObj.Form[tmpId].reqSent) && isSet(ReqObj.Form[tmpId].formType) 
+      && ReqObj.Form[tmpId].formType.toLowerCase() !== "bl" && !IsChatbl(tmpId)
       ) {
         if (trimVal(ReqObj.Form[tmpId].reqSent.toLowerCase()) !== "no")
           new Generation(1).onSubmit(tmpId);  //tocheck
@@ -1120,6 +1118,79 @@ function initializeForm(formArray) {
       }
     }
     return returnObj;
+  }
+  function paywithHideShow(tmpId) {
+    if (currentISO() !== "IN") {
+      $("#t" + tmpId + "_paywithdiv").addClass("dn");
+      $(".be-hlpd").addClass("h120");
+      $("#t" + tmpId + "_paywithcon").addClass("dn");
+    } else {
+      $(".be-hlpd").removeClass("h120");
+      $("#t" + tmpId + "_paywithcon").removeClass("dn");
+      $("#t" + tmpId + "_paywithdiv").removeClass("dn");
+    }
+  }
+  function checktoCall(tmpId) {
+    var imesh = imeshExist();
+    var glid = usercookie.getParameterValue(imesh, "glid");
+    if (
+      (glid !== "" && typeof ReqObj.CNSerCalled === "undefined") ||
+      (typeof ReqObj.CNSerCalled !== "undefined" && ReqObj.CNSerCalled === false)
+    ) {
+      toCallMiniDetails(tmpId);
+      ReqObj.CNSerCalled = true;
+    }
+  }
+  function toCallMiniDetails(tmpId) {
+    // cname
+    //if(currentISO() === "IN") { // check
+    if (
+      (!isSet(ReqObj.CNSerCalled) || !ReqObj.CNSerCalled) &&
+      (imeshExist() !== "" || (isSet(ReqObj.glid) && ReqObj.glid != ""))
+    ) {
+      ReqObj.CNSerCalled = true;
+      miniDetailService(tmpId);
+    } else ReqObj.Form[tmpId].cName.toask = false;
+    //}
+  }
+  function miniDetailService(tmpId) {
+    var data = {};
+    var imeshcookie = imeshExist();
+    data["s_glusrid"] =
+      imeshcookie === ""
+        ? ReqObj.glid
+        : usercookie.getParameterValue(imeshcookie, "glid");
+    data["modid"] = ReqObj.Form[tmpId].modId;
+    ReqObj.miniDetailHit.ping = true;
+    fireAjaxRequest({
+      data: {
+        ga: {
+          s: false,
+          f: false,
+          gatype: "MiniDetails",
+          source: "",
+        },
+        tmpId: tmpId,
+        ajaxObj: {
+          obj: "",
+          s: {
+            ss: 0,
+            sf: {
+              af: 0,
+              pa: 0,
+            },
+            f: 0,
+          },
+          f: {
+            f: 0,
+          },
+        },
+        ajaxtimeout: 0,
+        ajaxdata: data,
+        hitfinserv: "",
+        type: 7,
+      },
+    });
   }
   function OpenForm(LocalReqObj, flagsugg) {
     // don't change the sequence of functions
