@@ -7848,93 +7848,6 @@
     // ReqObj.Form[tmpId].flags.isDescDivShown = false;
   }
   
-  function PropertyDefault(tmpId, templateDefaults) {
-    ReqObj.Form[tmpId].mcatName = ReturnCorrectVal(templateDefaults.mcatName, "");
-    ReqObj.Form[tmpId].mcatId = ReturnCorrectVal(templateDefaults.mcatId, "-1");
-    ReqObj.Form[tmpId].catId = ReturnCorrectVal(templateDefaults.catId, "-1");
-    ReqObj.Form[tmpId].modId = ReturnCorrectVal(templateDefaults.modId, "DIR");
-    ReqObj.Form[tmpId].ctaType = ReturnCorrectVal(
-      templateDefaults.ctaType,
-      "other"
-    );
-    ReqObj.Form[tmpId].plsqArr = ReturnCorrectVal(templateDefaults.plsqArr, "");
-    ReqObj.Form[tmpId].userFilledIsq = ReturnCorrectVal(
-      templateDefaults.userFilledIsq,
-      []
-    );
-    ReqObj.Form[tmpId].ordr_qnty_index = ReturnCorrectVal(
-      templateDefaults.ordr_qnty_index,
-      ""
-    );
-    ReqObj.Form[tmpId].currentclassCount = 0;
-    ReqObj.Form[tmpId].pvTrackingFired = false;
-    ReqObj.Form[tmpId].populate = true;
-    ReqObj.Form[tmpId].intentCalled = false;
-    ReqObj.Form[tmpId].enqintentCalled = false;
-    ReqObj.Form[tmpId].glusrService = {
-      times: 0,
-      toCall: false,
-      isPhone: false,
-      isName: false,
-    };
-    ReqObj.Form[tmpId].nec = { classCount: 0 };
-    ReqObj.Form[tmpId].defSubmit = {
-      todo: true,
-      eve: "",
-      blurfired: false,
-      subfired: false,
-      loginfval: "",
-    };
-    ReqObj.Form[tmpId].showAttachment = isSet(templateDefaults.showAttachment)
-      ? templateDefaults.showAttachment
-      : "-1";
-    ReqObj.Form[tmpId].toFireEscTracking = updateToFireEscTrackingKey(tmpId);
-    (ReqObj.Form[tmpId].cName = {
-      prodServ: "",
-      toask: false,
-      qtut: false, // qtut condition
-      tov: false, // tov condition
-      rb: false, // reselling/business condition
-      tov1: false, // if user selects larger that 1 lac
-      isIN: false, // if not not indian - don't ask
-      isq: false, // if isq fails , ask company name
-      isShown: false,
-      cdiv: false,
-      fs: false, // fireservice
-      chtml: false,
-      cnameId: "",
-    }),
-      (ReqObj.Form[tmpId].flagSuggCalledOnce = false);
-    ReqObj.Form[tmpId].gst = {
-      html: false,
-      number: 0,
-    };
-    ReqObj.Form[tmpId].url = {
-      html: false,
-      name: "",
-      isq: "",
-      rbox: "",
-    };
-    ReqObj.Form[tmpId].isqMcat = -1;
-    //set default afflid here for chat bl
-    if (isSet(ReqObj.Form[tmpId].formType)) {
-      if (ReqObj.Form[tmpId].formType.toLowerCase() === "bl") {
-        ReqObj.Form[tmpId].afflId = ReturnCorrectVal(templateDefaults.afflId, 0);
-        ReqObj.Form[tmpId].BLIntent = ReturnCorrectVal(
-          templateDefaults.BLIntent,
-          ""
-        );
-      } else {
-        ReqObj.Form[tmpId].reqSent = ReturnCorrectVal(
-          templateDefaults.reqSent,
-          ""
-        );
-      }
-    }
-  
-    ReqObj.Form[tmpId].insert = ReturnCorrectVal(templateDefaults.insert, "I");
-  }
-  
   function StaticIsqKeys(tmpId) {
     ReqObj.Form[tmpId].Static = {
       questionsId: [],
@@ -15782,25 +15695,7 @@
       }
     }
   }
-  
-  function SetBLEnqDefaultFlags(tempId, instId) {
-    if (isSet(tempId) && isSet(instId))
-      ReqObj.Form[tempId + instId].flags = CopyObject(Templateconfig[tempId]);
-    else ReqObj.Form[tempId + instId].flags = {};
-  }
-  
-  function GenOnClick(tmpId) {
-    if (GenerationOnClick(tmpId) && UserFilledIsq(tmpId)) {
-      if (
-        isSecondBlEnq(tmpId) &&
-        usercookie.getParameterValue(imeshExist(), "uv") !== "V"
-      ) {
-        return false;
-      }
-      return true;
-    } else return false;
-  }
-  
+
   function GenerationOnClick(tmpId) {
     if (
       isSet(tmpId) &&
@@ -15817,30 +15712,7 @@
     else return false;
   }
   
-  function CallIntentGen(tmpId) {
-    if (
-      isSet(tmpId) &&
-      (tmpId.substring(0, 2) === "09" || isIntentBlForm(tmpId))
-    ) {
-      if (
-        isSet(ReqObj.Form[tmpId].reqSent) &&
-        isSet(ReqObj.Form[tmpId].formType) &&
-        ReqObj.Form[tmpId].formType.toLowerCase() !== "bl" &&
-        !IsChatbl(tmpId)
-      ) {
-        if (trimVal(ReqObj.Form[tmpId].reqSent.toLowerCase()) !== "no")
-          new Generation(1).onSubmit(tmpId);
-      } else {
-        if (
-          isSet(ReqObj.Form[tmpId].formType) &&
-          isIntentBlForm(tmpId) &&
-          isSet(ReqObj.Form[tmpId].BLIntent) &&
-          trimVal(ReqObj.Form[tmpId].BLIntent.toLowerCase()) === "yes"
-        )
-          toFireBLIntent(tmpId, "i");
-      }
-    }
-  }
+  
   
   function SetDefaultUserInputKeys(tmpId) {
     ReqObj.Form[tmpId].UserInputs = {
@@ -15861,85 +15733,11 @@
     };
   }
   
-  function SetBLEnqDefaultKeys(tmpId) {
-    ReqObj.Form[tmpId].cityOth = "";
-    ReqObj.Form[tmpId].generationCalled = false;
-    ReqObj.userType = "";
-    SetDefaultUserInputKeys(tmpId);
+ 
   
-    ReqObj.Form[tmpId].generationId =
-      isSet(ReqObj.Form[tmpId].generationId) &&
-      ReqObj.Form[tmpId].generationId !== "" &&
-      (ReqObj.Form[tmpId].insert === "R" || ReqObj.Form[tmpId].insert === "U")
-        ? parseInt(ReqObj.Form[tmpId].generationId)
-        : defaultGenerationId;
-    ReqObj.Form[tmpId].query_destination = -1;
-    ReqObj.Form[tmpId].TrackedDisplaySteps = [];
-    ReqObj.Form[tmpId].TrackedSubmitSteps = [];
-    ReqObj.Form[tmpId].BackwardDisplaySteps = [];
-    ReqObj.Form[tmpId].IsbackClicked = false;
-    ReqObj.Form[tmpId].IsqUnitArray = [];
-    ReqObj.Form[tmpId].IsProdNameChanged = false;
-  }
   
-  function CreateFormObject(tmpId, ReceivedReqObj) {
-    ReqObj.Form[tmpId] = CopyObject(ReceivedReqObj);
-    ReqObj.Original[tmpId] = CopyObject(ReceivedReqObj);
-    if (isSSB(tmpId) && isSet(ReqObj.Original[tmpId]["loginv"]))
-      ReqObj.Form[tmpId]["savevalue"] = ReqObj.Original[tmpId]["loginv"];
-  }
   
-  function FormDefaultsFromProperty(LocalReqObj) {
-    var tmpId = LocalReqObj.tempId + LocalReqObj.instId;
-    ReqObj.su_cta = 0;
-    CreateFormObject(tmpId, LocalReqObj);
-    setIplocCookie(tmpId);
-    addTemplates(tmpId, template_array);
-    updateKeyTypeOfForm(tmpId);
-    SetBLEnqDefaultFlags(ReqObj.Form[tmpId].tempId, ReqObj.Form[tmpId].instId);
-    PropertyDefault(tmpId, ReqObj.Form[tmpId]);
-    SetBLEnqDefaultKeys(tmpId);
   
-    MakeRefText(tmpId);
-    if (!GenOnClick(tmpId) && !isEcomProduct(tmpId)) {
-      CallIntentGen(tmpId);
-    }
-    if (
-      (ReqObj.Form[tmpId].ctaName.toLowerCase() === "middle" && Bl04(tmpId)) ||
-      (isSet(ReqObj.Form[tmpId].isFrInline) &&
-        ReqObj.Form[tmpId].isFrInline === "1")
-    ) {
-      blinlineDefaults(tmpId);
-    }
-    if (tmpId.substring(0, 2) === "09") {
-      BLEnqPopUpDefault(tmpId);
-    }
-    if (IsChatbl(tmpId)) {
-      OpenChatBLPopup(tmpId);
-    }
-  
-    return ReqObj.Form[tmpId];
-  }
-  function blinlineDefaults(tmpId) {
-    if (
-      isSet(ReqObj.Form[tmpId].isFrInline) &&
-      ReqObj.Form[tmpId].isFrInline === "1"
-    ) {
-      html =
-        "<div class='df'><div class='w50 fpr30' id='t" +
-        tmpId +
-        "_partition1'></div><div class='w50 fpr10' id='t" +
-        tmpId +
-        "_partition2'></div></div>";
-      $("#t" + tmpId + "_bl_form").html(html);
-      $("#t" + tmpId + "_inlineBL").addClass("be-mdleWrap");
-    } else {
-      $("#t" + tmpId + "_hdg").html(
-        "<div class='beclrW be-bgb cbl_p10 txt-cnt' style='font-size: 18px;'>Tell us what you need</div>"
-      );
-      $("#t" + tmpId + "_hdg").removeClass("bedsnone");
-    }
-  }
   function blInlineTransition(tmpId) {
     //adwords_ch
     if (isBlInlineFr(tmpId)) {
@@ -16166,11 +15964,7 @@
     stopBgScroll();
   }
   
-  function BLEnqPopUpDefault(tmpId) {
-    ReqObj.updateImage = 0;
   
-    OpenBLEnqPopup(tmpId);
-  }
   
   function ClearBLEnqFormUI(tmpId) {
     if (tmpId.substring(0, 2) === "09") ClearBLEnqPopUpUI(tmpId);
@@ -16265,37 +16059,9 @@
     }
   }
   
-  function isEcomProduct(tmpId) {
-    return isSet(ReqObj.Form[tmpId].isEcom) && ReqObj.Form[tmpId].isEcom === 1
-      ? true
-      : false;
-  }
+  
   
  
-  function updateKeyTypeOfForm(tmpId) {
-    if (
-      !(
-        isSet(ReqObj.Form[tmpId].typeofform) &&
-        ReqObj.Form[tmpId].typeofform !== ""
-      )
-    ) {
-      if (ReqObj.Form[tmpId].formType.toLowerCase() === "enq") {
-        if (ReqObj.Form[tmpId].ctaType.toLowerCase() === "image")
-          ReqObj.Form[tmpId].typeofform = "image";
-        if (ReqObj.Form[tmpId].ctaType.toLowerCase() === "video")
-          ReqObj.Form[tmpId].typeofform = "video";
-        if (
-          ReqObj.Form[tmpId].ctaType.toLowerCase() !== "image" &&
-          ReqObj.Form[tmpId].ctaType.toLowerCase() !== "video"
-        )
-          ReqObj.Form[tmpId].typeofform = "enquiry";
-      } else if (ReqObj.Form[tmpId].formType.toLowerCase() === "bl") {
-        ReqObj.Form[tmpId].typeofform = "bl";
-      } else if (IsChatbl(tmpId)) {
-        ReqObj.Form[tmpId].typeofform = "popupchatbl";
-      }
-    }
-  }
   
   function checkblockedUser() {
     return usercookie.getParameterValue(imeshExist(), "usts") === "2"
@@ -20715,34 +20481,7 @@
    *  Change and check tracking
    */
   
-  function MakeRefText(tmpId) {
-    ReqObj.Form[tmpId].refText =
-      "ctaName=" +
-      (isSet(ReqObj.Form[tmpId].ctaName) ? ReqObj.Form[tmpId].ctaName : "");
-    ReqObj.Form[tmpId].refText +=
-      "|ctaType=" +
-      (isSet(ReqObj.Form[tmpId].ctaType) ? ReqObj.Form[tmpId].ctaType : "");
-    ReqObj.Form[tmpId].refText +=
-      "|PT=" +
-      (isSet(ReqObj.Form[tmpId].pageType) ? ReqObj.Form[tmpId].pageType : "");
-    ReqObj.Form[tmpId].refText +=
-      "|Section=" +
-      (isSet(ReqObj.Form[tmpId].section) ? ReqObj.Form[tmpId].section : "");
-    ReqObj.Form[tmpId].refText +=
-      "|Position=" +
-      (isSet(ReqObj.Form[tmpId].position) ? ReqObj.Form[tmpId].position : "");
-    ReqObj.Form[tmpId].refText +=
-      "|ScriptVer=" +
-      (isSet(ReqObj.Form[tmpId].scriptVersion)
-        ? ReqObj.Form[tmpId].scriptVersion
-        : "");
-    ReqObj.Form[tmpId].refText +=
-      "|compRank=" +
-      (isSet(ReqObj.Form[tmpId].FCPRank) ? ReqObj.Form[tmpId].FCPRank : "");
-    ReqObj.Form[tmpId].refText +=
-      "|searchTerm=" +
-      (isSet(ReqObj.Form[tmpId].mcatName) ? ReqObj.Form[tmpId].mcatName : "");
-  }
+  
   
   function imInvokeRequestForGaCode(tmpId, eventAction) {
     //<!--google analytics async code start-->
@@ -20854,11 +20593,7 @@
     }
   }
   
-  function addTemplates(templateid, template_array) {
-    if ($.inArray(templateid, template_array) === -1) {
-      template_array.push(templateid);
-    }
-  }
+  
   
   function UpdateAfterLogin(key) {
     if (usercookie.getParameterValue(imeshExist(), key) !== "") {
@@ -22624,9 +22359,7 @@
     return BLname;
   }
   
-  function IsChatbl(tmpId) {
-    return isSet(tmpId) && tmpId.substr(0, 2) === "08" ? true : false;
-  }
+ 
   
   function IsChatBLInline(tmpId) {
     return ReqObj.Form[tmpId].formType.toLowerCase() === "chatbl-inline"
@@ -22864,17 +22597,7 @@
   //     return "nochat";
   // }
   
-  function OpenChatBLPopup(tmpId) {
-    isBLFormOpen = true;
-    if (IsChatBLInline(tmpId)) chatwidgetTransitions(tmpId);
-    chatblTransition(tmpId);
-    updateChatBlProdName(tmpId);
-    chatblFirstMsg(tmpId);
-    if (!IsChatBLInline(tmpId)) {
-      stopBgScroll();
-      $(".t" + tmpId + "blk_scrn").removeClass("dn");
-    }
-  }
+  
   
   function chatblFirstMsg(tmpId) {
     setTimeout(function () {
@@ -23302,13 +23025,7 @@
     }
   }
   
-  function setIplocCookie(tmpId) {
-    if (!(Enq04(tmpId) || Bl04(tmpId) || Bl01(tmpId) || isSSB(tmpId))) {
-      var imcoockie = usercookie.getCookie("ImeshVisitor");
-      var ipcookie = usercookie.getCookie("iploc");
-      if (imcoockie == "" && ipcookie == "") new IpLoc(tmpId);
-    }
-  }
+  
   
   function flagsugcall(tmpId, ctname, ciso) {
     if (ctname != "India" && ctname !== ReqObj.Form[tmpId].ctn) {

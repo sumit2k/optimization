@@ -5,6 +5,7 @@ Post.js -:
 	- screen 2- screen 7
 	- form seq screen switch
 	- form close on click function
+	- BLEnqPopUpDefault, OpenChatBLPopup
 
 Pre.js -:
 	- Global variables
@@ -12,4 +13,6 @@ Pre.js -:
 	- UserLogin
 	- Form Identifying functions
 	- Initialize form/Openform function
+	- FormDefaultsFromProperty function 
+	- CreateFormObject, setIplocCookie, addTemplates, updateKeyTypeOfForm, SetBLEnqDefaultFlags, PropertyDefault, SetBLEnqDefaultKeys
 	- screen 0 screen 1

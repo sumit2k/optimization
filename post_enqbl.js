@@ -1,5 +1,22 @@
-// screen2-7
+//functions
+function OpenChatBLPopup(tmpId) {
+  isBLFormOpen = true;
+  if (IsChatBLInline(tmpId)) chatwidgetTransitions(tmpId);
+  chatblTransition(tmpId);
+  updateChatBlProdName(tmpId);
+  chatblFirstMsg(tmpId);
+  if (!IsChatBLInline(tmpId)) {
+    stopBgScroll();
+    $(".t" + tmpId + "blk_scrn").removeClass("dn");
+  }
+}
+function BLEnqPopUpDefault(tmpId) {
+  ReqObj.updateImage = 0;
+  OpenBLEnqPopup(tmpId);
+}
+//functions
 
+// screen2-7
 //please correct this code for ecom product
 FormSeq.prototype._screen2 = function (tmpId, typeOfForm) {
   dirimgscreencount = 2;
