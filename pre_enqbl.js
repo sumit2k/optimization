@@ -1192,6 +1192,148 @@ function initializeForm(formArray) {
       },
     });
   }
+  function fireAjaxRequest(event) {
+    var revent = event;
+    var tmpId = revent.data.tmpId;
+    var ajaxObj = revent.data.ajaxObj;
+    var ajaxtimeout = revent.data.ajaxtimeout;
+    var ajaxdata = revent.data.ajaxdata;
+    var formtype = isSet(ReqObj.Form[tmpId]) ? ReqObj.Form[tmpId].formType : isSet(ajaxdata["formType"]) ? ajaxdata["formType"] : "BL";
+    var form_type = formtype === "Enq" ? "Send Enquiry" : "Post Buy Leads";
+    if ( (revent.data.type === 0 && isSet(ReqObj.Form[tmpId]) && isSet(ReqObj.Form[tmpId].modId) && ReqObj.Form[tmpId].modId === "PRODDTL") || (revent.data.type === 8 && pdpenq(tmpId))) {
+      ajaxdata.pdp = true;
+    }
+    $.ajax({
+      cache: false,
+      url: getAjaxURL(revent),
+      type: revent.data.type === 8 ? "POST" : "GET",
+      timeout: ajaxtimeout,
+      dataType: "json",
+      crossOrigin: true,
+      crossDomain: true,
+      data: ajaxdata,
+      success: function (res) {
+        if (isSet(res)) {
+          if ( (isSet(res.CODE) && parseInt(res.CODE) === 200) || (isSet(res.Response) && parseInt(res.Response.Code) === 200) || (isSet(res.success) && parseInt(res.success) === 1) || (isSet(res.RESPONSE) && parseInt(res.RESPONSE.Code) === 200) || (isSet(res.RESP) && res.RESP !== "failure") || (isSet(res.queryid) && ValidGenId(res.queryid)) || (isSet(res.ofr) && ValidGenId(res.ofr)) || (isSet(res.msg) && isSet(res.msg.MESSAGE) && parseInt(res.msg.MESSAGE.CODE) === 200) ) {
+            OnAjaxSuccess(revent, res);
+            if (revent.data.ga.s === true)
+              blenqGATracking(form_type,"service:"+revent.data.ga.gatype +":success "+revent.data.ga.source,getEventLabel(),1,tmpId);
+            if (ajaxObj !== "" && ajaxObj.s.ss === 1) {
+              if (isSSB(tmpId))
+                ReqObj.Form[tmpId].servicecalled.push( ConstructorName(ajaxObj.obj.fn));
+              PostAjax(ajaxObj.obj, tmpId);
+            }
+            finishEnqDependents(tmpId, revent.data.type);
+          } else {
+            OnAjaxError(revent, res);
+            if (revent.data.ga.f === true)
+              blenqGATracking(form_type,"service:" + revent.data.ga.gatype + ":failure",res,1,tmpId);
+            if (ajaxObj !== "" && ajaxObj.s.sf.af === 1)
+              Ajaxfailure(ajaxObj.obj, tmpId, revent.data.hitfinserv);
+            if (ajaxObj !== "" && ajaxObj.s.sf.pa === 1)
+              PostAjax(ajaxObj.obj, tmpId, revent.data.hitfinserv);
+          }
+        } else {
+          OnAjaxError(revent, res);
+          finishEnqDependents(tmpId, revent.data.type);
+          if (revent.data.ga.f === true)
+            blenqGATracking(form_type,"service:" + revent.data.ga.gatype + ":failure","response undefined",1,tmpId);
+          if (ajaxObj !== "" && ajaxObj.s.f === 1)
+            Ajaxfailure(ajaxObj.obj, tmpId, revent.data.hitfinserv);
+          if ( isSet(revent.data.key) && isSet(revent.data.key.appendedVal) && revent.data.key.appendedVal !== "" )
+            RemoveValFromImEqGl(revent.data.key.appendedVal);
+        }
+      },
+      error: function (res) {
+        if (ajaxObj !== "" && ajaxObj.f.f === 1)
+          Ajaxfailure(ajaxObj.obj, tmpId, revent.data.hitfinserv);
+        res = isSet(res) ? JSON.stringify(res) : "response undefined";
+        if (revent.data.ga.f === true)
+          blenqGATracking(form_type,"service:" + revent.data.ga.gatype + ":failure",res,1,tmpId);
+        OnAjaxError(revent, res);
+        finishEnqDependents(tmpId, revent.data.type);
+      },
+      complete: function (res) {
+        OnAjaxComplete(revent, res);
+      },
+    });
+  }
+  
+  function getAjaxURL(event) {
+    var webAddressLocation = location.hostname;
+    var appsServerName = webAddressLocation.match(/^dev/)
+      ? "//dev-apps.imimg.com/"
+      : webAddressLocation.match(/^stg/)
+      ? "//stg-apps.imimg.com/"
+      : "//apps.imimg.com/";
+    switch (event.data.type) {
+      case 1:
+        return appsServerName + "index.php?r=Newreqform/saveEnrichment";
+      case 2:
+        return appsServerName + "index.php?r=Newreqform/BLEnqUpdate";
+      case 3:
+        return appsServerName + "index.php?r=postblenq/saveIsqBlEnq";
+      case 4:
+        return appsServerName + "index.php?r=Newreqform/TermNCondition";
+      case 5:
+        return appsServerName + "index.php?r=Newreqform/FinishEnqService";
+      case 6:
+        return appsServerName + "index.php?r=Newreqform/GlusrUpdate";
+      case 7:
+        return appsServerName + "index.php?r=Newreqform/MiniDetails";
+      case 0:
+        return appsServerName + "index.php?r=Newreqform/IntentGeneration";
+      case 8:
+        return appsServerName + "index.php?r=Newreqform/Postreq";
+      case 9:
+        return appsServerName + "index.php?r=postblenq/McatDtl";
+    }
+  }
+  
+  function OnAjaxSuccess(revent, res) {
+    switch (revent.data.type) {
+      case 6:
+        revent.data.ga.gatype === "GlusrUpdate"
+          ? GlusrUpdateOnSuccess(revent, 0, res)
+          : GlusrUpdateOnSuccess(revent, 1, res);
+        break;
+      case 7:
+        MiniDetailsOnSuccess(revent, res);
+        break;
+      case 8:
+        ReqObj.Form[revent.data.tmpId].formType.toLowerCase() === "enq"
+          ? EnqGenOnSuccess(revent, res)
+          : BLGenOnSuccess(revent, res);
+        break;
+      case 9:
+        McatDtlOnSuccess(revent, res);
+        break;
+    }
+  }
+  
+  function OnAjaxError(revent, res) {
+    switch (revent.data.type) {
+      case 6:
+        revent.data.ga.gatype === "GlusrUpdate"
+          ? GlusrUpdateOnError(revent, 0, res)
+          : GlusrUpdateOnError(revent, 1, res);
+        break;
+      case 7:
+        MiniDetailsOnError(revent, res);
+        break;
+      case 8:
+        BlEnqOnError(revent, res);
+        break;
+    }
+  }
+  
+  function OnAjaxComplete(revent, res) {
+    switch (revent.data.type) {
+      case 9:
+        McatDtlOnComplete(revent, res);
+        break;
+    }
+  }
   function OpenForm(LocalReqObj, flagsugg) {
     // don't change the sequence of functions
     var UpdatedReceivedReqObj = FormDefaultsFromProperty(LocalReqObj);
