@@ -734,6 +734,64 @@ function isSticky(tmpId) {
     return ReqObj.Form[tmpId].formType.toLowerCase() === "enq" ? true : false;
   }
 
+  
+  function IsChatBLInline(tmpId) {
+    return ReqObj.Form[tmpId].formType.toLowerCase() === "chatbl-inline"
+      ? true
+      : false;
+  }
+  
+  function IsChatBLOverlay(tmpId) {
+    return ReqObj.Form[tmpId].formType.toLowerCase() === "chatbl" ? true : false;
+  }
+  
+  function isnewSSB(tmpId) {
+    return tmpId.substr(0, 2) === "06" &&
+      isSet(ReqObj.Form[tmpId].isnewssb) &&
+      ReqObj.Form[tmpId].isnewssb === "1"
+      ? true
+      : false;
+  }
+  
+  function isBlInline(tmpId) {
+    return isGlIdEven(tmpId) &&
+      ReqObj.Form[tmpId].typeofform === "bl" &&
+      tmpId.substr(0, 2) === "01" &&
+      ReqObj.Form[tmpId].screenNumber < 0
+      ? true
+      : false;
+  }
+  
+  function isBlFirstfold(tmpId) {
+    return ReqObj.Form[tmpId].typeofform === "bl" &&
+      tmpId.substr(0, 2) === "04" &&
+      ReqObj.Form[tmpId].screenNumber < 0
+      ? true
+      : false;
+  }
+  
+  function isScriptTag(name) {
+    name = name.toLowerCase();
+    if (
+      name.includes("<script>") ||
+      name.includes("</script>") ||
+      name.includes("script&gt") ||
+      name.includes("%3cscript") ||
+      name.includes("script%253e") ||
+      (name.includes("<") && name.includes(">"))
+    )
+      return true;
+    else false;
+  }
+  
+  function isBlInlineFlag(tmpId) {
+    return isGlIdEven(tmpId) &&
+      ReqObj.Form[tmpId].typeofform === "bl" &&
+      tmpId.substr(0, 2) === "01"
+      ? true
+      : false;
+  }
+
   function flagsugcall(tmpId, ctname, ciso) {
     if (ctname != "India" && ctname !== ReqObj.Form[tmpId].ctn) {
       $("#t" + tmpId + "country_dropd").html("");
@@ -772,7 +830,7 @@ function isSticky(tmpId) {
       : true;
     return isProd;
   }
-  
+
   /**
   for future if we need to replace all duplicate tracking fired
   then replace numberToFind with number
@@ -9576,6 +9634,51 @@ function returnValidateTypeError(optionValue, questionText) {
   }
   return "2";
 }
+
+function returnIsqHtmlObj(RecurOfQues, tmpId) {
+  var imeshcookie = imeshExist(); //ff_here
+
+  if (isSSB(tmpId)) return returnSSBIsqHtml(RecurOfQues, tmpId);
+  // var qtcls = (isBlInline(tmpId)) ? "qut_cus iqutm" : "qut_cus";
+  var qtcls = isBlInline(tmpId)
+    ? "qut_cus iqutm"
+    : isBlFirstfold(tmpId)
+    ? imeshcookie == "" && currentISO() == "IN"
+      ? "qut_cus qut_ffun qtmt"
+      : "qut_cus qut_ffid qtmt"
+    : "qut_cus"; //ff_here
+  var blfrcls = isBlInlineFr(tmpId) ? " flx1" : "";
+  var outrdiv = isBlInline(tmpId)
+    ? RecurOfQues[0].label_div +
+      "<div class='inW240" +
+      blfrcls +
+      "'>" +
+      RecurOfQues[0].error_div +
+      "<div id='t" +
+      tmpId +
+      "qut_id' class='" +
+      qtcls +
+      "'>"
+    : RecurOfQues[0].error_div +
+      RecurOfQues[0].label_div +
+      "<div id='t" +
+      tmpId +
+      "qut_id' class='" +
+      qtcls +
+      "'>";
+  return [
+    {
+      ClosingWrapper: isBlInline(tmpId) ? "</div></div>" : "</div>",
+      Label: IsChatbl(tmpId) ? "<div>" + ChatBlMsgs("Quantity") + "</div>" : "",
+      OuterWrapper: outrdiv,
+      UserInput: RecurOfQues[0].UserInput + RecurOfQues[1].UserInput,
+      beforeInput: "",
+      beforeLabel: "",
+      qtuttype: 6,
+    },
+  ];
+}
+
 // Isq proto
 
 // RequirementDtl
