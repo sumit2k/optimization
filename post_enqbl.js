@@ -14,6 +14,188 @@ function BLEnqPopUpDefault(tmpId) {
   ReqObj.updateImage = 0;
   OpenBLEnqPopup(tmpId);
 }
+function FinishEnquiryService(tmpId, data_arr) {
+  if (
+    isSet(ReqObj.Form[tmpId].flags) &&
+    ReqObj.Form[tmpId].flags.isFinishEnquiryHit
+  )
+    return;
+  if (isSet(data_arr) && data_arr.sr === "gen") {
+    var data = data_arr.data_res;
+  } else {
+    var ofr_id = ReqObj.Form[tmpId].generationId;
+    var rfq_queryDestination = ReqObj.Form[tmpId].query_destination;
+    var modId = ReqObj.Form[tmpId].modId;
+    var data = {
+      ofr_id: ofr_id,
+      rfq_queryDestination: rfq_queryDestination,
+      modId: modId,
+    };
+  }
+  if (!(isSet(data_arr) && data_arr.sr === "gen"))
+    ReqObj.Form[tmpId].flags.isFinishEnquiryHit = true;
+  fireAjaxRequest({
+    data: {
+      ga: {
+        s: true,
+        f: true,
+        gatype: "FinishEnqService",
+        source: "",
+      },
+      tmpId: tmpId,
+      ajaxObj: {
+        obj: "",
+        s: {
+          ss: 0,
+          sf: {
+            af: 0,
+            pa: 0,
+          },
+          f: 0,
+        },
+        f: {
+          f: 0,
+        },
+      },
+      ajaxdata: data,
+      ajaxtimeout: 0,
+      type: 5,
+      hitfinserv: "",
+    },
+  });
+}
+function ValidNumber(number) {
+  if (isSet(number) && !!parseInt(number, 10) && Number(number)) return true;
+  else return false;
+}
+function getEventLabel(toappend) {
+  var imeshcookie = imeshExist();
+  var imeshiso = usercookie.getParameterValue(imeshcookie, "iso");
+  var verify = usercookie.getParameterValue(imeshcookie, "uv");
+  var iso = currentISO();
+  var isidentified =
+    imeshcookie === ""
+      ? "Unidentified"
+      : verify === "V"
+      ? "Verified"
+      : "Unverified";
+  var label = iso.toLowerCase() === "in" ? "Indian" : "Foreign";
+  label += "|" + isidentified + "|" + labelNEC(iso);
+
+  if (isSet(toappend) && toappend !== "") {
+    label = toappend + "|" + label;
+  }
+  return label;
+}
+function ValidGenId(id) {
+  if (ValidNumber(id) && parseInt(id, 10) > 1) return true;
+  else return false;
+}
+function blenqGATracking(eventCategory,eventAction,eventLabel,isinteraactive,tmpId) {
+  if (isSet(ReqObj.Form[tmpId]) &&(ReqObj.Form[tmpId].toFireGaTracking === true || ReqObj.Form[tmpId].noSampling === true || isinteraactive === 1 || ReqObj.Form[tmpId].inactiveBL)) {
+    var event_type = isinteraactive === 0 ? "IMEvent" : "IMEvent-NI";
+    if (glmodid == "PRODDTL" && eventAction == "Redirect:ProductUrl") {
+      event_type = "IMEvent";
+    }
+    var modid = eventCategory === "iploc" ? glmodid : ReqObj.Form[tmpId].modId;
+    var CD_Additional_Data =
+      tmpId === 0 ? modid : modid + "-" + ReqObj.Form[tmpId].refText;
+    eventLabel =
+      ReqObj.seller_cta && (ReqObj.su_cta == 0 || ReqObj.su_cta == 1)
+        ? eventLabel + " |SA"
+        : eventLabel;
+
+    //_gaq.push(['_trackEvent', eventCategory, eventAction, eventLabel, 0, true]);
+    imgtm.push({
+      event: event_type,
+      eventCategory: eventCategory,
+      eventAction: eventAction,
+      eventLabel: eventLabel,
+      CD_Additional_Data: CD_Additional_Data,
+    });
+  }
+}
+
+function blenqGATrackingMisc(eventCategory,eventAction,eventLabel,isinteraactive,tmpId,refText) {
+  // ReqObj.Form[tmpId].modId,  ReqObj.Form[tmpId].form_type
+  var event_type = isinteraactive === 0 ? "IMEvent" : "IMEvent-NI";
+  var modid = glmodid;
+  var CD_Additional_Data = modid + "-" + refText;
+  //_gaq.push(['_trackEvent', eventCategory, eventAction, eventLabel, 0, true]);
+  imgtm.push({
+    event: event_type,
+    eventCategory: eventCategory,
+    eventAction: eventAction,
+    eventLabel: eventLabel,
+    CD_Additional_Data: CD_Additional_Data,
+  });
+}
+/*--------------------------GlusrupdateonSuccess----------------------- */
+function GlusrUpdateOnSuccess(revent, todo, res) {
+  var userlogin = new UserLogin();
+  var imesh = imeshExist();
+  if (usercookie.getParameterValue(imesh, "usts") === "2")
+    userlogin.reAuthenticate({
+      data: {
+        logObject: "",
+        tmpId: revent.data.tmpId,
+        userlogin: userlogin,
+        blureve: false,
+        todo: "glusrupdate",
+        source: "updateservice",
+      },
+    });
+  else
+    userlogin.sendRequest({
+      data: {
+        logObject: "",
+        tmpId: revent.data.tmpId,
+        userlogin: userlogin,
+        blureve: false,
+        todo: "glusrupdate",
+        source: "updateservice",
+      },
+    });
+  if (todo === 0) callToIdentifiedQ(revent.data.tmpId, "from-Form");
+  if (todo === 1) {
+    if (revent.data.typename === "CompanyName")
+      ReqObj.UserDetail.cName = ReqObj.Form[revent.data.tmpId].companyName;
+    if (
+      revent.data.typename === "GST" &&
+      isSet(res.msg) &&
+      isSet(res.msg.DET_MESSSAGE) &&
+      isSet(res.msg.DET_MESSSAGE.STATUS)
+    ) {
+      if (res.msg.DET_MESSSAGE.STATUS.toLowerCase() === "successful")
+        ReqObj.gst.toask = false;
+      else ReqObj.gst.toask = true;
+    }
+    if (
+      revent.data.typename === "URL" &&
+      isSet(res.msg) &&
+      isSet(res.msg.MESSAGE) &&
+      isSet(res.msg.MESSAGE.STATUS)
+    ) {
+      if (res.msg.MESSAGE.STATUS.toLowerCase() === "successful")
+        ReqObj.url.toask = false;
+      else ReqObj.url.toask = true;
+    }
+    if (
+      isEnq(revent.data.tmpId) ||
+      Bl09(revent.data.tmpId) ||
+      Bl01(revent.data.tmpId) ||
+      Bl04(revent.data.tmpId)
+    )
+      miniDetailService(revent.data.tmpId);
+  }
+}
+function GlusrUpdateOnError(revent, todo, res) {
+  if (todo === 0) UpdateUserDetailKey();
+  if (todo === 1) {
+    if (revent.data.typename === "CompanyName") ReqObj.UserDetail.cName = "";
+    if (revent.data.typename === "GST") ReqObj.gst.toask = true;
+  }
+}
 //functions
 
 // screen2-7
@@ -1795,7 +1977,7 @@ function ThankYou(tmpId) {
       this.blEnqGeneration(tmpId);
     }
   };
-  
+
   Generation.prototype.cookies = function () {
     this.imeshCookie = imeshExist();
     this.imEqGlCookie = usercookie.getCookie("imEqGl");

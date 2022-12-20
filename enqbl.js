@@ -1,189 +1,5 @@
 
 
-  /**
-   *
-   * @description
-   * @param {*} fName constructor name of the class
-   * @returns object which is found in service sequence and inserted in hitarray
-   * @usage takes object from the service sequence and inserts the same into hit array
-   */
-  function PreAjax(fName, tmpId) {
-    if ( isSet(fName) && isSet(tmpId) && isSet(ReqObj.Form[tmpId].ServiceSequence)) {
-      var CalledObj = RemoveObjFromService( fName, tmpId, ReqObj.Form[tmpId].ServiceSequence);
-      if ( checkblockedUser() && imeshExist() === "" && fName.toLowerCase() === "userlogin" && ReqObj.Form[tmpId].FormSequence.ServiceSequenceBlocked.length === 0 && isSSB(tmpId)) {
-        ReqObj.Form[tmpId].FormSequence.ServiceSequenceBlocked.push(CalledObj);
-        var cb = ReqObj.Form[tmpId].FormSequence.ServiceSequenceBlocked[0].cb;
-        var len = cb.length - 1;
-        var index = tofindindexfn(cb, "userverification", "fn");
-        while (len >= 0) {
-          if ( isSet(cb[len].fn) && ConstructorName(cb[len].fn) !== "UserVerification") {
-            var popCatch = cb.pop();
-            ConstructorName(popCatch.fn) !== "Generation" ? cb[index].cb.push(popCatch): "";
-          }
-          len -= 1;
-        }
-      }
-      if (isSet(ReqObj.Form[tmpId].HitArray))
-        ReqObj.Form[tmpId].HitArray.push(CalledObj);
-      if (isSet(CalledObj) && CalledObj !== "") {
-        return CalledObj;
-      }
-    }
-  }
-  
-  /**
-   *
-   *
-   * @param {*} fName constructor name of the class
-   * @param {*} tmpId
-   * @param {*} array array from which the fName object is to be spliced
-   * @returns
-   */
-  
-  function SpliceObject(fName, array) {
-    if (isSet(fName) && isSet(array)) {
-      var DetachObject = "";
-      for (var i = 0; i < array.length; i++) {
-        if ( isSet(array[i].fn) && fName.toLowerCase() === ConstructorName(array[i].fn).toLowerCase()) {
-          DetachObject = array.splice(i, 1)[0];
-          break;
-        }
-        // else {
-        //   return DetachObject;
-        // }
-      }
-      return DetachObject;
-    }
-  }
-  
-  /**
-   *
-   *
-   * @param {*} fName object which to be removed from the service sequence
-   * @param {*} tmpId
-   * @returns removed object from the service sequence
-   */
-  function RemoveObjFromService(fName, tmpId) {
-    var ServiceArrayObj = "";
-    if (isSet(tmpId)) {
-      ServiceArrayObj = RemoveObjFromArray(
-        fName,
-        tmpId,
-        ReqObj.Form[tmpId].ServiceSequence
-      );
-    }
-    return ServiceArrayObj;
-  }
-  
-  /**
-   *
-   *
-   * @param {*} CalledObject object which to be removed from the hit sequence
-   * @param {*} tmpId
-   * @returns removed object from the hit sequence
-   */
-  function RemoveObjFromHit(CalledObject, tmpId) {
-    var HitArrayObj = "";
-    if (isSet(tmpId) && isSet(ReqObj.Form[tmpId].HitArray)) {
-      HitArrayObj = RemoveObjFromArray( ConstructorName(CalledObject.fn), tmpId, ReqObj.Form[tmpId].HitArray);
-    }
-    return HitArrayObj;
-  }
-  
-  /**
-   *
-   * @description
-   * @param {*} fName name of the object which is to be removed
-   * @param {*} tmpId
-   * @param {*} array array from which object is to be removed
-   * @returns removed object from the array
-   */
-  function RemoveObjFromArray(fName, tmpId, array) {
-    if (isSet(fName) && isSet(tmpId) && isSet(array)) {
-      var CalledObj = SpliceObject(fName, array);
-      if (isSet(CalledObj)) {
-        return CalledObj;
-      }
-    }
-  }
-  
-  /**
-   *
-   * @description this method is used
-   * @param {*} CalledObject:Object
-   * @param {*} tmpId:string
-   * @usage removes object from hit array and pushed it back to the service sequence.
-   */
-  function Ajaxfailure(CalledObject, tmpId, hitfinserv) {
-    if (isSet(CalledObject) && CalledObject !== "" && isSet(tmpId)) {
-      if (isSet(ReqObj.Form[tmpId].ServiceSequence)) {
-        RemoveObjFromHit(CalledObject, tmpId);
-        ReqObj.Form[tmpId].ServiceSequence.push(CalledObject);
-      }
-    }
-    // if (hitfinserv && !isSet(ReqObj.Form[tmpId].ServiceSequence) && ValidGenId(ReqObj.Form[tmpId].generationId)) {
-    //   FinishEnquiryService(tmpId);
-    //   ReqObj.Form[tmpId].hitFinishEnquiryService = false;
-    // }
-  }
-  
-  /**
-   *
-   * @description
-   * @param {*} CalledObject
-   * @param {*} tmpId
-   */
-  function PostAjax(CalledObject, tmpId) {
-    if (isSet(CalledObject) && CalledObject !== "") {
-      // if (isSet(CalledObject.post) && CalledObject.post.length > 0)
-      //   questionTransition(ReqObj.Form[tmpId].formType, tmpId);
-  
-      if (isSet(ReqObj.Form[tmpId].HitArray)) {
-        var TempCalledObject = RemoveObjFromHit(CalledObject, tmpId);
-  
-        if (TempCalledObject !== "") CalledObject = TempCalledObject;
-      }
-      SubmitCallback(CalledObject.cb, tmpId);
-      // ReqObj.Form[tmpId].LastPrePost = CalledObject.post;
-      for (var i = 0; i < CalledObject.post.length; i++) {
-        PrePostService(CalledObject.post[i], tmpId);
-      }
-      CalledObject.post = [];
-      // if (ReqObj.Form[tmpId].hitFinishEnquiryService !== "undefined" && ReqObj.Form[tmpId].hitFinishEnquiryService && CalledObject.cb.length === 0 && ValidGenId(ReqObj.Form[tmpId].generationId)) {
-      //   FinishEnquiryService(tmpId);
-      //   ReqObj.Form[tmpId].hitFinishEnquiryService = false;
-      // }
-    }
-  }
-  
-  function SubmitCallback(cb, tmpId) {
-    if (isSet(tmpId) && isSet(ReqObj.Form[tmpId].ServiceSequence) && isSet(cb)) {
-      for (var i = 0; i < cb.length; i++) {
-        if ( isSSB(tmpId) && $.inArray( ConstructorName(cb[i].fn), ReqObj.Form[tmpId].servicecalled ) !== -1) {}
-        else {
-          ReqObj.Form[tmpId].ServiceSequence.push(cb[i]);
-          if(isSet(cb[i].fn)) cb[i].fn.onSubmit(tmpId);
-          if (isSSB(tmpId) && ReqObj.Form[tmpId].flags.RemoveService) {
-            ReqObj.Form[tmpId].flags.RemoveService = false;
-            ReqObj.Form[tmpId].ServiceSequence.pop();
-          }
-        }
-      }
-    }
-  }
-  
-  function PrePostService(name, tmpId) {
-    // RemoveButton(tmpId);
-    if (isSet(name) && name !== "") {
-      //added loader for bl chat
-      if (IsChatbl(tmpId)) {
-        newchatblScroll("t" + tmpId + "_chatScroll", tmpId);
-      } else {
-        addBlLoader(tmpId, "left");
-      }
-      name.call(ReqObj.Form[tmpId].FormSequence, tmpId);
-    }
-  }
   
   FormSeq.prototype.BLChatEvents = function (tmpId) {
     $(document).off("mouseenter.Chatbl").on("mouseenter.Chatbl", ".be-chat", function (event) {
@@ -5452,69 +5268,7 @@
     return LastScreen;
   };
   /*-------------------------------new Seq----------------------------------------- */
-  function FinishEnquiryService(tmpId, data_arr) {
-    if (
-      isSet(ReqObj.Form[tmpId].flags) &&
-      ReqObj.Form[tmpId].flags.isFinishEnquiryHit
-    )
-      return;
-    if (isSet(data_arr) && data_arr.sr === "gen") {
-      var data = data_arr.data_res;
-    } else {
-      var ofr_id = ReqObj.Form[tmpId].generationId;
-      var rfq_queryDestination = ReqObj.Form[tmpId].query_destination;
-      var modId = ReqObj.Form[tmpId].modId;
-      var data = {
-        ofr_id: ofr_id,
-        rfq_queryDestination: rfq_queryDestination,
-        modId: modId,
-      };
-    }
-    if (!(isSet(data_arr) && data_arr.sr === "gen"))
-      ReqObj.Form[tmpId].flags.isFinishEnquiryHit = true;
-    fireAjaxRequest({
-      data: {
-        ga: {
-          s: true,
-          f: true,
-          gatype: "FinishEnqService",
-          source: "",
-        },
-        tmpId: tmpId,
-        ajaxObj: {
-          obj: "",
-          s: {
-            ss: 0,
-            sf: {
-              af: 0,
-              pa: 0,
-            },
-            f: 0,
-          },
-          f: {
-            f: 0,
-          },
-        },
-        ajaxdata: data,
-        ajaxtimeout: 0,
-        type: 5,
-        hitfinserv: "",
-      },
-    });
-  }
-  
-  function finishEnqDependents(tmpId, etype) {
-    var type = [1, 3, 8];
-    if (isSet(ReqObj.Form[tmpId]) && isEnq(tmpId) && type.includes(etype)) {
-      ReqObj.Form[tmpId].waitFinServ -= 1;
-      if (
-        ReqObj.Form[tmpId].waitFinServ === 0 &&
-        ReqObj.Form[tmpId].flags.isThankYouCalled
-      )
-        FinishEnquiryService(tmpId);
-    }
-  }
-  
+    
   function flagDetach(tmpId) {
     if ($("#t" + tmpId + "flagdiv2").length > 0) {
       var ele = $("#t" + tmpId + "country_dropd").detach();
@@ -6432,173 +6186,6 @@
     }
   }
   
-  /*--------------------------McatDtlOnSuccess----------------------- */
-  
-  function McatDtlOnSuccess(revent, res) {
-    ReqObj.mcatdtl.response = true;
-    if (
-      isSet(res.Response.Data) &&
-      isSet(res.Response.Data.glcat_mcat_img1_250x250)
-    ) {
-      var img_url = res.Response.Data.glcat_mcat_img1_250x250;
-      img_url = img_url.replace("http:", "");
-      if (isSet(revent.data.key.cbObj) && revent.data.key.cbObj.hasCallback) {
-        ReqObj.Form[revent.data.tmpId].displayImage = img_url;
-      } else {
-        ReqObj.mcatImage = img_url;
-      }
-      pushImage(ReqObj.Form[revent.data.tmpId].mcatId, img_url, "");
-    }
-    if (isSet(res.Response.Data) && isSet(res.Response.Data.glcat_mcat_name)) {
-      var mcat_name = res.Response.Data.glcat_mcat_name;
-      ReqObj.Form[revent.data.tmpId].mcatName = mcat_name;
-      if (isBlInlineFr(revent.data.tmpId))
-        $("#t" + revent.data.tmpId + "_mcatNameAdw").text(
-          ReqObj.Form[revent.data.tmpId].mcatName
-        );
-      MakeRefText(revent.data.tmpId);
-    }
-  }
-  /*--------------------------McatDtlOnComplete----------------------- */
-  
-  function McatDtlOnComplete(revent, res) {
-    ReqObj.mcatdtl.response = true;
-    if (isSet(revent.data.key.cbObj) && revent.data.key.cbObj.hasCallback)
-      revent.data.key.cbObj.cbfunc(revent.data.tmpId);
-    $("#t" + revent.data.tmpId + "_imglodr").addClass("bedsnone");
-    if (isSet(revent.data.key.left) && revent.data.key.left === 1)
-      leftSideTransition(0, revent.data.tmpId, "fromservice");
-  }
-  
-  /*--------------------------GlusrupdateonSuccess----------------------- */
-  function GlusrUpdateOnSuccess(revent, todo, res) {
-    var userlogin = new UserLogin();
-    var imesh = imeshExist();
-    if (usercookie.getParameterValue(imesh, "usts") === "2")
-      userlogin.reAuthenticate({
-        data: {
-          logObject: "",
-          tmpId: revent.data.tmpId,
-          userlogin: userlogin,
-          blureve: false,
-          todo: "glusrupdate",
-          source: "updateservice",
-        },
-      });
-    else
-      userlogin.sendRequest({
-        data: {
-          logObject: "",
-          tmpId: revent.data.tmpId,
-          userlogin: userlogin,
-          blureve: false,
-          todo: "glusrupdate",
-          source: "updateservice",
-        },
-      });
-    if (todo === 0) callToIdentifiedQ(revent.data.tmpId, "from-Form");
-    if (todo === 1) {
-      if (revent.data.typename === "CompanyName")
-        ReqObj.UserDetail.cName = ReqObj.Form[revent.data.tmpId].companyName;
-      if (
-        revent.data.typename === "GST" &&
-        isSet(res.msg) &&
-        isSet(res.msg.DET_MESSSAGE) &&
-        isSet(res.msg.DET_MESSSAGE.STATUS)
-      ) {
-        if (res.msg.DET_MESSSAGE.STATUS.toLowerCase() === "successful")
-          ReqObj.gst.toask = false;
-        else ReqObj.gst.toask = true;
-      }
-      if (
-        revent.data.typename === "URL" &&
-        isSet(res.msg) &&
-        isSet(res.msg.MESSAGE) &&
-        isSet(res.msg.MESSAGE.STATUS)
-      ) {
-        if (res.msg.MESSAGE.STATUS.toLowerCase() === "successful")
-          ReqObj.url.toask = false;
-        else ReqObj.url.toask = true;
-      }
-      if (
-        isEnq(revent.data.tmpId) ||
-        Bl09(revent.data.tmpId) ||
-        Bl01(revent.data.tmpId) ||
-        Bl04(revent.data.tmpId)
-      )
-        miniDetailService(revent.data.tmpId);
-    }
-  }
-  function GlusrUpdateOnError(revent, todo, res) {
-    if (todo === 0) UpdateUserDetailKey();
-    if (todo === 1) {
-      if (revent.data.typename === "CompanyName") ReqObj.UserDetail.cName = "";
-      if (revent.data.typename === "GST") ReqObj.gst.toask = true;
-    }
-  }
-  /*-------------------------Mini Detail on Success---------------------- */
-  function MiniDetailsOnSuccess(revent, res) {
-    ReqObj.miniDetailHit.ping = false;
-    var cname =
-      isSet(res.Response.Data.glusr_usr_companyname) &&
-      res.Response.Data.glusr_usr_companyname !== ""
-        ? false
-        : true;
-    ReqObj.UserDetail.cName =
-      cname === false ? res.Response.Data.glusr_usr_companyname : "";
-    ReqObj.UserDetail.isgst = res.Response.Data.IS_GST_AVAILABLE;
-    ReqObj.UserDetail.isurl = res.Response.Data.IS_URL_AVAILABLE;
-    ReqObj.gst.toask =
-      isSet(res.Response.Data.IS_GST_AVAILABLE) &&
-      parseInt(res.Response.Data.IS_GST_AVAILABLE) === 0
-        ? true
-        : false;
-    ReqObj.url.toask =
-      isSet(res.Response.Data.IS_URL_AVAILABLE) &&
-      parseInt(res.Response.Data.IS_URL_AVAILABLE) === 0
-        ? true
-        : false;
-    if (ReqObj.UserDetail.cName !== "") ReqObj.miniDetailHit.reply.success = true;
-    else ReqObj.miniDetailHit.reply.failure = true;
-    ReqObj.seller_cta = !toAskCname(revent.data.tmpId) && currentISO() == "IN";
-    ReqObj.su_cta++;
-    if (
-      isSSB(revent.data.tmpId) &&
-      ReqObj.UserDetail.cName === "" &&
-      ((currentISO() === "IN" &&
-        ReqObj.Form[revent.data.tmpId].prodName !== "") ||
-        currentISO() !== "IN") &&
-      cNameConditions(revent.data.tmpId) === true
-    ) {
-      onCName(revent.data.tmpId);
-    } else if (!isEnq(revent.data.tmpId) && ReqObj.UserDetail.cName !== "") {
-      $("#t" + revent.data.tmpId + "_cdiv").html("");
-      $("#t" + revent.data.tmpId + "_cbx").addClass("bedsnone");
-    }
-    if (
-      isSSB(revent.data.tmpId) &&
-      ReqObj.url.toask === true &&
-      currentISO() !== "IN" &&
-      urlConditions(revent.data.tmpId).ask === true
-    ) {
-      onURLName(revent.data.tmpId);
-    }
-  }
-  
-  function MiniDetailsOnError(revent, res) {
-    if (
-      isSet(res) &&
-      isSet(res.Response) &&
-      isSet(res.Response.Code) &&
-      parseInt(res.Response.Code) === 204 &&
-      isSet(res.Response.Status) &&
-      res.Response.Status.toLowerCase() === "failure"
-    ) {
-      ReqObj.gst.toask = true;
-      ReqObj.url.toask = true;
-      ReqObj.UserDetail.cName = "";
-    }
-  }
   
   /*------------------------------------Enquiry On Success-------------------------------------------*/
   
@@ -19737,45 +19324,6 @@
     // }
   }
   
-  function blenqGATracking(eventCategory,eventAction,eventLabel,isinteraactive,tmpId) {
-    if (isSet(ReqObj.Form[tmpId]) &&(ReqObj.Form[tmpId].toFireGaTracking === true || ReqObj.Form[tmpId].noSampling === true || isinteraactive === 1 || ReqObj.Form[tmpId].inactiveBL)) {
-      var event_type = isinteraactive === 0 ? "IMEvent" : "IMEvent-NI";
-      if (glmodid == "PRODDTL" && eventAction == "Redirect:ProductUrl") {
-        event_type = "IMEvent";
-      }
-      var modid = eventCategory === "iploc" ? glmodid : ReqObj.Form[tmpId].modId;
-      var CD_Additional_Data =
-        tmpId === 0 ? modid : modid + "-" + ReqObj.Form[tmpId].refText;
-      eventLabel =
-        ReqObj.seller_cta && (ReqObj.su_cta == 0 || ReqObj.su_cta == 1)
-          ? eventLabel + " |SA"
-          : eventLabel;
-  
-      //_gaq.push(['_trackEvent', eventCategory, eventAction, eventLabel, 0, true]);
-      imgtm.push({
-        event: event_type,
-        eventCategory: eventCategory,
-        eventAction: eventAction,
-        eventLabel: eventLabel,
-        CD_Additional_Data: CD_Additional_Data,
-      });
-    }
-  }
-  
-  function blenqGATrackingMisc(eventCategory,eventAction,eventLabel,isinteraactive,tmpId,refText) {
-    // ReqObj.Form[tmpId].modId,  ReqObj.Form[tmpId].form_type
-    var event_type = isinteraactive === 0 ? "IMEvent" : "IMEvent-NI";
-    var modid = glmodid;
-    var CD_Additional_Data = modid + "-" + refText;
-    //_gaq.push(['_trackEvent', eventCategory, eventAction, eventLabel, 0, true]);
-    imgtm.push({
-      event: event_type,
-      eventCategory: eventCategory,
-      eventAction: eventAction,
-      eventLabel: eventLabel,
-      CD_Additional_Data: CD_Additional_Data,
-    });
-  }
   
   function labelNEC(iso) {
     var nec = "";
@@ -19791,25 +19339,7 @@
     return nec;
   }
   
-  function getEventLabel(toappend) {
-    var imeshcookie = imeshExist();
-    var imeshiso = usercookie.getParameterValue(imeshcookie, "iso");
-    var verify = usercookie.getParameterValue(imeshcookie, "uv");
-    var iso = currentISO();
-    var isidentified =
-      imeshcookie === ""
-        ? "Unidentified"
-        : verify === "V"
-        ? "Verified"
-        : "Unverified";
-    var label = iso.toLowerCase() === "in" ? "Indian" : "Foreign";
-    label += "|" + isidentified + "|" + labelNEC(iso);
   
-    if (isSet(toappend) && toappend !== "") {
-      label = toappend + "|" + label;
-    }
-    return label;
-  }
   
   /* no idea about this */
   function ServiceGATrack(TracName, TracEvent, FileName) {
@@ -20373,22 +19903,7 @@
     ReqObj.IPDetails["countryname"] = resp.geoip_countryname;
     ReqObj.IPDetails["ipaddress"] = resp.geoip_ipaddress;
   }
-  function currentISO() {
-    var imeshiso = usercookie.getParameterValue(imeshExist(), "iso");
-    var ipiso = usercookie.getParameterValue(
-      usercookie.getCookie("iploc"),
-      "gcniso"
-    );
-    var iso =
-      imeshiso !== ""
-        ? imeshiso
-        : ReqObj.changeUserIso !== ""
-        ? ReqObj.changeUserIso
-        : ipiso !== ""
-        ? ipiso
-        : "IN";
-    return iso;
-  }
+  
   
   function currentIpCountry() {
     return usercookie.getParameterValue(usercookie.getCookie("iploc"), "gcnnm");
@@ -20401,26 +19916,6 @@
     }
   
     return -1;
-  }
-  
-  function ConstructorName(obj) {
-    if (isSet(obj)) {
-      if (obj.constructor.name) {
-        return obj.constructor.name;
-      } else {
-        if (isSet(obj.className) && obj.className !== "") {
-          return obj.className;
-        } else {
-          var regex = new RegExp(/s*function\s*(.*?)\s*\{/);
-          var fun = obj.constructor.toString().match(regex)[1];
-  
-          var index = fun.indexOf("(");
-          if (index !== -1) {
-            return fun.substr(0, index);
-          }
-        }
-      }
-    }
   }
   function FormCloseButtons(tmpId) {
     $(document)
@@ -20471,15 +19966,7 @@
     usercookie = new UserCookie();
   }
   
-  function ValidGenId(id) {
-    if (ValidNumber(id) && parseInt(id, 10) > 1) return true;
-    else return false;
-  }
   
-  function ValidNumber(number) {
-    if (isSet(number) && !!parseInt(number, 10) && Number(number)) return true;
-    else return false;
-  }
   
   function SanitizeId(id) {
     return isSet(id)
@@ -21630,24 +21117,7 @@
       : false;
   }
   
-  function isGlIdEven(tmpId) {
-    if (isSet(ReqObj.Form[tmpId].isNewUI) && ReqObj.Form[tmpId].isNewUI === "0") {
-      return true;
-    }
-    return false;
-  }
-  function isBlInlineFr(tmpId) {
-    if (
-      ReqObj.Form[tmpId].screenNumber <= 0 &&
-      ReqObj.Form[tmpId].FormSequence._stepCounter <= 0 &&
-      isGlIdEven(tmpId) &&
-      isSet(ReqObj.Form[tmpId].isFrInline) &&
-      ReqObj.Form[tmpId].isFrInline === "1"
-    ) {
-      return true;
-    }
-    return false;
-  }
+  
   
   function isOTPBoxHidden(tmpId) {
     return $("#t" + tmpId + "_otpbox").length === 0 ||
@@ -21931,20 +21401,6 @@
     return ShowForeignUserIsq;
   }
   
-  /*
-   *
-   * To maintain mcatId and related image
-   *
-   */
-  
-  function pushImage(mcatID, dispImgUrl, zoomImgUrl) {
-    ReqObj.ImageKey[mcatID] =
-      isSet(dispImgUrl) && dispImgUrl !== ""
-        ? dispImgUrl
-        : isSet(zoomImgUrl) && zoomImgUrl !== ""
-        ? zoomImgUrl
-        : "";
-  }
   
   /*
    *
