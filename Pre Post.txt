@@ -10,6 +10,7 @@ Post.js -:
 	- LeftSide and RightSide
 	- FormSeq Post
 	- EnquireNow
+	- UserVerification
 	- Miscellaneous
 
 Pre.js -:
