@@ -5719,3 +5719,3756 @@ FormSeq.prototype.BLSingleStep = function (tmpId) {
   };
   /*-------------------------------new Seq----------------------------------------- */
 // FormSeq Pre
+
+// EnquireNow
+
+  /**-------------------new seq----------------------------- */
+  function EnquireNow() {
+    this.className = "EnquireNow";
+    this.enquirehtml = "";
+  }
+  EnquireNow.prototype.hasHtml = function (EnquireObj) {
+    var IsqBoxSuffixHtmlObj = {
+      SuffixOuterHtml: "<div  id='t" + EnquireObj.tmpId + "_enqnow'>",
+      SuffixClosingHtml: "</div>",
+      suffix: "_isqBox",
+    };
+    this.enquirehtml = MakeWrapper(
+      [[returnEnquireNowHtml(EnquireObj.tmpId)]],
+      EnquireObj.tmpId,
+      IsqBoxSuffixHtmlObj,
+      ""
+    );
+    EnquireObj.that.NumberofClassCalled -= 1;
+    if (this.enquirehtml !== "") {
+      ReqObj.Form[EnquireObj.tmpId].currentclassCount++;
+      this.ifHtmlPresent(EnquireObj);
+    } else {
+      this.ifHtmlNotPresent(EnquireObj);
+    }
+    if (this.enquirehtml !== "") return true;
+    else return false;
+  };
+  EnquireNow.prototype.ifHtmlPresent = function (EnquireObj) {
+    AttachObject(EnquireObj.object, EnquireObj.tmpId);
+    if (isSet(EnquireObj.AfterService)) {
+      for (var i = 0; i < EnquireObj.AfterService.length; i++) {
+        EnquireObj.that.MakeSeq(EnquireObj.AfterService[i], EnquireObj.tmpId);
+      }
+    }
+    if (EnquireObj.that.NumberofClassCalled === 0) {
+      makeFinalSeq(EnquireObj, EnquireObj.tmpId);
+    }
+  };
+  EnquireNow.prototype.ifHtmlNotPresent = function (EnquireObj) {
+    if (EnquireObj.hasFallback) {
+      CreateSeq(EnquireObj.FallbackObj);
+    }
+  };
+  EnquireNow.prototype.displayHtml = function (tmpId) {
+    return this.enquirehtml;
+  };
+  EnquireNow.prototype.onSubmit = function (tmpId) {
+    var enqNow = PreAjax("EnquireNow", tmpId);
+  };
+  EnquireNow.prototype.validate = function (tmpId) {
+    return true;
+  };
+  EnquireNow.prototype.handleButton = function (tmpId) {
+    ButtonNameUI("enquirenow", tmpId);
+  };
+  /**-------------------new seq----------------------------- */
+// EnquireNow
+
+// Isq proto
+function Isq(tmpId) {
+  this.templateId = "t" + tmpId;
+  this.className = "Isq";
+  ReqObj.Form[tmpId].preFilledIsq = {};
+  StructureIsq(tmpId); // to check for prefilled isq's
+  this.IsqScreen = -1;
+  this.countISQUpdated = false;
+}
+
+Isq.prototype.hasHtml = function (IsqObject) {
+  if (isSet(IsqObject)) {
+    ReqObj.Form[IsqObject.tmpId].Isq.HasHtmlCalled = true;
+    GetIsqFromObj(IsqObject.tmpId);
+    if (ReqObj.Form[IsqObject.tmpId].IsqArray === "") {
+      ReqObj.Form[IsqObject.tmpId].GlobalIsqObject.IsqObject = IsqObject;
+    } else {
+      if (
+        isSet(ReqObj.Form[IsqObject.tmpId].GlobalIsqObject) &&
+        typeof ReqObj.Form[IsqObject.tmpId].GlobalIsqObject.AttachingObject ===
+          "function"
+      )
+        ReqObj.Form[IsqObject.tmpId].GlobalIsqObject.AttachingObject(IsqObject);
+    }
+  }
+};
+
+Isq.prototype.defaultEvents = function (tmpId) {
+  ChatblfooterAns(tmpId);
+
+  qtutEvents(tmpId);
+  if (
+    ReqObj.Form[tmpId].formType.toLowerCase() === "bl" ||
+    ReqObj.Form[tmpId].formType.toLowerCase() === "enq"
+  )
+    qtutUI(tmpId);
+  if (ReqObj.Form[tmpId].locisqId.length) {
+    for (var i = 0; i < ReqObj.Form[tmpId].locisqId.length; i++)
+      citySugg(tmpId, ReqObj.Form[tmpId].locisqId[i]);
+  }
+  SelectBoxEvents(tmpId);
+  InputBoxEvents(tmpId);
+  InputBoxAutoFocus(tmpId);
+  CheckBoxClick(tmpId);
+  RadioClick(tmpId);
+  if (isSSB(tmpId)) onCName(tmpId, "", "isq");
+  $(".t" + tmpId + "other_radiotemp")
+    .off("click")
+    .on("click", function (event) {
+      if ($(this).hasClass("t" + tmpId + "be-radioboxtemp")) {
+        $(this)
+          .siblings()
+          .each(function () {
+            if ($(this).parent().css("display") === "block") {
+              isRadioOtherClicked(this);
+            }
+          });
+      }
+    });
+
+  if (GenerationOnClick(tmpId)) this.validate(tmpId, 1);
+
+  if (imeshExist() !== "" && !pdpInactiveBL(tmpId))
+    $("#t" + tmpId + "_leftR").removeClass("lftMgn");
+
+  if (
+    (ReqObj.Form[tmpId].typeofform.toLowerCase() === "image" ||
+      ReqObj.Form[tmpId].typeofform.toLowerCase() === "video") &&
+    ReqObj.Form[tmpId].FormSequence.StepCounter === 0
+  ) {
+    $("#t" + tmpId + "_question").addClass("qtunfrst");
+    $("#t" + tmpId + "_question").addClass("mvta");
+    $("#t" + tmpId + "ques2").addClass("bedsnone");
+  } else {
+    $("#t" + tmpId + "_question").removeClass("qtunfrst");
+    $("#t" + tmpId + "_question").removeClass("mvta");
+    $("#t" + tmpId + "ques2").removeClass("bedsnone");
+  }
+  get_buyer_info(tmpId);
+  this.handleUI({
+    data: {
+      tmpId: tmpId,
+      obj: this,
+    },
+  });
+};
+Isq.prototype.handleUI = function (event) {
+  if (
+    isSet(ReqObj.Form[event.data.tmpId].isQuantIsq) &&
+    ReqObj.Form[event.data.tmpId].isQuantIsq !== "" &&
+    ReqObj.Form[event.data.tmpId].isQuantIsq === true
+  ) {
+    $("#t" + event.data.tmpId + "_interested").html(
+      "Enter required quantity to "
+    );
+    $("#t" + event.data.tmpId + "_getbestrest").html("");
+  }
+};
+
+Isq.prototype.EventIfScreenPresent = function (tmpId) {
+  if (isOtherEnq(tmpId)) {
+    this.handleHeading(tmpId);
+    ButtonNameUI("isq", tmpId);
+  }
+};
+
+Isq.prototype.handleHeading = function (tmpId) {
+  ReqObj.Form[tmpId].ctaheadingappend = false;
+  if (ReqObj.Form[tmpId].formType.toLowerCase() !== "enq")
+    $("#t" + tmpId + "_hdg")
+      .removeClass("bedsnone")
+      .html(getFormHeading(tmpId, ReqObj.Form[tmpId].currentScreen));
+  else {
+    if (
+      ReqObj.Form[tmpId].currentScreen.toLowerCase() === "isq" ||
+      ReqObj.Form[tmpId].currentScreen.toLowerCase() === "isqmoredetails"
+    ) {
+      if (
+        $("#isq_first_screen").attr("type") === "hidden" &&
+        $("#isq_first_screen").attr("value") === "Screen1"
+      ) {
+        ReqObj.Form[tmpId].ctaheadingappend =
+          ReqObj.Form[tmpId].FormSequence.StepCounter === 0 ? true : false;
+        if (
+          isImageVidEnq(tmpId) &&
+          ReqObj.Form[tmpId].FormSequence.StepCounter === 0
+        )
+          $("#t" + tmpId + "_hdg")
+            .addClass("bedsnone")
+            .html("");
+        else
+          $("#t" + tmpId + "_hdg")
+            .removeClass("bedsnone")
+            .html(getFormHeading(tmpId, "isq"));
+      } else {
+        if (
+          isImageVidEnq(tmpId) &&
+          ReqObj.Form[tmpId].FormSequence.StepCounter === 0
+        )
+          $("#t" + tmpId + "_hdg")
+            .addClass("bedsnone")
+            .html("");
+        else
+          $("#t" + tmpId + "_hdg")
+            .removeClass("bedsnone")
+            .html(getFormHeading(tmpId, "IsqRequirementDtl"));
+      }
+    }
+  }
+};
+
+Isq.prototype.handleButton = function (tmpId) {
+  ButtonNameUI("isq", tmpId);
+};
+
+Isq.prototype.AttachingObject = function (IsqObject) {
+  if (isSet(IsqObject)) {
+    var type = currentISO() !== "IN" && Enq09(IsqObject.tmpId) ? false : true;
+    if (Enq04(IsqObject.tmpId) || isBl(IsqObject.tmpId)) type = false;
+    if ( ReqObj.Form[IsqObject.tmpId].IsqArray !== null && ReqObj.Form[IsqObject.tmpId].prevCount !== ReqObj.Form[IsqObject.tmpId].IsqLength) {
+      IsqObject.that.NumberofClassCalled -= 1;
+      AttachObject(IsqObject.object, IsqObject.tmpId); // attach object to ui or service accordingly
+      if (isSet(IsqObject.AfterService)) {
+        for (var i = 0; i < IsqObject.AfterService.length; i++) {
+          if (typeof IsqObject.that.MakeSeq === "function")
+            IsqObject.that.MakeSeq(IsqObject.AfterService[i], IsqObject.tmpId);
+        }
+      }
+      if (isImageVidEnq(IsqObject.tmpId) && ReqObj.Form[IsqObject.tmpId].FormSequence.StepCounter === -1) {
+        // not yet 0
+        if (IsqObject.that.NumberofClassCalled === 0) {
+          // this is required because whenever NumberOfClassCalled is 0 sequnece is called to show steps
+          makeFinalSeq(IsqObject, IsqObject.tmpId);
+        }
+      } else if (isSSB(IsqObject.tmpId)) {
+        isqNextSequence(IsqObject);
+      } else if ( type === true && !isBlInline(IsqObject.tmpId) &&
+        ((isImageVidEnq(IsqObject.tmpId) &&
+          ReqObj.Form[IsqObject.tmpId].isQtutShown &&
+          ReqObj.Form[IsqObject.tmpId].FormSequence.StepCounter === 0) ||
+          (isSet(ReqObj.Form[IsqObject.tmpId].formType) &&
+            (ReqObj.Form[IsqObject.tmpId].formType.toLowerCase() === "enq" ||
+              ReqObj.Form[IsqObject.tmpId].formType.toLowerCase() === "bl") &&
+            (ReqObj.Form[IsqObject.tmpId].IsqLength -
+              ReqObj.Form[IsqObject.tmpId].prevCount <
+              3 ||
+              currentISO() !== "IN"))) &&
+        (ShowReqBox(IsqObject.tmpId) || cNameConditions(IsqObject.tmpId))
+      ) {
+        // If 'to show' isq is less than 3 ; enq ; showreq return true show reqbox with it -
+        if (currentISO() !== "IN") {
+          ReqObj.Form[IsqObject.tmpId].currentclassCount++;
+          this.countISQUpdated = true;
+        } // for isq object
+        var countlastUpdated =
+          currentISO() !== "IN" && IsqObject.last === true ? true : false; // last is true
+        IsqObject.that.NumberofClassCalled += 1; //change acc to condition
+        var hooks = {
+          pre: [],
+          post: [],
+        };
+        if (IsqObject.last === true) {
+          IsqObject.that.NumberofClassCalled += 1;
+          if (currentISO() !== "IN")
+            ReqObj.Form[IsqObject.tmpId].currentclassCount++;
+        }
+        var md = toAskMoreDetails(IsqObject.tmpId);
+        var mdObj = returnmdtlObject(
+          IsqObject.object.array,
+          IsqObject.object.hooks,
+          IsqObject.tmpId,
+          IsqObject.that,
+          countlastUpdated,
+          md
+        );
+        var RdObj = {
+          object: {
+            obj: new RequirementDtl(IsqObject.tmpId),
+            toReplace: true,
+            isService: false,
+            array: IsqObject.object.array,
+            hooks: hooks,
+            countlastUpdated: countlastUpdated,
+          },
+          tmpId: IsqObject.tmpId,
+          that: IsqObject.that,
+          AfterService: [],
+          hasFallback: false,
+          FallbackObj: null,
+        };
+        var cn = cNameConditions(IsqObject.tmpId);
+        var toCall = true;
+        if (IsqObject.last === true) {
+          if (
+            md.ask === false ||
+            (md.ask === true &&
+              ReqObj.Form[IsqObject.tmpId].currentclassCount === 4)
+          ) {
+            IsqObject.that.NumberofClassCalled -= 1;
+            toCall = false;
+          }
+          if (ShowReqBox(IsqObject.tmpId)) CreateSeq(RdObj);
+          else IsqObject.that.NumberofClassCalled -= 1;
+          if (
+            md.ask === true &&
+            toCall === true &&
+            ReqObj.Form[IsqObject.tmpId].currentclassCount < 5 &&
+            !isEnq(IsqObject.tmpId) &&
+            !isBl(IsqObject.tmpId)
+          )
+            CreateSeq(mdObj);
+        } else if (ShowReqBox(IsqObject.tmpId)) {
+          if (pdpenq(IsqObject.tmpId)) {
+            if (ReqObj.Form[IsqObject.tmpId].onsuccess)
+              makeFinalSeq(IsqObject, IsqObject.tmpId);
+            IsqObject.that.NumberofClassCalled -= 1;
+          } else CreateSeq(RdObj);
+        } else if (
+          md.ask === true &&
+          toCall === true &&
+          !isEnq(IsqObject.tmpId) &&
+          !isBl(IsqObject.tmpId)
+        ) {
+          CreateSeq(mdObj);
+        } else makeFinalSeq(IsqObject, IsqObject.tmpId);
+      } else if (IsqObject.that.NumberofClassCalled === 0) {
+        // this is required because whenever NumberOfClassCalled is 0 sequnece is called to show steps
+        if ( ( isBlInline(IsqObject.tmpId) || ((Bl09(IsqObject.tmpId) || Bl04(IsqObject.tmpId)) && currentISO() !== "IN" && !pdpInactiveBL(IsqObject.tmpId) ) ) && ShowReqBox(IsqObject.tmpId) ) {
+          if (Bl04(IsqObject.tmpId) || Bl09(IsqObject.tmpId)) {
+            var flen = IsqObject.FallbackObj.length;
+            IsqObject.that.NumberofClassCalled += flen + 1;
+            for (i = 0; i < flen; i++) CreateSeq(IsqObject.FallbackObj[i]);
+            IsqObject.that.NumberofClassCalled -= 1;
+          } else {
+            IsqObject.that.NumberofClassCalled += 2;
+            CreateSeq(IsqObject.FallbackObj);
+            IsqObject.that.NumberofClassCalled -= 1;
+          }
+        }
+        if(pdpInactiveBL(IsqObject.tmpId) && currentISO()!='IN'){
+            let qut = 0;
+            for (let i = 0; i < ReqObj.Form[IsqObject.tmpId].IsqArray.length; i++) {
+                if(ReqObj.Form[IsqObject.tmpId].IsqArray[i].length>1){
+                    if(ReqObj.Form[IsqObject.tmpId].IsqArray[i][0].IM_SPEC_MASTER_DESC=="Quantity"){
+                        qut=1;
+                        break;
+                    }
+                }   
+            }
+            if(qut==0){
+                var flen = IsqObject.FallbackObj.length;
+                IsqObject.that.NumberofClassCalled += flen + 1;
+                for (i = 0; i < flen; i++) CreateSeq(IsqObject.FallbackObj[i]);
+                IsqObject.that.NumberofClassCalled -= 1;
+            }   
+        }
+        makeFinalSeq(IsqObject, IsqObject.tmpId);
+      }
+    } else {
+      if (IsqObject.hasFallback) {
+        // abhi tk no use ???
+        if (
+          isBlInline(IsqObject.tmpId) &&
+          ReqObj.Form[IsqObject.tmpId].IsqArray === null &&
+          IsqObject.that.NumberofClassCalled > 1
+        ) {
+          IsqObject.that.NumberofClassCalled -= 1;
+        }
+        if (isSet(IsqObject.Thankyou) && IsqObject.Thankyou) {
+          if (
+            isSet(ReqObj.Form[IsqObject.tmpId].FormSequence) &&
+            typeof ReqObj.Form[IsqObject.tmpId].FormSequence.OnCloseSeq ===
+              "function"
+          )
+            ReqObj.Form[IsqObject.tmpId].FormSequence.OnCloseSeq(
+              IsqObject.tmpId
+            ); // on close sequence is called
+        } else if (isSSB(IsqObject.tmpId)) {
+          IsqObject.that.NumberofClassCalled -= 1;
+          isqNextSequence(IsqObject);
+        } else if (
+          currentISO() !== "IN" &&
+          (isEnq(IsqObject.tmpId) || Bl04(IsqObject.tmpId)) &&
+          ReqObj.Form[IsqObject.tmpId].ReqDtl.HasHtmlCalled
+        ) {
+          IsqObject.that.NumberofClassCalled -= 1;
+          makeFinalSeq(IsqObject, IsqObject.tmpId);
+        } //ff_here
+        else if (Bl04(IsqObject.tmpId)) {
+          IsqObject.that.NumberofClassCalled -= 1;
+          makeFinalSeq(IsqObject, IsqObject.tmpId);
+        }
+
+        Bl09(IsqObject.tmpId)
+          ? CreateSeq(IsqObject.FallbackObj[0])
+          : CreateSeq(IsqObject.FallbackObj);
+      } else {
+        if (
+          isSet(IsqObject.nextStep) &&
+          typeof IsqObject.nextStep === "function"
+        )
+          IsqObject.nextStep.apply(ReqObj.Form[IsqObject.tmpId].FormSequence); // is next step available FormSequence for next step is called
+      }
+    }
+  }
+};
+
+function UserType() {
+  // checks whether is Indian or not.
+  if (currentISO() === "IN") return "IN";
+  else return "FR";
+}
+
+function returnIsq(tmpId) {
+  var IsqCountry = currentISO() === "IN" ? "IN" : "F";
+  var isqmdata = $.parseJSON(
+    sessionStorage.getItem(
+      "enqbl" + ReqObj.Form[tmpId].mcatId + "-" + IsqCountry
+    )
+  );
+  var isqcdata = $.parseJSON(
+    sessionStorage.getItem(
+      "enqbl" + ReqObj.Form[tmpId].catId + "-" + IsqCountry
+    )
+  );
+  if (isSet(isqmdata) && isqmdata !== "") return isqmdata.DATA;
+  if (
+    isSet(savedMcatIsq[ReqObj.Form[tmpId].mcatId]) &&
+    isSet(savedMcatIsq[ReqObj.Form[tmpId].mcatId][IsqCountry]) &&
+    savedMcatIsq[ReqObj.Form[tmpId].mcatId][IsqCountry] !== ""
+  )
+    return savedMcatIsq[ReqObj.Form[tmpId].mcatId][IsqCountry];
+  if (isSet(isqcdata) && isqcdata !== "") return isqcdata.DATA;
+  if (
+    isSet(savedCatIsq[ReqObj.Form[tmpId].catId]) &&
+    isSet(savedCatIsq[ReqObj.Form[tmpId].catId][IsqCountry]) &&
+    savedCatIsq[ReqObj.Form[tmpId].catId][IsqCountry] !== ""
+  )
+    return savedCatIsq[ReqObj.Form[tmpId].catId][IsqCountry];
+  return null;
+}
+
+function IsqPopulate(todo) {
+  var arr = template_array;
+  var len = arr.length;
+  for (var i = 0; i < len; i++) {
+    if (
+      !isSet(ReqObj.Form[arr[i]].IsqArray) ||
+      ReqObj.Form[arr[i]].IsqArray === "" ||
+      ReqObj.Form[arr[i]].IsqArray === null
+    ) {
+      ReqObj.Form[arr[i]].IsqArray = todo === true ? returnIsq(arr[i]) : null;
+      ReqObj.Form[arr[i]].IsqLength =
+        isSet(ReqObj.Form[arr[i]].IsqArray) &&
+        ReqObj.Form[arr[i]].IsqArray !== null
+          ? ReqObj.Form[arr[i]].IsqArray.length
+          : 0;
+    }
+    ReqObj.Form[arr[i]].onsuccess =
+      todo === true && Enq09(arr[i]) ? true : false;
+    onCompleteISQ(arr[i]);
+  }
+}
+
+function GetIsqFromObj(tmpId) {
+  // update IsqArray depending on mcatId /catId
+  if (isSet(tmpId)) {
+    var country = UserType(); // check for country
+    ReqObj.Form[tmpId].IsqArray = ""; // initial value empty
+    if (
+      parseInt(ReqObj.Form[tmpId].mcatId) === -1 &&
+      parseInt(ReqObj.Form[tmpId].catId) === -1
+    ) {
+      // if -1 isq array is null and length 0
+      ReqObj.Form[tmpId].IsqArray = null;
+      ReqObj.Form[tmpId].IsqLength = 0;
+    } else {
+      if (
+        parseInt(ReqObj.Form[tmpId].mcatId) !== -1 &&
+        ReqObj.Form[tmpId].mcatId !== ""
+      ) {
+        // mcatid !(-1) and not empty
+        if (ReqObj.Form[tmpId].mcatId in savedMcatIsq) {
+          // find mcatId in object
+          if (country in savedMcatIsq[ReqObj.Form[tmpId].mcatId]) {
+            // country --mcatid
+            ReqObj.Form[tmpId].IsqArray =
+              savedMcatIsq[ReqObj.Form[tmpId].mcatId][country]; // isqarray updated
+          }
+        }
+      } else if (ReqObj.Form[tmpId].catId in savedCatIsq) {
+        // same for savedCatIsq
+        if (country in savedCatIsq[ReqObj.Form[tmpId].catId]) {
+          ReqObj.Form[tmpId].IsqArray =
+            savedCatIsq[ReqObj.Form[tmpId].catId][country];
+        }
+      }
+      ReqObj.Form[tmpId].IsqLength = isSet(ReqObj.Form[tmpId].IsqArray)
+        ? ReqObj.Form[tmpId].IsqArray.length
+        : 0; // length of isq array
+    }
+  }
+  // Why??
+}
+
+function GetIsq(tmpId) {
+  // ti fetch Isq Service
+  if (isSet(tmpId)) {
+    var form_type =
+      ReqObj.Form[tmpId].formType === "Enq" ? "Send Enquiry" : "Post Buy Leads";
+    GetIsqFromObj(tmpId);
+    if (
+      ReqObj.Form[tmpId].IsqArray === "" ||
+      ReqObj.Form[tmpId].IsqArray === null
+    ) {
+      if (
+        parseInt(ReqObj.Form[tmpId].mcatId, 10) !== -1 &&
+        ReqObj.Form[tmpId].mcatId !== ""
+      ) {
+        var mcatId = ReqObj.Form[tmpId].mcatId;
+        var cat_type = 3;
+      } else if (parseInt(ReqObj.Form[tmpId].catId, 10) !== -1) {
+        var mcatId = ReqObj.Form[tmpId].catId;
+        var cat_type = 2;
+      }
+      ReqObj.Form[tmpId].isqMcat = mcatId;
+      var IsqCountry = currentISO() === "IN" ? "IN" : "F";
+      if (
+        isSet(document.referrer) &&
+        document.referrer.includes("indianexporters")
+      ){ // sessionStorage.removeItem("enqbl" + ReqObj.Form[tmpId].catId + "-" + IsqCountry);
+      // sessionStorage.removeItem("enqbl" + mcatId + "-" + IsqCountry);          // js error Failed to read the sessionStorage
+      try{
+          sessionStorage.removeItem("enqbl" + ReqObj.Form[tmpId].catId + "-" + IsqCountry);
+          sessionStorage.removeItem("enqbl" + mcatId + "-" + IsqCountry);
+      }
+      catch(err){
+              // js error Failed to read the sessionStorage
+      }
+  }
+      var isq_mdata = null;
+      var isq_cdata = null;
+      try{
+      isq_mdata = $.parseJSON(
+        sessionStorage.getItem("enqbl" + mcatId + "-" + IsqCountry)
+      );}
+    catch(err){
+    isq_mdata = null;
+        // js error Failed to read the sessionStorage
+      }
+    try{
+      isq_cdata = $.parseJSON(
+        sessionStorage.getItem(
+          "enqbl" + ReqObj.Form[tmpId].catId + "-" + IsqCountry
+        )
+      );
+      }
+      catch(err){
+    isq_cdata = null;
+        // js error Failed to read the sessionStorage
+      }
+      var isq_data = isSet(isq_mdata) ? isq_mdata : isq_cdata;
+      var country = UserType();
+      var isqCalled =
+        isSet(ReqObj.IsqCalled[mcatId + IsqCountry]) &&
+        ReqObj.IsqCalled[mcatId + IsqCountry] === true
+          ? true
+          : false;
+      if (isq_mdata !== null && isq_mdata.DATA !== "")
+        isq_data = showQuantityUnit(tmpId, isq_mdata.DATA, 1) ? isq_data : "";
+      if (
+        (isq_data === "" ||
+          isq_data === null ||
+          typeof isq_data === "undefined") &&
+        isSet(mcatId) &&
+        parseInt(mcatId, 10) !== -1 &&
+        isqCalled === false
+      ) {
+        ReqObj.IsqCalled[mcatId + IsqCountry] = true;
+        $.ajax({
+          cache: true,
+          url: appsServerName + "index.php?r=Newreqform/GetIsq",
+          type: "GET",
+          crossOrigin: true,
+          crossDomain: true,
+          data: {
+            modid: ReqObj.Form[tmpId].modId,
+            mcatid: mcatId,
+            cat_type: cat_type,
+            flag: 1,
+            isq_format: 1,
+            generic_flag: 1,
+            country_iso: currentISO(),
+          },
+          dataType: "json",
+          timeout: 3000,
+          success: function (res) {
+            if (
+              isSet(res) &&
+              isSet(res.DATA) &&
+              !(
+                typeof res.DATA === "string" &&
+                res.DATA.toLowerCase() === "null"
+              )
+            ) {
+              if (res.DATA.length > 0) {
+                ReqObj.Form[tmpId].IsqArray = res.DATA;
+                ReqObj.Form[tmpId].IsqLength =
+                  ReqObj.Form[tmpId].IsqArray.length;
+                // sessionStorage.setItem("enqbl" + mcatId + "-" + IsqCountry, JSON.stringify(res)); // js error Failed to execute 'setItem' on 'Storage': Setting the value of 'enqbl208665-IN' exceeded the quota.
+                try {
+                  sessionStorage.setItem(
+                    "enqbl" + mcatId + "-" + IsqCountry,
+                    JSON.stringify(res)
+                  );
+                } catch (err) {
+                  // quota_exceeded_error
+                }
+                var PushArr = [];
+                var PushId = "";
+                if (
+                  parseInt(ReqObj.Form[tmpId].mcatId) !== -1 &&
+                  ReqObj.Form[tmpId].mcatId !== ""
+                ) {
+                  PushArr = savedMcatIsq;
+                  PushId = ReqObj.Form[tmpId].mcatId;
+                } else {
+                  PushArr = savedCatIsq;
+                  PushId = ReqObj.Form[tmpId].catId;
+                }
+                if (PushId in PushArr)
+                  PushArr[PushId][country] = ReqObj.Form[tmpId].IsqArray;
+                else {
+                  PushArr[PushId] = {};
+                  PushArr[PushId][country] = ReqObj.Form[tmpId].IsqArray;
+                }
+                isSet(ReqObj.Form[tmpId].populate) &&
+                ReqObj.Form[tmpId].populate === true
+                  ? IsqPopulate(true)
+                  : onCompleteISQ(tmpId);
+                ReqObj.Form[tmpId].onsuccess = false;
+                // PushArr[PushId] = ReqObj.Form[tmpId].IsqArray;
+              } else {
+                ReqObj.Form[tmpId].IsqArray = null;
+                ReqObj.Form[tmpId].IsqLength = 0;
+                ReqObj.Form[tmpId].isqMcat = -1;
+                if (
+                  parseInt(ReqObj.Form[tmpId].mcatId) !== -1 &&
+                  ReqObj.Form[tmpId].mcatId !== ""
+                ) {
+                  if (!isSet(savedMcatIsq[ReqObj.Form[tmpId].mcatId]))
+                    savedMcatIsq[ReqObj.Form[tmpId].mcatId] = [];
+                  savedMcatIsq[ReqObj.Form[tmpId].mcatId][country] = null;
+                } else {
+                  // savedCatIsq[ReqObj.Form[tmpId].catId] = null;
+
+                  savedCatIsq[ReqObj.Form[tmpId].catId][country] = null;
+                }
+                ReqObj.IsqCalled[mcatId + IsqCountry] = false;
+                IsqPopulate(false);
+              }
+              (!isSet(ReqObj.CNSerCalled) || !ReqObj.CNSerCalled) &&
+              imeshExist() !== ""
+                ? toCallMiniDetails(tmpId)
+                : "";
+            } else {
+              ReqObj.Form[tmpId].IsqArray = null;
+              ReqObj.Form[tmpId].IsqLength = 0;
+              ReqObj.Form[tmpId].isqMcat = -1;
+              ReqObj.IsqCalled[mcatId + IsqCountry] = false;
+              IsqPopulate(false);
+            }
+
+            if (
+              !isSSB(tmpId) &&
+              currentISO() === "IN" &&
+              !isMoglixUi(tmpId) &&
+              !IsChatbl(tmpId) &&
+              isSet(ReqObj.Form[tmpId].mcatId) &&
+              parseInt(ReqObj.Form[tmpId].mcatId, 10) !== -1 &&
+              ReqObj.Form[tmpId].mcatId != "" &&
+              !isSet(
+                sessionStorage.getItem("plaWidget-" + ReqObj.Form[tmpId].mcatId)
+              )
+            ) {
+              plawidget(tmpId);
+            }
+          },
+          error: function (res) {
+            ReqObj.Form[tmpId].IsqArray = null;
+            ReqObj.Form[tmpId].IsqLength = 0;
+            ReqObj.IsqCalled[mcatId + IsqCountry] = false;
+            IsqPopulate(false);
+            res = isSet(res) ? res : "response undefined";
+            blenqGATracking(form_type, "Get ISQ", res, 1, tmpId);
+          },
+          complete: function () {
+            // if (isSet(tmpId) && isSet(ReqObj.Form[tmpId].Isq) && ReqObj.Form[tmpId].Isq.HasHtmlCalled) {
+            //   if (isSet(ReqObj.Form[tmpId].GlobalIsqObject) && typeof ReqObj.Form[tmpId].GlobalIsqObject.AttachingObject === "function")
+            //     ReqObj.Form[tmpId].GlobalIsqObject.AttachingObject(ReqObj.Form[tmpId].GlobalIsqObject.IsqObject); //// !!!!this is why GlobalIsqObject is used !!!!
+            // }
+            // if (isSet(tmpId) && isSet(ReqObj.Form[tmpId].ReqDtl) && ReqObj.Form[tmpId].ReqDtl.HasHtmlCalled) {
+            //   if (isSet(ReqObj.Form[tmpId].GlobalRdObj) && typeof ReqObj.Form[tmpId].GlobalRdObj.AttachingObject === "function")
+            //     ReqObj.Form[tmpId].GlobalRdObj.AttachingObject(ReqObj.Form[tmpId].GlobalRdObj.RdObj); //// !!!!this is why GlobalRdObj is used !!!!
+            // }
+          },
+        });
+      } else if (isSet(tmpId) && isSet(mcatId) && parseInt(mcatId, 10) === -1) {
+        ReqObj.Form[tmpId].IsqArray = null;
+        ReqObj.Form[tmpId].IsqLength = 0;
+        delete HitMcatIsq[ReqObj.Form[tmpId].mcatId];
+        if (ReqObj.Form[tmpId].Isq.HasHtmlCalled) {
+          if (
+            isSet(ReqObj.Form[tmpId].GlobalIsqObject) &&
+            typeof ReqObj.Form[tmpId].GlobalIsqObject.AttachingObject ===
+              "function"
+          )
+            ReqObj.Form[tmpId].GlobalIsqObject.AttachingObject(
+              ReqObj.Form[tmpId].GlobalIsqObject.IsqObject
+            ); //// !!!!this is why GlobalIsqObject is used !!!!
+        }
+      } else if (
+        isq_data !== "" &&
+        isq_data !== null &&
+        typeof isq_data !== "undefined"
+      ) {
+        ReqObj.Form[tmpId].IsqArray = isq_data.DATA;
+        ReqObj.Form[tmpId].IsqLength = isq_data.DATA.length;
+        var PushArr = [];
+        var PushId = "";
+        if (
+          parseInt(ReqObj.Form[tmpId].mcatId) !== -1 &&
+          ReqObj.Form[tmpId].mcatId !== ""
+        ) {
+          PushArr = savedMcatIsq;
+          PushId = ReqObj.Form[tmpId].mcatId;
+        } else {
+          PushArr = savedCatIsq;
+          PushId = ReqObj.Form[tmpId].catId;
+        }
+        if (PushId in PushArr)
+          PushArr[PushId][country] = ReqObj.Form[tmpId].IsqArray;
+        else {
+          PushArr[PushId] = {};
+          PushArr[PushId][country] = ReqObj.Form[tmpId].IsqArray;
+        }
+        onCompleteISQ(tmpId);
+      } else {
+        if (isSet(tmpId)) {
+          if (
+            parseInt(ReqObj.Form[tmpId].mcatId) === -1 &&
+            parseInt(ReqObj.Form[tmpId].catId) === -1
+          ) {
+            ReqObj.Form[tmpId].IsqArray = null;
+          } else {
+            ReqObj.Form[tmpId].IsqArray = "";
+          }
+          ReqObj.Form[tmpId].IsqLength = 0;
+        }
+      }
+    } else {
+      ReqObj.Form[tmpId].isqMcat =
+        parseInt(ReqObj.Form[tmpId].mcatId) !== -1
+          ? parseInt(ReqObj.Form[tmpId].mcatId)
+          : parseInt(ReqObj.Form[tmpId].catId) !== -1
+          ? parseInt(ReqObj.Form[tmpId].catId)
+          : ReqObj.Form[tmpId].isqMcat;
+    } // review
+  }
+}
+
+function onCompleteISQ(tmpId) {
+  if (
+    isSet(tmpId) &&
+    isSet(ReqObj.Form[tmpId].Isq) &&
+    ReqObj.Form[tmpId].Isq.HasHtmlCalled
+  ) {
+    if (
+      isSet(ReqObj.Form[tmpId].GlobalIsqObject) &&
+      typeof ReqObj.Form[tmpId].GlobalIsqObject.AttachingObject === "function"
+    )
+      ReqObj.Form[tmpId].GlobalIsqObject.AttachingObject(
+        ReqObj.Form[tmpId].GlobalIsqObject.IsqObject
+      ); //// !!!!this is why GlobalIsqObject is used !!!!
+  }
+
+  if (
+    isSet(tmpId) &&
+    isSet(ReqObj.Form[tmpId].ReqDtl) &&
+    ReqObj.Form[tmpId].ReqDtl.HasHtmlCalled
+  ) {
+    if (
+      isSet(ReqObj.Form[tmpId].GlobalRdObj) &&
+      typeof ReqObj.Form[tmpId].GlobalRdObj.AttachingObject === "function"
+    )
+      ReqObj.Form[tmpId].GlobalRdObj.AttachingObject(
+        ReqObj.Form[tmpId].GlobalRdObj.RdObj
+      ); //// !!!!this is why GlobalRdObj is used !!!!
+  }
+}
+
+Isq.prototype.resetClass = function (tmpId) {
+  if (ReqObj.Form[tmpId].prevCount > ReqObj.Form[tmpId].IsqStep1) {
+    ReqObj.Form[tmpId].prevCount -= ReqObj.Form[tmpId].IsqStepN;
+
+    //isqstepn
+  } else {
+    ReqObj.Form[tmpId].prevCount -= ReqObj.Form[tmpId].IsqStep1;
+    //isqstep1
+  }
+};
+
+Isq.prototype.validate = function (tmpId, updatedCounter) {
+  if (updatedCounter !== 1 && (!ReqObj.Form[tmpId].isret || this.IsqScreen < 0))
+    this.IsqScreen++;
+  ReqObj.Form[tmpId].isret = 0;
+  if (
+    isImageVidEnq(tmpId) &&
+    ReqObj.Form[tmpId].FormSequence.StepCounter === 0 &&
+    ReqObj.Form[tmpId].qtUtQuesPresent === false
+  )
+    this.IsqScreen--;
+  if (
+    tmpId.substr(0, 2) === "01" &&
+    isGlIdEven(tmpId) &&
+    ReqObj.Form[tmpId].screenNumber <= 0 &&
+    ReqObj.Form[tmpId].qtUtQuesPresent === false
+  )
+    this.IsqScreen--;
+  if (
+    tmpId.substr(0, 2) === "04" &&
+    isGlIdEven(tmpId) &&
+    ReqObj.Form[tmpId].screenNumber <= 0 &&
+    ReqObj.Form[tmpId].qtUtQuesPresent === false
+  )
+    this.IsqScreen--;
+  if (isSSB(tmpId)) this.IsqScreen = 0;
+  var IsqScreen = this.IsqScreen;
+  var Error = ValidateQuestions(tmpId, false, IsqScreen);
+  if (!Error && updatedCounter !== 1) this.IsqScreen--;
+  return Error;
+};
+
+Isq.prototype.displayHtml = function (tmpId) {
+  if (isSet(tmpId) && isSet(ReqObj.Form[tmpId])) {
+    if (
+      (ReqObj.Form[tmpId].typeofform.toLowerCase() === "image" ||
+        ReqObj.Form[tmpId].typeofform.toLowerCase() === "video") &&
+      isSet(ReqObj.Form[tmpId].userFilledIsq) &&
+      ReqObj.Form[tmpId].userFilledIsq !== "" &&
+      ReqObj.Form[tmpId].FormSequence.StepCounter !== 0
+    )
+      StructureIsq(tmpId);
+    if (isSSB(tmpId)) ReqObj.Form[tmpId].prevCount = 0;
+    if (ReqObj.Form[tmpId].IsqArray === null) return null; // no isq available
+    ReqObj.Form[tmpId].IsqStep1 = isSSB(tmpId)
+      ? ReqObj.Form[tmpId].IsqLength
+      : ReqObj.Form[tmpId].IsqStep1;
+    var returnHtml =
+      ReqObj.Form[tmpId].prevCount === 0
+        ? this.makeIsq(ReqObj.Form[tmpId].IsqStep1, tmpId)
+        : this.makeIsq(ReqObj.Form[tmpId].IsqStepN, tmpId);
+    /*
+              1. prev count = 0 || no isq shown || call makeIsq with isqStep1
+              2. prev count > 0 || isq shown || call makeIsq with isqStepN --
+              N - how many isq's on 2bd or 3rd or nth step
+            */
+    if (returnHtml !== "" && this.countISQUpdated === false)
+      ReqObj.Form[tmpId].currentclassCount++;
+    if (IsChatbl(tmpId)) {
+      ReqObj.Form[tmpId].isqans = returnHtml !== "" ? true : false;
+      return returnHtml !== "" ? [this.question, this.answer] : [""];
+    }
+    if (isOtherEnq(tmpId)) {
+      if (
+        isImageVidEnq(tmpId) &&
+        ReqObj.Form[tmpId].FormSequence.StepCounter === 0
+      )
+        ReqObj.Form[tmpId].calledClassName[
+          ReqObj.Form[tmpId].FormSequence.StepCounter
+        ] = this.className + "SP";
+      else
+        ReqObj.Form[tmpId].calledClassName[
+          ReqObj.Form[tmpId].FormSequence.StepCounter
+        ] = this.className;
+    }
+    return [returnHtml];
+  }
+  return [""];
+};
+function isNewInlineBl(tmpId) {
+  if (ReqObj.Form[tmpId].modId === "DIR") return true;
+  else return false;
+}
+
+Isq.prototype.makeIsq = function (MaxIsq, tmpId) {
+  ReqObj.Form[tmpId].stopper =
+    Math.min(
+      MaxIsq,
+      ReqObj.Form[tmpId].IsqLength - ReqObj.Form[tmpId].prevCount
+    ) + ReqObj.Form[tmpId].prevCount;
+  if (
+    isImageVidEnq(tmpId) &&
+    ReqObj.Form[tmpId].FormSequence.StepCounter > 0 &&
+    ReqObj.Form[tmpId].isQtutShown === true
+  )
+    ReqObj.Form[tmpId].stopper++;
+  return this.TraverseIsq(tmpId);
+};
+
+Isq.prototype.TraverseIsq = function (tmpId) {
+  var whole_wrapper = "";
+  var suffix = isBlFirstfold(tmpId)
+    ? "_isqBox' class='eqF100 isq_ffmt'>"
+    : "_isqBox'>";
+  //ff_here
+
+  var IsqBoxSuffixOuterHtml = "<div  id='t" + tmpId + suffix;
+  var CurrentPageQuestions = [];
+  var finalIsqQuestions = [];
+  ReqObj.Form[tmpId].locisqId = [];
+  if (
+    (isOtherEnq(tmpId) &&
+      ReqObj.Form[tmpId].prevCount === 0 &&
+      !isImageVidEnq(tmpId)) ||
+    (isImageVidEnq(tmpId) &&
+      ReqObj.Form[tmpId].prevCount === 0 &&
+      ReqObj.Form[tmpId].FormSequence.StepCounter > 0)
+  ) {
+    IsqBoxSuffixOuterHtml +=
+      "<input type='hidden' id='isq_first_screen' value='Screen1'>";
+  }
+  if (
+    (currentISO() !== "IN" && IsChatbl(tmpId)) ||
+    (currentISO() === "IN" && pdpenq(tmpId))
+  )
+    ReqObj.Form[tmpId].stopper = ReqObj.Form[tmpId].IsqLength;
+  for (
+    var i = ReqObj.Form[tmpId].prevCount;
+    i < ReqObj.Form[tmpId].stopper;
+    i++
+  ) {
+    ReqObj.Form[tmpId].Isq.Question = [];
+    if (
+      isImageVidEnq(tmpId) &&
+      ReqObj.Form[tmpId].FormSequence.StepCounter === 0
+    ) {
+      FindIsqObject(
+        ReqObj.Form[tmpId].IsqArray[i],
+        tmpId,
+        0,
+        false,
+        finalIsqQuestions
+      );
+      ReqObj.ImageVideoIsqSeq = true;
+      if (
+        isSet(ReqObj.Form[tmpId].requireNow) &&
+        ReqObj.Form[tmpId].requireNow === true &&
+        finalIsqQuestions.length === 0
+      ) {
+        ReqObj.Form[tmpId].requireNow = false;
+      }
+    } else if (isBlInline(tmpId)) {
+      if (showQuantityUnit(tmpId, ReqObj.Form[tmpId].IsqArray, 2)) {
+        quantityshown = 1;
+        FindIsqObject(
+          ReqObj.Form[tmpId].quantityunit,
+          tmpId,
+          0,
+          false,
+          finalIsqQuestions
+        );
+
+        CurrentPageQuestions.push(ReqObj.Form[tmpId].Isq.Question);
+        if (ReqObj.Form[tmpId].IsqArray.length === 1) {
+          ReqObj.Form[tmpId].prevCount += 1;
+        }
+        // ReqObj.Form[tmpId].isBlQtutShown = true;
+      } else if (isNewInlineBl(tmpId)) {
+        for (var i = 0; i < ReqObj.Form[tmpId].IsqArray.length; i++) {
+          if (
+            ReqObj.Form[tmpId].IsqArray[i].length !== 2 ||
+            (ReqObj.Form[tmpId].IsqArray[i].length === 2 &&
+              ReqObj.Form[tmpId].IsqArray[i][0].toLowerCase() !== "quantity")
+          ) {
+            FindIsqObject(
+              ReqObj.Form[tmpId].IsqArray[i],
+              tmpId,
+              0,
+              false,
+              finalIsqQuestions
+            );
+            displayedisq = 1;
+            if (ReqObj.Form[tmpId].IsqArray.length === 1) {
+              ReqObj.Form[tmpId].prevCount += 1;
+            }
+
+            break;
+          }
+        }
+        CurrentPageQuestions.push(ReqObj.Form[tmpId].Isq.Question);
+      }
+      break;
+    } else if (
+      Bl01(tmpId) &&
+      isNewInlineBl(tmpId) &&
+      this.className == "Isq" &&
+      this.IsqScreen == -1 &&
+      displayedisq === 1 &&
+      !isBlFirstfold(tmpId) &&
+      !IsChatbl(tmpId) &&
+      !IsChatBLInline(tmpId) &&
+      !isBlInlineFr(tmpId)
+    ) {
+      for (var i = 0; i < ReqObj.Form[tmpId].IsqArray.length; i++) {
+        // if((ReqObj.Form[tmpId].IsqArray)[i].length === 2 && (ReqObj.Form[tmpId].IsqArray)[i][0].toLowerCase() !== "quantity"){
+        //     if(i === 0){
+        //         blankscreenisq = 1;
+        //         continue;
+        //     }
+        // }
+        if (ReqObj.Form[tmpId].IsqArray[i].length !== 2) {
+          if (i === 0) {
+            // if only 1 isq is there
+            blankscreenisq = 1;
+            continue;
+          } else {
+            blankscreenisq = 0;
+            FindIsqObject(
+              ReqObj.Form[tmpId].IsqArray[i],
+              tmpId,
+              0,
+              false,
+              finalIsqQuestions
+            );
+            CurrentPageQuestions.push(ReqObj.Form[tmpId].Isq.Question);
+          }
+        }
+      }
+      break;
+    } else if (isBlFirstfold(tmpId)) {
+      //here
+      if (showQuantityUnit(tmpId, ReqObj.Form[tmpId].IsqArray, 2)) {
+        FindIsqObject(
+          ReqObj.Form[tmpId].quantityunit,
+          tmpId,
+          0,
+          false,
+          finalIsqQuestions
+        );
+        CurrentPageQuestions.push(ReqObj.Form[tmpId].Isq.Question);
+        if (ReqObj.Form[tmpId].IsqArray.length === 1) {
+          ReqObj.Form[tmpId].prevCount += 1;
+        }
+      }
+      break;
+    } else
+      FindIsqObject(
+        ReqObj.Form[tmpId].IsqArray[i],
+        tmpId,
+        0,
+        false,
+        finalIsqQuestions
+      );
+    if (ReqObj.Form[tmpId].Isq.Question.length !== 0)
+      CurrentPageQuestions.push(ReqObj.Form[tmpId].Isq.Question);
+    if (
+      isSet(ReqObj.ImageVideoIsqSeq) &&
+      ReqObj.ImageVideoIsqSeq === true &&
+      isSet(ReqObj.Form[tmpId].isQuantIsq) &&
+      ReqObj.Form[tmpId].isQuantIsq === true
+    ) {
+      break;
+    }
+  }
+  if (checkIsqHtmlCreation(finalIsqQuestions) === true) {
+    if (
+      isSSB(tmpId) &&
+      ReqObj.Form[tmpId].Isq.CurrentPageQuestions.length !== 0
+    ) {
+      ReqObj.Form[tmpId].Isq.CurrentPageQuestionsStatic = [];
+      ReqObj.Form[tmpId].Isq.CurrentPageQuestionsStatic.push(
+        ReqObj.Form[tmpId].Isq.CurrentPageQuestions[0][0]
+      );
+      CurrentpageSSBIsq(tmpId, CurrentPageQuestions);
+    } else if ((Bl09(tmpId) || Bl04(tmpId)) && currentISO() !== "IN") {
+      ReqObj.Form[tmpId].Isq.CurrentPageQuestionsStatic = [];
+      ReqObj.Form[tmpId].Isq.CurrentPageQuestionsStatic.push(
+        ReqObj.Form[tmpId].Isq.CurrentPageQuestions[0]
+      );
+      ReqObj.Form[tmpId].Isq.CurrentPageQuestions = [];
+    }
+    // if (isSet(ReqObj.ImageVideoIsqSeq) && ReqObj.ImageVideoIsqSeq === true && isSet(ReqObj.Form[tmpId].isQuantIsq) && ReqObj.Form[tmpId].isQuantIsq === false)
+    //   ReqObj.Form[tmpId].Isq.CurrentPageQuestions.pop();
+
+    ReqObj.Form[tmpId].Isq.CurrentPageQuestions.push(CurrentPageQuestions);
+
+    if (
+      ReqObj.ImageVideoIsqSeq !== true &&
+      !isBlInline(tmpId) &&
+      !isBlFirstfold(tmpId)
+    )
+      ReqObj.Form[tmpId].prevCount = ReqObj.Form[tmpId].stopper; //ff_here
+    else if (
+      ReqObj.ImageVideoIsqSeq === true &&
+      ReqObj.Form[tmpId].FormSequence.StepCounter === 0
+    )
+      ReqObj.Form[tmpId].prevCount = 0;
+    else if (
+      ReqObj.ImageVideoIsqSeq === true &&
+      ReqObj.Form[tmpId].FormSequence.StepCounter !== 0
+    )
+      ReqObj.Form[tmpId].prevCount = ReqObj.Form[tmpId].stopper;
+
+    if (!IsChatbl(tmpId)) {
+      var IsqBoxSuffixClosingHtml = "</div>";
+      var IsqBoxSuffixHtmlObj = {
+        SuffixOuterHtml: IsqBoxSuffixOuterHtml,
+        SuffixClosingHtml: IsqBoxSuffixClosingHtml,
+        suffix: "_isqBox",
+      };
+      if (
+        isImageVidEnq(tmpId) &&
+        ReqObj.Form[tmpId].FormSequence.StepCounter === 0 &&
+        finalIsqQuestions.length < 2 &&
+        ReqObj.Form[tmpId].requireNow !== true
+      ) {
+        finalIsqQuestions.unshift([returnEnquireNowHtml(tmpId)]);
+      }
+      whole_wrapper = MakeWrapper(
+        finalIsqQuestions,
+        tmpId,
+        IsqBoxSuffixHtmlObj,
+        ""
+      );
+    } else {
+      this.question = MakeWrapper(
+        finalIsqQuestions,
+        tmpId,
+        WrapperObj(
+          "<div  id='t" + tmpId + "_isqBox' class = 'cbl_ques cbl_vh' >",
+          "</div>",
+          "_isqBox"
+        ),
+        "ques"
+      );
+
+      if (!ReqObj.Form[tmpId].toAppendQues) {
+        var FormId = "#t" + tmpId + "_newblchatReply";
+        if ($(FormId).children(".cbl_resend.cbl_skip")) {
+          $(FormId).children(".cbl_resend.cbl_skip").remove();
+        }
+        finalIsqQuestions[0][0]["UserInput"] += skipDiv1(tmpId); //chat bl bug
+      }
+
+      this.answer = MakeWrapper(
+        finalIsqQuestions,
+        tmpId,
+        WrapperObj(
+          "<div  id='t" +
+            tmpId +
+            "_isqBoxInput' class='cbl_isq_grp cbl_dtls cbl_df cbl_aic t" +
+            tmpId +
+            "_userInput cbl_br10 dn'>",
+          "</div>",
+          "_isqBox"
+        ),
+        "input"
+      );
+
+      whole_wrapper = this.question + this.answer;
+    }
+    return whole_wrapper;
+  } else {
+    if (!isBlInline(tmpId) && !isBlFirstfold(tmpId))
+      ReqObj.Form[tmpId].prevCount = ReqObj.Form[tmpId].stopper;
+    return ""; //ff_here
+  }
+};
+
+function checkIsqHtmlCreation(arr) {
+  var len = arr.length;
+  var count = 0;
+  for (var i = 0; i < len; i++) {
+    if (isSet(arr[i][0].flag) && arr[i][0].flag === false) count++;
+  }
+  return count === len ? false : true;
+}
+
+function addLine() {
+  return '<div class="cbl_line"></div>';
+}
+
+function FindIsqObject(
+  Collection,
+  tmpId,
+  ObjectPosition,
+  isRecursion,
+  arrayOfQues
+) {
+  // This function is used to get the object where data lies
+  if (isSet(Collection)) {
+    if (Collection instanceof Array) {
+      var len = isSet(Collection) ? Collection.length : 0;
+      var RecurOfQues = [];
+      var toaddPartition = 0;
+      var isqtut = false;
+      for (var i = 0; i < len; i++) {
+        if (
+          1 === toaddPartition &&
+          IsChatbl(tmpId) &&
+          (currentISO() === "IN" ||
+            (currentISO() !== "IN" &&
+              (Collection[i].IM_SPEC_MASTER_DESC.toLowerCase() === "quantity" ||
+                Collection[i].IM_SPEC_MASTER_DESC.toLowerCase() ===
+                  "quantity unit")))
+        ) {
+          QuesObj["UserInput"] += addLine();
+        }
+        if (len > 1) ObjectPosition++;
+        var QuesObj = FindIsqObject(Collection[i], tmpId, ObjectPosition, true);
+        RecurOfQues.push(QuesObj);
+        toaddPartition = 1;
+        isqtut =
+          QuesObj.qtuttype === 5 || QuesObj.qtuttype === 6 ? true : false;
+      }
+      if (isqtut === true)
+        return arrayOfQues.push(returnIsqHtmlObj(RecurOfQues, tmpId));
+      else arrayOfQues.push(RecurOfQues);
+      return arrayOfQues;
+    } else {
+      if (
+        ReqObj.Form[tmpId].modId === "MDC" &&
+        Collection.IM_SPEC_MASTER_DESC === "Brand"
+      )
+        ReqObj.Form[tmpId].stopper++;
+      else {
+        var qtisq = false;
+        var sampisq = false;
+        if (
+          isSet(ReqObj.Form[tmpId].toGetCurrentPagestring) &&
+          ReqObj.Form[tmpId].toGetCurrentPagestring
+        )
+          getIsqQuestions(Collection, "current", tmpId);
+        if (
+          Collection.IM_SPEC_MASTER_DESC.toLowerCase() === "quantity" ||
+          Collection.IM_SPEC_MASTER_DESC.toLowerCase() === "quantity unit"
+        ) {
+          ReqObj.Form[tmpId].cName.qtut = true;
+          qtisq = true;
+          ReqObj.Form[tmpId].cName.qtracking = 1;
+        }
+        if (
+          Collection.IM_SPEC_MASTER_DESC.toLowerCase() ===
+            "total order value" ||
+          Collection.IM_SPEC_MASTER_DESC.toLowerCase() ===
+            "total order value(rs)"
+        ) {
+          ReqObj.Form[tmpId].cName.tov = true;
+        }
+        if (
+          isSet(ReqObj.Form[tmpId].defaultIsq) &&
+          ReqObj.Form[tmpId].defaultIsq === "1" &&
+          isSet(
+            Collection.IM_SPEC_MASTER_DESC.toLowerCase().match("sample order")
+          )
+        )
+          sampisq = true;
+        if (
+          isImageVidEnq(tmpId) &&
+          ReqObj.Form[tmpId].FormSequence.StepCounter === 0
+        ) {
+          if (
+            Collection.IM_SPEC_MASTER_DESC.toLowerCase() === "quantity" ||
+            Collection.IM_SPEC_MASTER_DESC.toLowerCase() === "quantity unit"
+          ) {
+            var htmlObj =
+              qtisq === false && currentISO() !== "IN"
+                ? {
+                    clsNm: false,
+                    flag: false,
+                    ClosingWrapper: "",
+                    Label: "",
+                    OuterWrapper: "",
+                    UserInput: "",
+                  }
+                : convertHtml(Collection, tmpId, ObjectPosition); // if quantity call convert html
+            ReqObj.Form[tmpId].previousFullDesc =
+              Collection.IM_SPEC_MASTER_FULL_DESC;
+            ReqObj.Form[tmpId].isQuantIsq = true;
+            if (isRecursion) {
+              return htmlObj;
+            } else {
+              return arrayOfQues.push([htmlObj]);
+            }
+          } else {
+            ReqObj.Form[tmpId].requireNow = true;
+            return returnEnquireNowHtml(tmpId); // return type must be object similar to htmlObj
+          }
+        } else {
+          var htmlObj =
+            qtisq === false &&
+            sampisq === false &&
+            (currentISO() !== "IN" || (currentISO() === "IN" && pdpenq(tmpId)))
+              ? {
+                  clsNm: false,
+                  flag: false,
+                  ClosingWrapper: "",
+                  Label: "",
+                  OuterWrapper: "",
+                  UserInput: "",
+                }
+              : convertHtml(Collection, tmpId, ObjectPosition);
+          ReqObj.Form[tmpId].previousFullDesc =
+            Collection.IM_SPEC_MASTER_FULL_DESC;
+        }
+
+        // return html;
+        if (isRecursion) {
+          return htmlObj;
+        } else {
+          return arrayOfQues.push([htmlObj]);
+        }
+      }
+    }
+  }
+}
+
+function FindIsqObjectQuestions(
+  Collection,
+  tmpId,
+  ObjectPosition,
+  isRecursion,
+  arrayOfQues
+) {
+  // This function is used to get the object where data lies
+  if (isSet(Collection)) {
+    if (Collection instanceof Array) {
+      var len = isSet(Collection) ? Collection.length : 0;
+      var RecurOfQues = [];
+      for (var i = 0; i < len; i++) {
+        if (len > 1) ObjectPosition++;
+        var QuesObj = FindIsqObjectQuestions(
+          Collection[i],
+          tmpId,
+          ObjectPosition,
+          true
+        );
+        RecurOfQues.push(QuesObj);
+      }
+      arrayOfQues.push(RecurOfQues);
+      return arrayOfQues;
+    } else {
+      if (
+        isSet(ReqObj.Form[tmpId].toGetQuestionsOnly) &&
+        ReqObj.Form[tmpId].toGetQuestionsOnly
+      )
+        getIsqQuestions(Collection, "allquestions", tmpId);
+    }
+  }
+}
+
+Isq.prototype.SaveDetails = function (tmpId) {
+  var IsqScreen = this.IsqScreen;
+  SaveIsq(tmpId, "isq", IsqScreen);
+  if (
+    !isSSB(tmpId) &&
+    ReqObj.Form[tmpId].intentCalled === false &&
+    imeshExist() !== ""
+  )
+    toFireGeneration(tmpId);
+};
+
+Isq.prototype.BackButton = function (tmpId) {
+  this.IsqScreen--;
+  if (ReqObj.Form[tmpId].isret) {
+    this.IsqScreen--;
+    ReqObj.Form[tmpId].isret = 0;
+  }
+};
+
+Isq.prototype.displayAnswer = function (tmpId) {
+  if (
+    IsChatbl(tmpId) &&
+    isSet(ReqObj.Form[tmpId].isqans) &&
+    ReqObj.Form[tmpId].isqans === false
+  ) {
+  } else {
+    var classtotest = chatBlClass(tmpId, "right");
+    var leftright = IsChatbl(tmpId) ? "cbl_ansr" : "";
+    return [
+      ConversationRightWrapper(tmpId, GetAnswer(tmpId, "isq"), {
+        classtotest: classtotest,
+        leftright: leftright,
+      }),
+    ];
+  }
+};
+
+Isq.prototype.onSubmit = function (tmpId, after) {
+  var IsqObject = isSet(after) && after === true ? "" : PreAjax("Isq", tmpId);
+  var hitfinserv = "";
+
+  var isq_data = {
+    modid: ReqObj.Form[tmpId].modId,
+    ofr_id: ReqObj.Form[tmpId].generationId,
+    b_response: ReqObj.Form[tmpId].optionsValue,
+    q_desc: ReqObj.Form[tmpId].questionsDesc,
+    UPDIP: "India",
+    UPDURL: window.document.URL.toString().substr(0, 450),
+    UPDIP_COUNTRY: "India",
+    UPDATESCREEN:
+      ReqObj.Form[tmpId].formType.toLowerCase() === "enq"
+        ? "DESKTOP ENQUIRY FORM"
+        : "DESKTOP BL FORM",
+    glusr_id: usercookie.getParameterValue(imeshExist(), "glid"),
+    q_id: ReqObj.Form[tmpId].questionsId,
+    b_id: ReqObj.Form[tmpId].optionsId,
+  };
+
+  $("#yajaca").hide(); // click away message on pns form
+
+  if (ReqObj.Form[tmpId].mcatId === "-1" || ReqObj.Form[tmpId].mcatId === "") {
+    isq_data.mcat_id = ReqObj.Form[tmpId].catId;
+  } else {
+    isq_data.mcat_id = ReqObj.Form[tmpId].mcatId;
+  }
+  isq_data.glusr_email = "";
+  if (ReqObj.Form[tmpId].formType === "Enq") {
+    isq_data.enq = 1;
+    isq_data.funcToCall = "Enq";
+  }
+  if (
+    (!isSet(ReqObj.Form[tmpId].toFireIsq) || ReqObj.Form[tmpId].toFireIsq) &&
+    isSet(ReqObj.Form[tmpId].optionsValue) &&
+    (ReqObj.Form[tmpId].IsqUpdated ||
+      ReqObj.Form[tmpId].optionsValue.length > 0) &&
+    isSet(ReqObj.Form[tmpId].Isq.newIsqAdded) &&
+    ReqObj.Form[tmpId].Isq.newIsqAdded &&
+    ValidGenId(ReqObj.Form[tmpId].generationId)
+  ) {
+    ReqObj.Form[tmpId].waitFinServ += 1;
+    if (ReqObj.Form[tmpId].typeofform === "bl")
+      ReqObj.Form[tmpId].Isq.newIsqAdded = false;
+    fireAjaxRequest({
+      data: {
+        ga: {
+          gatype: "saveIsqBlEnq",
+          source: "",
+          s: true,
+          f: true,
+        },
+        tmpId: tmpId,
+        ajaxObj: {
+          obj: IsqObject,
+          s: {
+            ss: 1,
+            sf: {
+              af: 0,
+              pa: 0,
+            },
+            f: 1,
+          },
+          f: {
+            f: 1,
+          },
+        },
+        ajaxtimeout: 0,
+        ajaxdata: isq_data,
+        hitfinserv: hitfinserv,
+        type: 3,
+      },
+    });
+  } else {
+    PostAjax(IsqObject, tmpId);
+  }
+};
+
+function msg_firimgvid(text, tmpId) {
+  var msg =
+    ReqObj.Form[tmpId].typeofform.toLowerCase() === "image"
+      ? "images"
+      : "videos";
+  if(direnqImage(tmpId)){
+    return "";
+  }    
+  else{
+    return (
+      "<div class='eqimvid'>" +
+      returnSpan("", "", text, "befwt", "") +
+      " to get latest " +
+      msg +
+      " & best quotes</div>"
+    );
+  }
+  
+}
+function returnEnquireNowHtml(tmpId) {
+  return {
+    ClosingWrapper: "</div>",
+    Label: "",
+    OuterWrapper: returnContainer(
+      "t" + tmpId,
+      "_enquirenow",
+      "eqs16",
+      "",
+      "",
+      ""
+    ),
+    UserInput: /*returnButton("t" + tmpId, "_submit", "Enquire now!", "")*/ "",
+    beforeInput: "",
+    beforeLabel: "",
+    isenquire: true,
+  };
+}
+
+function updateUserFilledIsq(tmpId, isq_data) {
+  for (var i = 0; i < 2; i++) {
+    var isqobj = {
+      optionsId: isq_data.b_id[i],
+      optionsValue: isq_data.b_response[i],
+      questionsDesc: isq_data.q_desc[i],
+      questionsId: isq_data.q_id[i],
+    };
+    ReqObj.Form[tmpId].userFilledIsq.push(isqobj);
+  }
+}
+
+function updateQtKey(tmpId, change) {
+  ReqObj.Form[tmpId].qtutchange.quantity = change;
+}
+
+function updateUtKey(tmpId, change) {
+  ReqObj.Form[tmpId].qtutchange.unit = change;
+}
+
+function qtutUI(tmpId) {
+  if (isSet(ReqObj.Form[tmpId].preFilledUnitDetail)) {
+    var invalue = ReqObj.Form[tmpId].preFilledUnitDetail.invalue;
+    var inputid = ReqObj.Form[tmpId].preFilledUnitDetail.id;
+    if (isSet(invalue) && invalue !== "" && isSet(inputid) && inputid !== "") {
+      if (invalue.length > 18) {
+        $("body").addClass("enqblsug");
+      } else {
+        $("body").removeClass("enqblsug");
+      }
+    }
+  }
+}
+
+function qtutEvents(tmpId) {
+  var toappend =
+    tmpId.substr(0, 2) === "09" &&
+    ReqObj.Form[tmpId].formType.toLowerCase() === "bl"
+      ? tmpId + "_" + (ReqObj.Form[tmpId].FormSequence.StepCounter + 1)
+      : tmpId;
+
+  var id2 = $(".unsug" + toappend).attr("id");
+  var id = $(".qtut" + toappend).attr("id"); // delete sugg object before creating new !
+  typeUnitSuggester(tmpId);
+  typeQuantitySuggester(tmpId);
+  $("#" + id).on("input", function (event) {
+    ReqObj.Form[tmpId].errflag = false;
+    var typedchar = $("#" + event.target.id).val();
+    if (validateInputEvent(tmpId, event) === true) {
+      if (!ReqObj.Form[tmpId].qtutsugg) {
+        typeUnitSuggester(tmpId, "from-validate");
+        typeQuantitySuggester(tmpId, "from-validate");
+      }
+      ReqObj.Form[tmpId].errflag = true;
+      ReqObj.Form[tmpId].QtUtError = false;
+      if (typedchar !== "") updateQtKey(tmpId, "filled");
+      else updateQtKey(tmpId, "empty");
+      handleErrorUI(
+        {
+          data: {
+            r_data: {
+              target: {
+                id: id,
+              },
+            },
+            tmpId: tmpId,
+          },
+        },
+        false
+      );
+      var source = modifyqutAnswers(tmpId, typedchar);
+      if (ReqObj.Form[tmpId].qtutsugg) {
+        $("#" + id).autocomplete({
+          source: source,
+        });
+      }
+    }
+    if (!isSet(ReqObj.Form[tmpId].errflag) || ReqObj.Form[tmpId].errflag)
+      handleQuantityUi({
+        data: {
+          event: event,
+          tmpId: tmpId,
+          todo: "highlight",
+        },
+      });
+  });
+
+  $("#" + id).on("keydown", function (event) {
+    // keydown events on numbers and letters only
+    if (event.which === 40 || event.which === 38) updateQtUtFields(event, true);
+  });
+
+  $("#" + id + ", #" + id2)
+    .focusout(function (event) {
+      if (!isSet(ReqObj.Form[tmpId].errflag) || ReqObj.Form[tmpId].errflag) {
+        handleQuantityUi({
+          data: {
+            event: event,
+            tmpId: tmpId,
+            todo: "removeFocus",
+          },
+        });
+      }
+    })
+    .on("focus", function (event) {
+      if (!isSet(ReqObj.Form[tmpId].errflag) || ReqObj.Form[tmpId].errflag) {
+        handleQuantityUi({
+          data: {
+            event: event,
+            tmpId: tmpId,
+            todo: "highlight",
+          },
+        });
+        if (
+          $("#" + event.target.id).val() !== "" &&
+          ReqObj.Form[tmpId].QtUtError === false
+        ) {
+          if (!ReqObj.Form[tmpId].qtutsugg) {
+            typeUnitSuggester(tmpId);
+            typeQuantitySuggester(tmpId);
+          }
+          var source = modifyqutAnswers(tmpId, $("#" + event.target.id).val());
+          if (ReqObj.Form[tmpId].qtutsugg) {
+            $("#" + id).autocomplete({
+              source: source,
+            });
+          }
+        }
+      }
+    });
+
+  // $("#" + id).on("blur", function(event) {
+  //   if (!isSet(ReqObj.Form[tmpId].errflag) || ReqObj.Form[tmpId].errflag)
+  //     handleQuantityUi({
+  //       data: {
+  //         event: event,
+  //         tmpId: tmpId,
+  //         todo: "highlight"
+  //       }
+  //     });
+  // });
+
+  $("#" + $(".unsug" + toappend).attr("id")).on("keydown", function (event) {
+    handleErrorUI(
+      {
+        data: {
+          r_data: {
+            target: {
+              id: $(".unsug" + toappend).attr("id"),
+            },
+          },
+          tmpId: tmpId,
+        },
+      },
+      false
+    );
+    if (event.which === 8) {
+      ReqObj.Form[tmpId].isUnitPrefilled = false;
+      var pfval = $("#" + id).val();
+      $("#" + id).val("");
+      $("#" + id).val(pfval);
+      if (returnType(pfval) === "num" && parseInt(pfval) !== 0) {
+        if (!ReqObj.Form[tmpId].qtutsugg) {
+          typeUnitSuggester(tmpId);
+          typeQuantitySuggester(tmpId);
+        }
+        var source = modifyqutAnswers(tmpId, pfval);
+        if (ReqObj.Form[tmpId].qtutsugg) {
+          $("#" + id).autocomplete({
+            source: source,
+          });
+        }
+      }
+    }
+  });
+
+  $("#" + $(".unsug" + toappend).attr("id")).on("input", function (event) {
+    var val = $("#" + $(".unsug" + toappend).attr("id")).val();
+    if (val !== "") updateUtKey(tmpId, "input");
+    // else updateUtKey(tmpId, "empty");
+    else {
+
+      updateUtKey(tmpId, "empty");
+      var arr = [];
+      var sarr = [];
+  
+      for (var i = 0; i < ReqObj.Form[tmpId].IsqArray.length; i++){
+        if(ReqObj.Form[tmpId].IsqArray[i].length === 2){
+          for(var j = 0 ; j < 2; j++){
+            if(ReqObj.Form[tmpId].IsqArray[i][j].IM_SPEC_MASTER_DESC.toLowerCase() === "quantity unit"){
+              arr = ReqObj.Form[tmpId].IsqArray[i][j].IM_SPEC_OPTIONS_DESC.split("##");
+            }
+          }
+        }
+        var len = arr.length;
+        for (var i = 0; i < len; i++) {
+          if (arr[i].toLowerCase() === "other" || arr[i].toLowerCase() === "others"){
+            continue;
+          }
+          else{
+            sarr.push(arr[i]);
+          }   
+        }  
+      }
+      $('#'+ id2)
+        .autocomplete({
+            source: sarr,
+            minLength: 0
+        })
+        .focus(function() {
+            $(this).autocomplete('search', $(this).val())
+        });  
+              
+    }
+
+  });
+
+  if (IsChatbl(tmpId) && $(".qtut" + toappend).length > 0) {
+    $("#t" + tmpId + "_isqBoxInput").addClass("cbl_odrq");
+  }
+}
+
+function updateQtUtFields(event, keydownp) {
+  var qt_element = $("#" + event.target.id);
+  var tmpId = event.target.id.substring(1, 5);
+  var toappend =
+    tmpId.substr(0, 2) === "09" &&
+    ReqObj.Form[tmpId].formType.toLowerCase() === "bl"
+      ? tmpId + "_" + (ReqObj.Form[tmpId].FormSequence.StepCounter + 1)
+      : tmpId;
+  var ut_element = $("#" + $(".unsug" + toappend).attr("id"));
+
+  var value = $(qt_element).val();
+  var len = value.length;
+  if (len > 0) {
+    var count = 0;
+    for (var i = 0; i < len; i++) {
+      if (returnType(value[i]) === "num") count++;
+      else break;
+    }
+    $(qt_element).val(value.substring(0, count).trim());
+    if (keydownp !== true) $(qt_element).blur(); // to remove focus
+    $(ut_element).val(value.substring(count, len).trim());
+    updateOptionId(tmpId, $(".unsug" + toappend).attr("id"));
+  }
+}
+
+function updateOptionId(tmpId, ut_element_id) {
+  var ut_element = $("#" + ut_element_id);
+  var unit = $(ut_element).val().toLowerCase();
+  newOptionId = getOptionId(tmpId, unit);
+  $(ut_element).attr("optionid", newOptionId);
+}
+
+function getOptionId(tmpId, unit) {
+  if (ReqObj.Form[tmpId].IdMapDesc.hasOwnProperty(unit.toLowerCase()))
+    newOptionId = ReqObj.Form[tmpId].IdMapDesc[unit];
+  else newOptionId = ReqObj.Form[tmpId].IdMapDesc["other"];
+
+  return isSet(newOptionId) ? newOptionId : "";
+}
+
+function modifyqutAnswers(tmpId, typedchar) {
+  //var typedchar = "" + parseInt(typedchar) + "";
+  if (typedchar !== "" && typedchar.length > 0) {
+    var getcharCode = typedchar[typedchar.length - 1].charCodeAt(0);
+    if (
+      (getcharCode >= 65 && getcharCode <= 90) ||
+      (getcharCode >= 97 && getcharCode <= 122)
+    ) {
+      typedchar = typedchar.substring(0, typedchar.length - 1);
+    }
+    var arr = JSON.parse(JSON.stringify(removeRepeated(tmpId)));
+    var len = arr.length;
+    for (var i = 0; i < len; i++) {
+      if (arr[i].toLowerCase() !== "other" && arr[i].toLowerCase() !== "others")
+        if (arr[i].toLowerCase() !== "none") arr[i] = typedchar + " " + arr[i];
+    }
+    return arr;
+  }
+}
+
+function removeRepeated(tmpId, start) {
+  var toappend =
+    tmpId.substr(0, 2) === "09" &&
+    ReqObj.Form[tmpId].formType.toLowerCase() === "bl"
+      ? tmpId + "_" + (ReqObj.Form[tmpId].FormSequence.StepCounter + 1)
+      : tmpId;
+
+  var arr = [];
+  var len = ReqObj.Form[tmpId].qutAnswers.length;
+  var ans = ReqObj.Form[tmpId].qutAnswers;
+  var ut_element_value = $("#" + $(".unsug" + toappend).attr("id")).val();
+  if (isSet(ut_element_value)) {
+    ut_element_value = ut_element_value.trim();
+    for (var i = 0; i < len; i++) {
+      if (ans[i].toLowerCase() !== ut_element_value.toLowerCase()) {
+        arr.push(ans[i]);
+      }
+    }
+  }
+  return arr;
+}
+
+function checkLastInput(tmpId, event) {
+  var firstval = $("#" + event.target.id)
+    .val()
+    .substring(0, 1);
+  var firstkeytype = returnType(firstval);
+  return firstkeytype === "num" && parseInt(firstval) !== 0
+    ? "valid"
+    : "invalid";
+}
+
+function checkInBetween(tmpId, event) {
+  // less than 2 - will be undefined !
+  var totallen = $("#" + event.target.id).val().length;
+  if (totallen === 2)
+    var val = $("#" + event.target.id)
+      .val()
+      .substring(0, totallen);
+  else if (totallen > 2)
+    var val = $("#" + event.target.id)
+      .val()
+      .substring(1, totallen);
+  return /^[a-zA-Z0-9 ]*$/.test(val) === false ? "invalid" : "valid"; // if not numbers/letters - invalid
+}
+
+function validateInputEvent(tmpId, event) {
+  var r_data = event;
+  var pressedKey = event.originalEvent["data"];
+  var totallen = $("#" + event.target.id).val().length;
+  var div_val = $("#" + event.target.id).val() * 1;
+  var keyType = returnType(pressedKey);
+  if (totallen === 1) {
+    if (keyType === "char") {
+      handleQuantityUi({
+        data: {
+          r_data: r_data,
+          tmpId: tmpId,
+          toEmpty: "none",
+          msg: "Quantity must be numeric",
+          type: false,
+        },
+      });
+      return false;
+    } else if (keyType === "num" && parseInt(pressedKey) === 0) {
+      handleQuantityUi({
+        data: {
+          r_data: r_data,
+          tmpId: tmpId,
+          toEmpty: "none",
+          msg: "Quantity should not be '0'",
+          type: false,
+        },
+      });
+      return false;
+    }
+    handleErrorUI(
+      {
+        data: {
+          r_data: r_data,
+          tmpId: tmpId,
+        },
+      },
+      false
+    );
+    if (keyType === "spchar") {
+      handleQuantityUi({
+        data: {
+          r_data: r_data,
+          tmpId: tmpId,
+          toEmpty: "none",
+          msg: "Enter a valid Quantity",
+        },
+      });
+      return false;
+    }
+    if (keyType === "backspace") {
+      if (checkLastInput(tmpId, event) === "invalid") {
+        var mssg =
+          div_val === 0
+            ? "Quantity should not be '0'"
+            : "Enter a valid Quantity";
+        handleQuantityUi({
+          data: {
+            r_data: r_data,
+            tmpId: tmpId,
+            toEmpty: "none",
+            msg: mssg,
+            type: false,
+          },
+        });
+        return false;
+      }
+    }
+    return true;
+  } else {
+    if (totallen === 0) return true;
+    if (checkLastInput(tmpId, event) === "invalid") {
+      var mssg =
+        parseInt(pressedKey) === 0
+          ? "Quantity should not be '0'"
+          : "Enter a valid Quantity";
+
+      handleQuantityUi({
+        data: {
+          r_data: r_data,
+          tmpId: tmpId,
+          toEmpty: "none",
+          msg: mssg,
+          type: false,
+        },
+      });
+      return false;
+    }
+    if (keyType === "spchar") {
+      handleQuantityUi({
+        data: {
+          r_data: r_data,
+          tmpId: tmpId,
+          toEmpty: "none",
+          msg: "Enter a valid Quantity",
+          type: false,
+        },
+      });
+      return false;
+    }
+    if (keyType === "backspace") {
+      if (checkInBetween(tmpId, event) === "invalid") {
+        handleQuantityUi({
+          data: {
+            r_data: r_data,
+            tmpId: tmpId,
+            toEmpty: "none",
+            msg: "Enter a valid Quantity",
+            type: false,
+          },
+        });
+
+        return false;
+      }
+      return true;
+    }
+    if (keyType === "char" || keyType === "num") {
+      if (checkInBetween(tmpId, event) === "invalid") {
+        handleQuantityUi({
+          data: {
+            r_data: r_data,
+            tmpId: tmpId,
+            toEmpty: "none",
+            msg: "Enter a valid Quantity",
+            type: false,
+          },
+        });
+        return false;
+      } else if (keyType === "char") {
+        handleQuantityUi({
+          data: {
+            r_data: r_data,
+            tmpId: tmpId,
+            toEmpty: "lastChar",
+            type: true,
+            pressedKey: pressedKey,
+          },
+        });
+        updateUtKey(tmpId, "input");
+      }
+    }
+    handleErrorUI(
+      {
+        data: {
+          r_data: r_data,
+          tmpId: tmpId,
+        },
+      },
+      false
+    );
+    return true;
+  }
+}
+
+function returnType(pressedKey) {
+  if (typeof pressedKey === "undefined" || pressedKey === null) {
+    return "backspace";
+  }
+  var getcharCode = pressedKey.charCodeAt(0);
+  if (
+    (getcharCode >= 65 && getcharCode <= 90) ||
+    (getcharCode >= 97 && getcharCode <= 122)
+  ) {
+    return "char";
+  } else if (getcharCode >= 48 && getcharCode <= 57) {
+    return "num";
+  } else return "spchar";
+}
+/* ---------------CSS HANDLING-----------------------*/
+  
+function returnCharPos(typedChar, pressedKey) {
+  var len = typedChar.length;
+  for (var i = 0; i < len; i++) {
+    if (typedChar.charAt(i) === pressedKey) {
+      return i;
+    }
+  }
+  return -1;
+}
+
+function handleQuantityUi(event) {
+  if (event.data.toEmpty === "none") {
+    ReqObj.Form[event.data.tmpId].QtUtError = true;
+    handleErrorUI(event, true);
+  }
+  if (event.data.toEmpty === "lastChar") {
+    var typedChar = $("#" + event.data.r_data.target.id).val();
+    var len = $("#" + event.data.r_data.target.id).val().length;
+    if (event.data.type === false) {
+      $("#" + event.data.r_data.target.id).val(typedChar.substring(0, len - 1));
+      ReqObj.Form[event.data.tmpId].QtUtError = true;
+      handleErrorUI(event, true);
+    } else {
+      var pos = returnCharPos(typedChar, event.data.pressedKey);
+      len = pos !== -1 ? pos : len;
+      var toappend =
+        event.data.tmpId.substr(0, 2) === "09" &&
+        ReqObj.Form[event.data.tmpId].formType.toLowerCase() === "bl"
+          ? event.data.tmpId +
+            "_" +
+            (ReqObj.Form[event.data.tmpId].FormSequence.StepCounter + 1)
+          : event.data.tmpId;
+
+      $("#" + event.data.r_data.target.id).val(typedChar.substring(0, len));
+      $("#" + $(".unsug" + toappend).attr("id")).focus();
+      if ($("#" + $(".unsug" + toappend).attr("id")).is("focus")) {
+        $("#" + $(".unsug" + toappend).attr("id")).val(event.data.pressedKey);
+      } else {
+        $("#" + $(".unsug" + toappend).attr("id"))
+          .focus()
+          .click();
+        $("#" + $(".unsug" + toappend).attr("id")).val(event.data.pressedKey);
+      }
+    }
+  }
+  if (event.data.todo === "highlight") {
+    var tmpId = event.data.tmpId;
+    var toappendhr =
+      event.data.tmpId.substr(0, 2) === "09" &&
+      ReqObj.Form[event.data.tmpId].formType.toLowerCase() === "bl"
+        ? event.data.tmpId +
+          "_" +
+          (ReqObj.Form[event.data.tmpId].FormSequence.StepCounter + 1)
+        : event.data.tmpId;
+    var cls =
+      isSSB(tmpId) && isnewSSB(tmpId)
+        ? "qut_cus_active nb_cus_qt"
+        : tmpId.substr(0, 2) === "01" &&
+          isGlIdEven(tmpId) &&
+          ReqObj.Form[tmpId].screenNumber === 0
+        ? "qut_cus_active inEql_cus_active"
+        : "qut_cus_active";
+    $(".qtut" + toappendhr)
+      .parent()
+      .addClass(cls);
+    $("#t" + event.data.tmpId + "qut_id").addClass(cls);
+  }
+
+  if (event.data.todo === "removeFocus") {
+    var tmpId = event.data.tmpId;
+    var cls =
+      isSSB(tmpId) && isnewSSB(tmpId)
+        ? "qut_cus_active nb_cus_qt"
+        : tmpId.substr(0, 2) === "01" &&
+          isGlIdEven(tmpId) &&
+          ReqObj.Form[tmpId].screenNumber === 0
+        ? "qut_cus_active inEql_cus_active"
+        : "qut_cus_active";
+    $("#t" + event.data.tmpId + "qut_id").removeClass(cls);
+  }
+}
+
+function handleErrorUI(event, showError) {
+  var toappend =
+    event.data.tmpId.substr(0, 2) === "09" &&
+    ReqObj.Form[event.data.tmpId].formType.toLowerCase() === "bl"
+      ? event.data.tmpId +
+        "_" +
+        (ReqObj.Form[event.data.tmpId].FormSequence.StepCounter + 1)
+      : event.data.tmpId;
+  var formType = ReqObj.Form[event.data.tmpId].formType.toLowerCase();
+  var errorCls =
+    formType === "bl"
+      ? "redc"
+      : isMoglixUi(event.data.tmpId)
+      ? "be-erbx beerrp"
+      : "beerrp sper";
+  if (IsChatbl(event.data.tmpId))
+    showError
+      ? addChatblError(event.data.tmpId, event.data.msg)
+      : removechatblerror(event.data.tmpId);
+  else if (showError === true) {
+    $("#t" + toappend + "_validinev")
+      .html(event.data.msg)
+      .removeClass("bedsnone")
+      .addClass(errorCls);
+    $(".qtut" + toappend)
+      .parent()
+      .addClass("qut_cus_active");
+    $("#" + event.data.r_data.target.id).removeClass("highlight-err");
+    $("#t" + event.data.tmpId + "qut_id").removeClass("qut_cus_active");
+  } else if (showError === false) {
+    $("#t" + toappend + "_validinev")
+      .html("")
+      .addClass("bedsnone")
+      .removeClass(errorCls);
+    $("#" + event.data.r_data.target.id).removeClass("highlight-err");
+  }
+}
+
+function handleQuantityUiErrorMsg(event) {
+  if (IsChatbl(event.data.tmpId)) {
+    addChatblError(event.data.tmpId, event.data.errorObject.msg);
+  } else {
+    var formType = ReqObj.Form[event.data.tmpId].formType.toLowerCase();
+    var errorClass =
+      formType === "enq"
+        ? isMoglixUi(event.data.tmpId)
+          ? "be-erbx " + event.data.errorClass
+          : event.data.errorClass
+        : "redc";
+    if (
+      event.data.option_type == "quantity" ||
+      event.data.option_type == "quantity unit"
+    ) {
+      var toappend =
+        event.data.tmpId.substr(0, 2) === "09" &&
+        ReqObj.Form[event.data.tmpId].formType.toLowerCase() === "bl"
+          ? event.data.tmpId +
+            "_" +
+            (ReqObj.Form[event.data.tmpId].FormSequence.StepCounter + 1)
+          : event.data.tmpId;
+      $("#t" + toappend + "_validinev")
+        .html(event.data.errorObject.msg)
+        .removeClass("bedsnone")
+        .addClass(errorClass);
+    } else if (event.data.option_type == "text") {
+      var inputid = $(event.data.errorSelect).attr("id");
+      $("#" + inputid + "_err").removeClass("bedsnone");
+    } else {
+      $(event.data.errorSelect + "_err").removeClass("bedsnone");
+    }
+    $(event.data.errorSelect).addClass("highlight-err");
+    if (isSSB(event.data.tmpId)) $(event.data.errorSelect).focus();
+    $(event.data.errorSelect)
+      .off("click keyup")
+      .on("click keyup", function () {
+        event.data.option_type == "quantity unit"
+          ? $("#t" + toappend + "_validinev").addClass("bedsnone")
+          : event.data.option_type == "text"
+          ? $("#" + inputid + "_err").addClass("bedsnone")
+          : $(event.data.errorSelect + "_err").addClass("bedsnone");
+        $(event.data.errorSelect).removeClass("highlight-err");
+      });
+  }
+}
+/* ---------------CSS HANDLING-----------------------*/
+
+/* ---------------CSS HANDLING-----------------------*/
+
+function onSelectQtUt(event) {
+  ReqObj.Form[event.target.id.substring(1, 5)].IsqQtUtEvents["onselect"] = true;
+  updateUtKey(event.target.id.substring(1, 5), "isq");
+  updateQtUtFields(event);
+}
+
+function typeQuantitySuggester(tmpId, where) {
+  var imeshcookie = imeshExist();
+  var qtut_sugg = "";
+  var toappend =
+    tmpId.substr(0, 2) === "09" &&
+    ReqObj.Form[tmpId].formType.toLowerCase() === "bl"
+      ? tmpId + "_" + (ReqObj.Form[tmpId].FormSequence.StepCounter + 1)
+      : tmpId;
+  ReqObj.Form[tmpId].qtutsugg = false;
+  if (typeof Suggester !== "undefined") {
+    suggClass = IsChatbl(tmpId)
+      ? IsChatBLInline(tmpId)
+        ? "cus_qt smcbl_qt"
+        : "cus_qt chatbl_qt"
+      : isSSB(tmpId)
+      ? isnewSSB(tmpId)
+        ? "cus_qt nb-cus-qt"
+        : "cus_qt mb-cus-qt"
+      : isBlInline(tmpId) ||
+        (isGlIdEven(tmpId) &&
+          tmpId.substr(0, 2) === "01" &&
+          where === "from-validate")
+      ? "cus_qt inEql_cus_qt"
+      : isBlFirstfold(tmpId)
+      ? imeshcookie == "" && currentISO() == "IN"
+        ? "cus_qt inEql_cus_qtun"
+        : "cus_qt inEql_cus_qtid"
+      : "cus_qt";
+    qtut_sugg = new Suggester({
+      onSelect: onSelectQtUt,
+      element: $(".qtut" + toappend).attr("id"),
+      minStringLengthToFetchSuggestion: 1,
+      updateCache: false,
+      autocompleteClass: suggClass,
+      minStringLengthToDisplaySuggestion: 1,
+      source: [],
+      postValUpd: false,
+      tmpId: false,
+      rowsToDisplay: "5",
+      type: "custom",
+    });
+    ReqObj.Form[tmpId].qtutsugg = true;
+  }
+}
+
+function updateoption(event) {
+  var tmpId = event.target.id.substr(1, 4);
+  updateOptionId(tmpId, event.target.id);
+  updateUtKey(tmpId, "sugg");
+}
+
+function typeUnitSuggester(tmpId, where) {
+  var imeshcookie = imeshExist();
+  var unit_sugg = "";
+  let arr = [];
+  
+  for (var i = 0; i < ReqObj.Form[tmpId].IsqArray.length; i++){
+    if(ReqObj.Form[tmpId].IsqArray[i].length === 2){
+      for(var j = 0 ; j < 2; j++){
+        if(ReqObj.Form[tmpId].IsqArray[i][j].IM_SPEC_MASTER_DESC.toLowerCase() === "quantity unit"){
+          
+          arr = ReqObj.Form[tmpId].IsqArray[i][j].IM_SPEC_OPTIONS_DESC.split("##");
+        }
+      }
+      
+    }
+  }
+  // console.log(arr);
+  var toappend =
+    tmpId.substr(0, 2) === "09" &&
+    ReqObj.Form[tmpId].formType.toLowerCase() === "bl"
+      ? tmpId + "_" + (ReqObj.Form[tmpId].FormSequence.StepCounter + 1)
+      : tmpId;
+  if (typeof Suggester !== "undefined") {
+    suggClass = IsChatbl(tmpId)
+      ? IsChatBLInline(tmpId)
+        ? "cus_ut smcbl_ut"
+        : "cus_ut chatbl_ut"
+      : isSSB(tmpId)
+      ? isnewSSB(tmpId)
+        ? "cus_ut nb-cus-ut"
+        : "cus_ut mb-cus-ut"
+      : isBlInline(tmpId) ||
+        (isGlIdEven(tmpId) &&
+          tmpId.substr(0, 2) === "01" &&
+          where === "from-validate")
+      ? "cus_ut inEql_cus_ut"
+      : isBlFirstfold(tmpId)
+      ? imeshcookie == "" && currentISO() == "IN"
+        ? "cus_ut inEql_cus_utun"
+        : "cus_ut inEql_cus_utid"
+      : "cus_ut";
+    row_num_ut = IsChatbl(tmpId) ? "3" : "5";
+    unit_sugg = new Suggester({
+      element: $(".unsug" + toappend).attr("id"),
+      onSelect: updateoption,
+      placeholder: "",
+      classPlaceholder: "",
+      source: arr,
+      minStringLengthToFetchSuggestion: 1,
+      updateCache: false,
+      autocompleteClass: suggClass,
+      type: "custom",
+      minStringLengthToDisplaySuggestion: 1,
+      rowsToDisplay: row_num_ut,
+    });
+    ReqObj.Form[tmpId].unitSuggester.push(unit_sugg);
+    
+  }
+}
+
+function MakeLabel(labelObj, descriptionHtml, tmpId) {
+  if (IsChatbl(tmpId)) {
+    return ChatBlMsgs(labelObj.QuestionDesc);
+  } else if (isSSB(tmpId))
+    return MakeSSBLabel(labelObj, descriptionHtml, tmpId);
+  else if (isBlInline(tmpId)) {
+    var label =
+      isBlInlineFr(tmpId) && labelObj.flag === "1"
+        ? "<label class='" +
+          labelObj.lblClass +
+          "' id='" +
+          labelObj.labelId +
+          "'"
+        : "<label class='fs15 cl11' id='" + labelObj.labelId + "'";
+    if (isSet(labelObj.questionId) && labelObj.questionId !== "")
+      Label += "quesid='" + labelObj.questionId + "'";
+    label += ">" + labelObj.QuestionDesc + "</label>";
+    return label;
+  } else {
+    var lbdiv = labelObj["lblin"] === true ? "tllb pr" : "";
+    var Label =
+      "<div class='" +
+      lbdiv +
+      "'><label class='" +
+      labelObj.lblClass +
+      "' id='" +
+      labelObj.labelId +
+      "'";
+    if (isSet(labelObj.questionId) && labelObj.questionId !== "")
+      Label += "quesid='" + labelObj.questionId + "'";
+    Label += ">" + labelObj.QuestionDesc + "</label>";
+    if (isSet(descriptionHtml)) Label += descriptionHtml;
+    Label += "</div>";
+    return Label;
+  }
+}
+
+function LabelForCheckAndRadio(labelObj, descriptionHtml, tmpId, HelpLabel) {
+  if (IsChatbl(tmpId)) {
+    return ChatBlMsgs(labelObj.QuestionDesc, labelObj.type);
+  } else if (isSSB(tmpId)) {
+    return SSBChkBxAndRadButLabel(labelObj, descriptionHtml, tmpId, HelpLabel);
+  } else if (isBlInline(tmpId)) {
+    return (
+      "<label id=" +
+      labelObj.labelId +
+      " quesid='" +
+      labelObj.questionId +
+      "' class = 'fs15 cl11'>" +
+      labelObj.QuestionDesc +
+      "</label>"
+    );
+  } else {
+    return (
+      "<div class='beclr'></div><div class='be-dvtxt bewauto bepr tllb'><label id=" +
+      labelObj.labelId +
+      " quesid='" +
+      labelObj.questionId +
+      "' class='" +
+      (labelObj.lblClass || "") +
+      "' >" +
+      labelObj.QuestionDesc +
+      "</label>" +
+      HelpLabel +
+      descriptionHtml +
+      "</div><div class='beclr'></div>"
+    );
+  }
+}
+
+/**
+ *@description takes input parameter and returns the HTML for the different error blocks
+ *
+ *
+ * @returns HTML for the error block
+ */
+function errorBlockFunction(errorObject, tmpId) {
+  if (!isSet(errorObject) || $.isEmptyObject(errorObject)) return "";
+  else {
+    if (IsChatbl(tmpId)) {
+      addChatblError(tmpId, errorObject.msg);
+      return "";
+    } else {
+      return (
+        "<div  class='be-erbx isq_error_block " +
+        errorObject.error_block_class +
+        "'><div data-role='content'>" +
+        errorObject.msg +
+        "</div><a class='be-erarw " +
+        errorObject.anchor_class +
+        "'  data-role='arrow'></a></div>"
+      );
+    }
+  }
+}
+
+function Tooltip(inputType, desc) {
+  var descriptionHtml = "";
+  if (isSet(inputType) && isSet(desc) && desc !== "") {
+    if (inputType.toLowerCase() === "text") {
+      descriptionHtml = FullDescHtml({
+        div1Class: "int-ct1 info_iconeqbl",
+        div2Class: "blnewform_sprit inft",
+        div3Class: "nwarN bedsnone full_desc Tp8",
+        fullDesc: desc,
+      });
+    } else if (inputType.toLowerCase() === "select") {
+      descriptionHtml = FullDescHtml({
+        div1Class: "int-ct3 info_iconeqbl",
+        div2Class: "blnewform_sprit inft",
+        div3Class: "nwarN bedsnone full_desc Tp8",
+        fullDesc: desc,
+      });
+    } else if (inputType.toLowerCase() === "radio") {
+      descriptionHtml += FullDescHtml({
+        div1Class: "int-ct1 info_iconeqbl",
+        div2Class: "blnewform_sprit inft tn6",
+        div3Class: "nwarN bedsnone full_desc",
+        fullDesc: desc,
+      });
+    } else if (inputType.toLowerCase() === "check") {
+      descriptionHtml += FullDescHtml({
+        div1Class: "int-ct1 info_iconeqbl",
+        div2Class: "blnewform_sprit inft tn6",
+        div3Class: "nwarN bedsnone full_desc",
+        fullDesc: desc,
+      });
+    }
+    if (isSet(descriptionHtml)) return descriptionHtml;
+    else return "";
+  }
+  return descriptionHtml;
+}
+
+/**
+ *@description returns the textbox html for the ISQ
+ *
+ *
+ * @returns HTML for the text block
+ */
+
+function TextBoxHTML(textboxObject, desc) {
+  var descriptionHtml = "";
+  if (isSet(desc) && desc !== "") {
+    textboxObject.lblClass += " bedbtip";
+    descriptionHtml = FullDescHtml({
+      div1Class: "int-ct3 info_iconeqbl",
+      div2Class: "blnewform_sprit inft",
+      div3Class: "nwarN bedsnone full_desc Tp8",
+      fullDesc: desc,
+    });
+  }
+  var textHTML =
+    "<div class='" +
+    textboxObject.divClass +
+    "'>" +
+    MakeLabel(textboxObject, descriptionHtml) +
+    TextBoxIp(textboxObject);
+
+  return textHTML;
+}
+
+function returnFirstPrefilledUnit(tmpId) {
+  if (
+    isSet(ReqObj.Form[tmpId].userFilledIsq) &&
+    isSet(ReqObj.Form[tmpId].userFilledIsq[1]) &&
+    isSet(ReqObj.Form[tmpId].userFilledIsq[1].optionsValue) &&
+    ReqObj.Form[tmpId].userFilledIsq[1].optionsValue !== ""
+  ) {
+    return handleSpecialQuotes(
+      ReqObj.Form[tmpId].userFilledIsq[1].optionsValue
+    );
+  } else return "";
+}
+
+function TextBoxIp(textboxObject, addLabel, addvalue) {
+  var invalue =
+    isSet(addvalue) && addvalue === true
+      ? isSet(textboxObject.ans) && textboxObject.ans != ""
+        ? textboxObject.ans[0]
+        : ReqObj.Form[textboxObject.inputId.substring(1, 5)].qutAnswers[0]
+      : typeof textboxObject.ans == "string"
+      ? textboxObject.ans
+      : textboxObject.ans.length === 0
+      ? ""
+      : textboxObject.ans[0];
+  invalue = handleSpecialQuotes(invalue);
+  invalue =
+    textboxObject.type === "ut" &&
+    (invalue.toLowerCase() === "none" ||
+      invalue.toLowerCase() === "other" ||
+      invalue.toLowerCase() === "others")
+      ? ""
+      : invalue;
+  var tmpId = textboxObject.inputId.substring(1, 5);
+  var prefil = returnFirstPrefilledUnit(tmpId);
+  invalue =
+    textboxObject.type === "ut" &&
+    typeof prefil !== "undefined" &&
+    prefil !== ""
+      ? prefil
+      : invalue;
+  invalue =
+    textboxObject.type === "ut"
+      ? invalue.charAt(0).toUpperCase() + invalue.slice(1)
+      : invalue;
+  if (textboxObject.QuestionDesc.toLowerCase() === "quantity unit") {
+    ReqObj.Form[tmpId].isUnitPrefilled = invalue !== "" ? true : false;
+    ReqObj.Form[tmpId].preFilledUnitDetail = {
+      invalue: invalue,
+      id: textboxObject.inputId,
+    };
+  }
+  var inhtml =
+    isSet(addLabel) && addLabel === true
+      ? "<label id='" +
+        textboxObject.labelId +
+        "' class='" +
+        textboxObject.lblClass +
+        "'>" +
+        textboxObject.QuestionDesc +
+        "</label>"
+      : "";
+  var locprop = "";
+  var isq_msg = textboxObject["QuestionDesc"].toLowerCase();
+  if (
+    isq_msg == "pickup location" ||
+    isq_msg == "drop location" ||
+    isq_msg == "pickup city" ||
+    isq_msg == "drop city"
+  ) {
+    locprop =
+      '" maxlength = "100" autocomplete = "off" role = "textbox" aria-autocomplete="list" aria-haspopup="true"';
+    textboxObject.inputClass += " ui-autocomplete-input";
+    ReqObj.Form[tmpId].locisqId.push(textboxObject.inputId);
+  }
+  return (
+    inhtml +
+    "<input type='text' class='" +
+    textboxObject.inputClass +
+    "' id='" +
+    textboxObject.inputId +
+    "' name='" +
+    textboxObject.inputName +
+    "' optionid = '" +
+    textboxObject.optionId +
+    "' maxlength='" +
+    textboxObject.maxlength +
+    "' autocomplete='off' value='" +
+    invalue +
+    "' role='textbox' placeholder = '" +
+    textboxObject.placeholder +
+    "'" +
+    locprop +
+    "/>"
+  );
+}
+
+/**
+ *@description returns the selectbox html for the ISQ
+ *
+ *
+ * @returns HTML for the select block
+ */
+function SelectBox(SelectObject, desc) {
+  var descriptionHtml = "";
+  if (isSet(desc) && desc !== "") {
+    SelectObject.lblClass += " bedbtip";
+    descriptionHtml = FullDescHtml({
+      div1Class: "int-ct3 info_iconeqbl",
+      div2Class: "blnewform_sprit inft",
+      div3Class: "nwarN bedsnone full_desc Tp8",
+      fullDesc: desc,
+    });
+  }
+
+  var selectbox =
+    "<div class='" +
+    SelectObject.divClass +
+    "'>" +
+    MakeLabel(SelectObject, descriptionHtml) +
+    "<select class='" +
+    SelectObject.selectClass +
+    "'";
+  if (typeof SelectObject.onchange !== "undefined" && SelectObject.onchange) {
+    selectbox += " onchange = 'funcOth(id)'";
+  }
+  selectbox +=
+    " name='" +
+    SelectObject.selectName +
+    "' id='" +
+    SelectObject.selectId +
+    "'><option value=''>" +
+    SelectObject.optionValue +
+    "</option>";
+  return selectbox;
+}
+
+function SelectBoxIp(SelectObject, tmpId) {
+  var element = IsChatbl(tmpId) ? "ul" : "select";
+  var htmlofsel = "<" + element + " class='" + SelectObject.selectClass + "'";
+  if (typeof SelectObject.onchange !== "undefined" && SelectObject.onchange) {
+    htmlofsel += " onchange = 'funcOth(id)'";
+  }
+  htmlofsel +=
+    " name='" +
+    SelectObject.selectName +
+    "' id='" +
+    SelectObject.selectId +
+    "'>";
+  htmlofsel += IsChatbl(tmpId)
+    ? "<li value='' disabled = 'true'>" + SelectObject.optionValue + "</li>"
+    : "<option value=''>" + SelectObject.optionValue + "</option>";
+  return htmlofsel;
+}
+
+/**
+ *@description returns the others box  html for checkoox and radio box
+ *
+ *
+ * @returns string
+ */
+
+function OthersBox(OtherBoxObject, tmpId) {
+  var html = "<div class='" + OtherBoxObject.divClass + "'><input type='text'";
+  html += IsChatbl(tmpId)
+    ? "class='cbl_othinpt be-input isq_txtbx isq-st2'"
+    : isSSB(tmpId)
+    ? " class='be-input'"
+    : " class='be-input isq_txtbx isq-st2' ";
+  html +=
+    " name='" +
+    OtherBoxObject.inputName +
+    "' id='" +
+    OtherBoxObject.inputId +
+    "' placeholder='Other Option' value='" +
+    OtherBoxObject.ans +
+    "'>";
+  html += isSSB(tmpId)
+    ? "</div>"
+    : "<label for='" +
+      OtherBoxObject.inputId +
+      "' optionid = " +
+      OtherBoxObject.optionId +
+      "></label></div>";
+  return html;
+}
+
+function FullDescHtml(fullDescObject) {
+  return (
+    "<div class='" +
+    fullDescObject.div1Class +
+    "'><div class='" +
+    fullDescObject.div2Class +
+    "'></div><div class='" +
+    fullDescObject.div3Class +
+    "'>" +
+    fullDescObject.fullDesc +
+    "</div></div>"
+  );
+}
+
+function CheckBox(tmpId, CheckboxObject, errorObject) {
+  var html =
+    "<div class='" +
+    CheckboxObject.divClass1 +
+    "'>" +
+    errorBlockFunction(errorObject) +
+    "<input type='checkbox' class='" +
+    CheckboxObject.inputClass +
+    " ' name='" +
+    CheckboxObject.templateId +
+    "checkbox_name" +
+    CheckboxObject.questionCount +
+    "' id='" +
+    CheckboxObject.templateId +
+    "checkbox_name" +
+    CheckboxObject.questionCount +
+    "_option" +
+    parseInt(CheckboxObject.i + 1) +
+    "' value='" +
+    CheckboxObject.option_desc +
+    "'" +
+    CheckboxObject.checked +
+    "><label optionid=" +
+    CheckboxObject.option_id +
+    "  for='" +
+    CheckboxObject.templateId +
+    "checkbox_name" +
+    CheckboxObject.questionCount +
+    "_option" +
+    parseInt(CheckboxObject.i + 1) +
+    "' class='" +
+    CheckboxObject.labelClass +
+    "'>";
+  html +=
+    IsChatbl(tmpId) || isSSB(tmpId)
+      ? ""
+      : "<div class='bechk-in bebr4'><div class='" +
+        CheckboxObject.divClass2 +
+        "'></div></div>";
+  html += isSSB(tmpId)
+    ? CheckboxObject.option_desc + "</label></div>"
+    : "<span class='" +
+      CheckboxObject.spanClass +
+      "' >" +
+      CheckboxObject.option_desc +
+      "</span></label></div>";
+  return html;
+}
+
+function RadioBox(tmpId, RadioboxObject, errorObject) {
+  var screen_no =
+    tmpId.substr(0, 2) === "09" &&
+    ReqObj.Form[tmpId].formType.toLowerCase() === "bl"
+      ? ReqObj.Form[tmpId].FormSequence.StepCounter + 1
+      : "";
+  var toadd =
+    screen_no !== ""
+      ? RadioboxObject.templateId + "_" + screen_no
+      : RadioboxObject.templateId;
+
+  var RadioDiv =
+    "<div class='" +
+    RadioboxObject.divClass1 +
+    "'>" +
+    errorBlockFunction(errorObject) +
+    "<input type='radio' class='" +
+    RadioboxObject.inputClass +
+    "' name='" +
+    RadioboxObject.templateId +
+    "radio_name" +
+    RadioboxObject.questionCount +
+    screen_no +
+    "' id='" +
+    toadd +
+    "_radio_name" +
+    RadioboxObject.questionCount +
+    "_option" +
+    parseInt(RadioboxObject.i + 1) +
+    "' value='" +
+    RadioboxObject.option_desc +
+    "'" +
+    RadioboxObject.checked +
+    "><label optionid=" +
+    RadioboxObject.option_id +
+    " for='" +
+    toadd +
+    "_radio_name" +
+    RadioboxObject.questionCount +
+    "_option" +
+    parseInt(RadioboxObject.i + 1);
+  RadioDiv += isSSB(tmpId)
+    ? "' class='" + ssbClass("radlbl", tmpId) + "'"
+    : "' class='bepr'";
+  if (isSet(RadioboxObject.cityFunc)) {
+    RadioDiv += RadioboxObject.cityFunc;
+  }
+  RadioDiv += ">";
+  RadioDiv +=
+    IsChatbl(tmpId) || isSSB(tmpId)
+      ? ""
+      : "<div class='bechk-in'><div class='" +
+        RadioboxObject.divClass2 +
+        "'></div></div>";
+  RadioDiv +=
+    "<span class='" +
+    RadioboxObject.spanClass +
+    "' id='" +
+    toadd +
+    "_rad_chk" +
+    RadioboxObject.questionCount +
+    "_option" +
+    parseInt(RadioboxObject.i + 1) +
+    "' >" +
+    RadioboxObject.option_desc +
+    "</span></label></div>";
+  return RadioDiv;
+}
+
+function StructureIsq(tmpId, user) {
+  if (isSet(ReqObj.Form[tmpId].plsqArr) && ReqObj.Form[tmpId].plsqArr !== "") {
+    var res = ReqObj.Form[tmpId].plsqArr.split("#");
+    res = isSet(res) ? res : "";
+    for (var counter = 0; counter !== res.length; counter++) {
+      var ques_arr = res[counter].split(":");
+      ques_arr[0] = trimVal(unescape(ques_arr[0]).toLowerCase());
+      if (BlEnqGenerated(tmpId)) {
+        ReqObj.Form[tmpId].preFilledIsq[ques_arr[0]] = unescape(ques_arr[1]);
+        if (
+          isSet(ReqObj.Form[tmpId].preFilledIsq[ques_arr[0]]) &&
+          ques_arr[0] !== "preferred_location"
+        ) {
+          //to convert all the prefill isq in lower case
+          ReqObj.Form[tmpId].preFilledIsq[ques_arr[0]] =
+            ReqObj.Form[tmpId].preFilledIsq[ques_arr[0]].split(", ");
+        }
+      } else {
+        var updatedIsq = unescape(ques_arr[1]);
+        if (isSet(updatedIsq)) {
+          updatedIsq = updatedIsq.split(", ");
+          updatedIsq = isSet(updatedIsq) ? updatedIsq : "";
+          if (updatedIsq.length === 1)
+            ReqObj.Form[tmpId].preFilledIsq[ques_arr[0]] = updatedIsq;
+          else ReqObj.Form[tmpId].preFilledIsq[ques_arr[0]] = [];
+        }
+      }
+
+      if (ReqObj.Form[tmpId].preFilledIsq[ques_arr[0]] instanceof Array) {
+        for (
+          var prefillIsqloop = 0;
+          prefillIsqloop < ReqObj.Form[tmpId].preFilledIsq[ques_arr[0]].length;
+          prefillIsqloop++
+        ) {
+          ReqObj.Form[tmpId].preFilledIsq[ques_arr[0]][prefillIsqloop] =
+            trimVal(
+              ReqObj.Form[tmpId].preFilledIsq[ques_arr[0]][prefillIsqloop]
+            );
+        }
+      }
+    }
+
+    //run a loop here to lowercase all values
+  }
+  for (var i = 0; i < ReqObj.Form[tmpId].userFilledIsq.length; i++) {
+    if (
+      notEmpty(ReqObj.Form[tmpId].userFilledIsq[i].questionsDesc) &&
+      notEmpty(ReqObj.Form[tmpId].userFilledIsq[i].optionsValue)
+    ) {
+      var answer = ReqObj.Form[tmpId].userFilledIsq[i].optionsValue.split(", ");
+      answer = isSet(answer) ? answer : "";
+      for (var j = 0; j < answer.length; j++) {
+        if (isSet(answer[j])) answer[j] = trimVal(answer[j]);
+      }
+      ReqObj.Form[tmpId].preFilledIsq[
+        ReqObj.Form[tmpId].userFilledIsq[i].questionsDesc.toLowerCase()
+      ] = answer;
+    }
+  }
+  if (ReqObj.Form[tmpId].preFilledIsq.quantity) {
+    //quantity '0' check
+    if (ReqObj.Form[tmpId].preFilledIsq.quantity[0][0] == "0") {
+      ReqObj.Form[tmpId].preFilledIsq.quantity[0] = "";
+      ReqObj.Form[tmpId].userFilledIsq[0].optionsValue = "";
+    }
+  }
+
+  if (isSet(ReqObj.Form[tmpId].preFilledIsq["preferred_location"])) {
+    var prefilled = ReqObj.Form[tmpId].preFilledIsq["preferred_location"];
+    if (isSet(prefilled.match(/Local Area/))) {
+      ReqObj.Form[tmpId].preFilledIsq["looking for suppliers"] = ["Local Only"];
+    } else if (isSet(prefilled.match(/all over India can contact/))) {
+      ReqObj.Form[tmpId].preFilledIsq["looking for suppliers"] = [
+        "Anywhere in India",
+      ];
+    } else if (isSet(prefilled.match(/will/))) {
+      ReqObj.Form[tmpId].preFilledIsq["looking for suppliers"] = [
+        "Specific City",
+      ];
+    }
+  }
+}
+
+function FillIsq(questionText, tmpId) {
+  if (isSet(questionText)) {
+    questionText = trimVal(questionText.toLowerCase());
+    if (questionText === "quantity" || questionText === "quantity unit")
+      return quantiyUnitPrefill(questionText, tmpId);
+    var index = checkprop(questionText, tmpId);
+    if (isSet(index)) {
+      var value = ReqObj.Form[tmpId].preFilledIsq[index];
+      delete ReqObj.Form[tmpId].preFilledIsq[index];
+      return value;
+    }
+    return null;
+  }
+}
+
+function quantiyUnitPrefill(questionText, tmpId) {
+  if (ReqObj.Form[tmpId].preFilledIsq.hasOwnProperty(questionText)) {
+    var value = ReqObj.Form[tmpId].preFilledIsq[questionText];
+    delete ReqObj.Form[tmpId].preFilledIsq[questionText];
+    return value;
+  }
+  return null;
+}
+
+function checkprop(questionText, tmpId) {
+  var prop = Object.getOwnPropertyNames(ReqObj.Form[tmpId].preFilledIsq);
+  for (var i = 0; i < prop.length; i++) {
+    if (prop[i] !== "" && prop[i].includes(questionText)) return prop[i];
+    if (
+      questionText.toLowerCase().includes("usage") ||
+      questionText.toLowerCase().includes("application")
+    ) {
+      if (
+        prop[i] !== "" &&
+        (prop[i].includes(questionText) || questionText.includes(prop[i]))
+      )
+        return prop[i];
+    }
+  }
+
+  return null;
+}
+
+function SelBoxMSg(QuestionText, tmpId) {
+  var defaultmsg =
+    isImageVidEnq(tmpId) && ReqObj.Form[tmpId].FormSequence.StepCounter === 0
+      ? "Unit"
+      : "Select a Value";
+  if (isSet(QuestionText)) {
+    var QuestionTextMatch = trimVal(QuestionText.toLowerCase());
+    if (QuestionTextMatch in SelectBoxStaticMsg) {
+      var msg = SelectBoxStaticMsg[QuestionTextMatch];
+      if (
+        isSet(msg) &&
+        isSet(tmpId) &&
+        IsChatbl(tmpId) &&
+        isSet(msg.chatbl) &&
+        msg.chatbl !== ""
+      ) {
+        return msg.chatbl;
+      } else {
+        return isImageVidEnq(tmpId) &&
+          ReqObj.Form[tmpId].FormSequence.StepCounter === 0
+          ? msg.imgvidfrst
+          : msg.default;
+      }
+    } else {
+      return defaultmsg;
+    }
+  }
+  return defaultmsg;
+}
+
+function getIsqQuestions(IsqObj, todo, tmpId) {
+  // Object Position is necessary for classes
+  //if (!isSet(ObjectPosition)) ObjectPosition = 0; // can be ignored here
+  if (todo === "allquestions")
+    ReqObj.Form[tmpId].Isq.getIsqQuestionString.push(
+      IsqObj.IM_SPEC_MASTER_DESC
+    );
+  else if (todo === "current")
+    ReqObj.Form[tmpId].Isq.currentQuestionString.push(
+      IsqObj.IM_SPEC_MASTER_DESC
+    );
+}
+
+function tov1(tmpId, tval) {
+  var stval = tval.split(" ");
+  var len = stval.length;
+  ReqObj.Form[tmpId].cName.tov1 =
+    stval[len - 1].toLowerCase() === "crore" ||
+    (stval[len - 1].toLowerCase() === "lakh" && parseInt(stval[len - 2]) > 1)
+      ? true
+      : false;
+}
+
+function SelectBoxEvents(tmpId) {
+  //(isSSB(tmpId) && isnewSSB(tmpId)) ? $("select.betextclr").parent().addClass("focused") :"";
+  $("select.betextclr")
+    .off("change click")
+    .on("change click", function () {
+      var SelBoxEl = $(this);
+      if ($(this).val() === "") {
+        SelBoxEl.css("color", "#9e9e9e");
+        SelBoxEl.parent().siblings().children("label").removeClass("redc");
+        SelBoxEl.parent().siblings().children(".isq_error_block").remove();
+        SelBoxEl.parent()
+          .siblings()
+          .children(".be-input")
+          .removeClass("highlight-err");
+      } else {
+        SelBoxEl.css("color", "#333");
+        SelBoxEl.removeClass("highlight-err");
+        SelBoxEl.siblings("label").removeClass("redc");
+        SelBoxEl.siblings(".isq_error_block").remove();
+      }
+      if (
+        !isEnq(tmpId) &&
+        ReqObj.Form[$(this)[0].id.substring(1, 5)].cName.tov === true
+      ) {
+        tov1($(this)[0].id.substring(1, 5), $(this).val());
+        onCName($(this)[0].id.substring(1, 5), true);
+      }
+    });
+}
+
+function InputBoxEvents(tmpId) {
+  setTimeout(function () {
+    $(".cbl_qunty").focus();
+    isSet($(".cbl_isq_grp").children()[0])
+      ? $(".cbl_isq_grp").children()[0].focus()
+      : "";
+  }, 1800);
+  $(".cbl_qtut .cbl_unit .cbl_qtut")
+    .off("click")
+    .on("click", function () {
+      removechatblerror(tmpId);
+    });
+
+  $(".inpt_errorbx")
+    .off("click keyup")
+    .on("click keyup", function () {
+      var InputBoxEl = $(this);
+      InputBoxEl.removeClass("highlight-err");
+      InputBoxEl.siblings("label").removeClass("redc");
+
+      InputBoxEl.siblings(".isq_error_block").remove();
+      InputBoxEl.siblings("select.betextclr").removeClass("highlight-err");
+
+      if (isSet(InputBoxEl.val()) && trimVal(InputBoxEl.val()) === "") {
+        InputBoxEl.parent().siblings().children("label").removeClass("redc");
+        InputBoxEl.parent().siblings().children(".isq_error_block").remove();
+        InputBoxEl.parent()
+          .siblings()
+          .children(".be-input")
+          .removeClass("highlight-err");
+      }
+    });
+}
+
+function InputBoxAutoFocus(tmpId) {
+  var el = $("input[type=text]");
+  var len = el.length;
+  for (var i = 0; i < len; i++) {
+    if ($(el[i]).hasClass("imgoneqty")) {
+      var ele2 = $(el[i]).attr("id");
+      $("#" + ele2).focus();
+    }
+  }
+}
+
+function IsqAlreadyPresent(tmpId, text) {
+  if (
+    isSet(tmpId) &&
+    notEmpty(text) &&
+    isSet(ReqObj.Form[tmpId].questionsDesc)
+  ) {
+    for (var i = 0; i < ReqObj.Form[tmpId].questionsDesc.length; i++) {
+      if (
+        text.toLowerCase() === ReqObj.Form[tmpId].questionsDesc[i].toLowerCase()
+      )
+        return i;
+    }
+  }
+  return -1;
+}
+
+function SaveIsq(tmpId, type, IsqScreen) {
+  if (type.toLowerCase() === "isq") {
+    var questionsId = ReqObj.Form[tmpId].questionsId;
+    var questionsDesc = ReqObj.Form[tmpId].questionsDesc;
+    var optionsId = ReqObj.Form[tmpId].optionsId;
+    var optionsValue = ReqObj.Form[tmpId].optionsValue;
+  } else if (type.toLowerCase() === "static") {
+    var questionsId = ReqObj.Form[tmpId].Static.questionsId;
+    var questionsDesc = ReqObj.Form[tmpId].Static.questionsDesc;
+    var optionsId = ReqObj.Form[tmpId].Static.optionsId;
+    var optionsValue = ReqObj.Form[tmpId].Static.optionsValue;
+  }
+  var CurrentPageQuestions = [];
+  if (
+    isnewSSB(tmpId) &&
+    isSet(ReqObj.Form[tmpId].Isq.CurrentPageQuestionsStatic) &&
+    type.toLowerCase() === "static" &&
+    currentISO() === "IN"
+  ) {
+    var CurrentPageQuestions =
+      ReqObj.Form[tmpId].Isq.CurrentPageQuestionsStatic;
+  } else if (IsqScreen > -1) {
+    var CurrentPageQuestions =
+      ReqObj.Form[tmpId].Isq.CurrentPageQuestions[IsqScreen];
+  }
+  ReqObj.Form[tmpId].Isq.newIsqAdded = false;
+
+  // if(isImageVidEnq(tmpId) && !isSet(CurrentPageQuestions)){
+  //   var CurrentPageQuestions = (ReqObj.Form[tmpId].Isq.CurrentPageQuestions.length !== 0) ? ReqObj.Form[tmpId].Isq.CurrentPageQuestions[0] : CurrentPageQuestions;
+  // }
+
+  if (isSet(CurrentPageQuestions)) {
+    // var AnswerArray = [];
+    ReqObj.Form[tmpId].IsqUpdated = false;
+    for (var n = 0; n < CurrentPageQuestions.length; n++) {
+      if (CurrentPageQuestions[n].length > 0) {
+        var AnswerText = "";
+        var QuestionText = "";
+      } else continue;
+      for (var m = 0; m < CurrentPageQuestions[n].length; m++) {
+        var indexofIsq = IsqAlreadyPresent(
+          tmpId,
+          CurrentPageQuestions[n][m].questionText
+        );
+
+        if (CurrentPageQuestions[n][m].type === "TEXTBOX") {
+          var toappend =
+            tmpId.substr(0, 2) === "09" &&
+            ReqObj.Form[tmpId].formType.toLowerCase() === "bl"
+              ? tmpId + "_" + (ReqObj.Form[tmpId].FormSequence.StepCounter + 1)
+              : tmpId;
+          var optionValue = trimVal(
+            $(CurrentPageQuestions[n][m].optionSelector).val()
+          );
+          CurrentPageQuestions[n][m].questionText.toLowerCase() ===
+          "quantity unit"
+            ? updateOptionId(tmpId, $(".unsug" + toappend).attr("id"))
+            : "";
+          if (indexofIsq === -1) {
+            if (optionValue) {
+              QuestionText =
+                QuestionText !== ""
+                  ? QuestionText
+                  : CurrentPageQuestions[n][m].questionText;
+              questionsId.push(CurrentPageQuestions[n][m].questionId);
+              questionsDesc.push(CurrentPageQuestions[n][m].questionText);
+              optionsId.push(
+                $(CurrentPageQuestions[n][m].optionSelector).attr("optionid")
+              );
+              optionsValue.push(optionValue);
+
+              if (trimVal(AnswerText.toLowerCase()) !== "not sure") {
+                AnswerText += " " + optionValue;
+                ReqObj.Form[tmpId].Isq.newIsqAdded = true;
+              } else {
+                AnswerText = NotFilled;
+              }
+            } else {
+              AnswerText = NotFilled;
+              if (
+                CurrentPageQuestions[n][m].questionText.toLowerCase() ===
+                "quantity"
+              )
+                break;
+            }
+          } else {
+            if (optionValue) {
+              QuestionText =
+                QuestionText !== ""
+                  ? QuestionText
+                  : CurrentPageQuestions[n][m].questionText;
+              questionsId[indexofIsq] = CurrentPageQuestions[n][m].questionId;
+              questionsDesc[indexofIsq] =
+                CurrentPageQuestions[n][m].questionText;
+              optionsId[indexofIsq] = $(
+                CurrentPageQuestions[n][m].optionSelector
+              ).attr("optionid");
+              optionsValue[indexofIsq] = optionValue;
+
+              if (trimVal(AnswerText.toLowerCase()) !== "not sure") {
+                AnswerText += " " + optionValue;
+                ReqObj.Form[tmpId].Isq.newIsqAdded = true;
+              } else {
+                AnswerText = NotFilled;
+              }
+            } else {
+              ReqObj.Form[tmpId].IsqUpdated = true;
+              questionsId.splice(indexofIsq, 1);
+              questionsDesc.splice(indexofIsq, 1);
+              optionsId.splice(indexofIsq, 1);
+              optionsValue.splice(indexofIsq, 1);
+            }
+          }
+        } else if (CurrentPageQuestions[n][m].type === "SELECT") {
+          var selectbx_val = "";
+          var optionId = IsChatbl(tmpId)
+            ? $(".cbl_selected").attr("optionid")
+            : $(
+                CurrentPageQuestions[n][m].optionSelector + " option:selected"
+              ).attr("optionid");
+          var optionVal = IsChatbl(tmpId)
+            ? trimVal(
+                $(CurrentPageQuestions[n][m].optionSelector).attr("value")
+              ).toLowerCase()
+            : trimVal(
+                $(
+                  CurrentPageQuestions[n][m].optionSelector + " option:selected"
+                ).attr("value")
+              ).toLowerCase();
+          if (optionVal === "other" || optionVal === "others")
+            selectbx_val = IsChatbl(tmpId)
+              ? trimVal(
+                  $(CurrentPageQuestions[n][m].optionSelector).attr("value")
+                )
+              : trimVal($(CurrentPageQuestions[n][m].others[0]).val());
+          else
+            selectbx_val = IsChatbl(tmpId)
+              ? trimVal(
+                  $(CurrentPageQuestions[n][m].optionSelector).attr("value")
+                )
+              : trimVal($(CurrentPageQuestions[n][m].optionSelector).val());
+
+          if (indexofIsq === -1) {
+            if (selectbx_val) {
+              QuestionText =
+                QuestionText !== ""
+                  ? QuestionText
+                  : CurrentPageQuestions[n][m].questionText;
+              questionsId.push(CurrentPageQuestions[n][m].questionId);
+              questionsDesc.push(CurrentPageQuestions[n][m].questionText);
+              optionsId.push(optionId);
+              optionsValue.push(selectbx_val);
+
+              if (trimVal(AnswerText.toLowerCase()) !== "not sure") {
+                AnswerText += " " + selectbx_val;
+                ReqObj.Form[tmpId].Isq.newIsqAdded = true;
+              }
+            } else {
+              AnswerText = NotFilled;
+            }
+          } else {
+            if (selectbx_val) {
+              QuestionText =
+                QuestionText !== ""
+                  ? QuestionText
+                  : CurrentPageQuestions[n][m].questionText;
+              questionsId[indexofIsq] = CurrentPageQuestions[n][m].questionId;
+              questionsDesc[indexofIsq] =
+                CurrentPageQuestions[n][m].questionText;
+              optionsId[indexofIsq] = optionId;
+              optionsValue[indexofIsq] = selectbx_val;
+
+              if (trimVal(AnswerText.toLowerCase()) !== "not sure") {
+                ReqObj.Form[tmpId].Isq.newIsqAdded = true;
+                AnswerText += " " + selectbx_val;
+              }
+            } else {
+              ReqObj.Form[tmpId].IsqUpdated = true;
+              AnswerText = NotFilled;
+              questionsId.splice(indexofIsq, 1);
+              questionsDesc.splice(indexofIsq, 1);
+              optionsId.splice(indexofIsq, 1);
+              optionsValue.splice(indexofIsq, 1);
+            }
+          }
+        }
+
+        //keep this for future
+        else if (CurrentPageQuestions[n][m].type === "CHECKBOX") {
+          if (indexofIsq !== -1) {
+            ReqObj.Form[tmpId].IsqUpdated = true;
+            for (var t = 0; t < questionsDesc.length; ) {
+              if (
+                CurrentPageQuestions[n][m].questionText.toLowerCase() ===
+                questionsDesc[t].toLowerCase()
+              ) {
+                questionsId.splice(t, 1);
+                questionsDesc.splice(t, 1);
+                optionsId.splice(t, 1);
+                optionsValue.splice(t, 1);
+              } else {
+                t++;
+              }
+            }
+          }
+          if (trimVal($(CurrentPageQuestions[n][m].optionSelector).val())) {
+            $.each(
+              $(CurrentPageQuestions[n][m].optionSelector + ":checked"),
+              function () {
+                QuestionText =
+                  QuestionText !== ""
+                    ? QuestionText
+                    : CurrentPageQuestions[n][m].questionText;
+                questionsId.push(CurrentPageQuestions[n][m].questionId);
+                questionsDesc.push(CurrentPageQuestions[n][m].questionText);
+                optionsId.push($(this).siblings("label").attr("optionid"));
+                optionsValue.push(trimVal($(this).val()));
+
+                if (trimVal(AnswerText.toLowerCase()) !== "not sure")
+                  AnswerText += ", " + trimVal($(this).val());
+              }
+            );
+          }
+          for (var j = 0; j < CurrentPageQuestions[n][m].others.length; j++) {
+            var optionValue = trimVal(
+              $(CurrentPageQuestions[n][m].others[j]).val()
+            );
+
+            if (optionValue) {
+              QuestionText =
+                QuestionText !== ""
+                  ? QuestionText
+                  : CurrentPageQuestions[n][m].questionText;
+              questionsId.push(CurrentPageQuestions[n][m].questionId);
+              questionsDesc.push(CurrentPageQuestions[n][m].questionText);
+              optionsId.push(
+                $(CurrentPageQuestions[n][m].others[j])
+                  .siblings("label")
+                  .attr("optionid")
+              );
+              optionsValue.push(optionValue);
+
+              if (trimVal(AnswerText.toLowerCase()) !== "not sure") {
+                AnswerText += ", " + optionValue;
+                ReqObj.Form[tmpId].Isq.newIsqAdded = true;
+              }
+            }
+          }
+          if (trimVal(AnswerText) === "") AnswerText = NotFilled;
+          else {
+            AnswerText = trimVal(AnswerText);
+            AnswerText = AnswerText.replace(/(^,)|(,$)/g, "");
+            ReqObj.Form[tmpId].Isq.newIsqAdded = true;
+          }
+        } else if (CurrentPageQuestions[n][m].type === "RADIO") {
+          if (indexofIsq !== -1) {
+            ReqObj.Form[tmpId].IsqUpdated = true;
+            questionsId.splice(indexofIsq, 1);
+            questionsDesc.splice(indexofIsq, 1);
+            optionsId.splice(indexofIsq, 1);
+            optionsValue.splice(indexofIsq, 1);
+          }
+          var optionValue = trimVal(
+            $(CurrentPageQuestions[n][m].optionSelector + ":checked").val()
+          );
+          if (optionValue) {
+            QuestionText =
+              QuestionText !== ""
+                ? QuestionText
+                : CurrentPageQuestions[n][m].questionText;
+            questionsId.push(CurrentPageQuestions[n][m].questionId);
+            questionsDesc.push(CurrentPageQuestions[n][m].questionText);
+            optionsId.push(
+              $(CurrentPageQuestions[n][m].optionSelector + ":checked")
+                .siblings("label")
+                .attr("optionid")
+            );
+            optionsValue.push(optionValue);
+            if (trimVal(AnswerText.toLowerCase()) !== "not sure") {
+              AnswerText += " " + optionValue;
+              ReqObj.Form[tmpId].Isq.newIsqAdded = true;
+            }
+          }
+          for (var j = 0; j < CurrentPageQuestions[n][m].others.length; j++) {
+            optionValue = trimVal(
+              $(CurrentPageQuestions[n][m].others[j]).val()
+            );
+            if (optionValue) {
+              QuestionText =
+                QuestionText !== ""
+                  ? QuestionText
+                  : CurrentPageQuestions[n][m].questionText;
+              questionsId.push(CurrentPageQuestions[n][m].questionId);
+              questionsDesc.push(CurrentPageQuestions[n][m].questionText);
+              optionsId.push(
+                $(CurrentPageQuestions[n][m].others[j])
+                  .siblings("label")
+                  .attr("optionid")
+              );
+              optionsValue.push(optionValue);
+              if (trimVal(AnswerText.toLowerCase()) !== "not sure") {
+                AnswerText += " " + optionValue;
+                ReqObj.Form[tmpId].Isq.newIsqAdded = true;
+              }
+            }
+          }
+          if (trimVal(AnswerText) === "") AnswerText = NotFilled;
+        }
+      }
+
+      ReqObj.Form[tmpId].Isq.CurrentScreenAnswers = trimVal(AnswerText);
+      ReqObj.Form[tmpId].Isq.KeyQuestion = trimVal(QuestionText);
+    }
+  }
+  // ReqObj.Form[tmpId].Isq.CurrentScreenAnswers = AnswerArray;
+
+  CurrentPageQuestions = [];
+}
+
+function GetAnswer(tmpId, type) {
+  if (isSet(tmpId) && isSet(ReqObj.Form[tmpId].Isq.CurrentScreenAnswers)) {
+    var Text = ReqObj.Form[tmpId].Isq.CurrentScreenAnswers;
+    Text =
+      Text !== "" && Text !== "Not Answered" && IsChatbl(tmpId)
+        ? ReqObj.Form[tmpId].Isq.KeyQuestion + ": " + Text
+        : Text;
+    ReqObj.Form[tmpId].Isq.CurrentScreenAnswers = "";
+    return Text;
+  }
+}
+
+function ValidateQuestions(tmpId, staticQues, IsqScreen) {
+  var form_type =
+    ReqObj.Form[tmpId].formType === "Enq" ? "Send Enquiry" : "Post Buy Leads";
+  var StepNumber = ReqObj.Form[tmpId].FormSequence.StepCounter + 1;
+  var CurrentPageQuestions = [];
+  var isquantityfilled = false;
+  var isunitfilled = false;
+  var isqtutvalidate = false;
+  var iserrorcr = true;
+  if (IsqScreen > -1) {
+    var CurrentPageQuestions =
+      ReqObj.Form[tmpId].Isq.CurrentPageQuestions[IsqScreen];
+  }
+  if (isSet(CurrentPageQuestions)) {
+    //   if(!IsChatbl(tmpId) &&isSet(ReqObj.Form[tmpId].QtUtError) && ReqObj.Form[tmpId].QtUtError === true) return false;
+    for (var n = 0; n < CurrentPageQuestions.length; n++) {
+      var errorCount = 0; //
+      var errorSelect = "";
+      var tracking = "";
+      var checkovalid = false,
+        radioovalid = false,
+        textovalid = false,
+        qunutvalid = false;
+      var errorObject = {};
+      if (!IsChatbl(tmpId)) {
+        errorObject = {
+          error_block_class: "beerrp3",
+          anchor_class: "bearwL2",
+        };
+      }
+      if (isSet(CurrentPageQuestions[n])) {
+        var NumberofQuestions = CurrentPageQuestions[n].length;
+        var option_type;
+        for (var m = 0; m < CurrentPageQuestions[n].length; m++) {
+          if (CurrentPageQuestions[n][m].type === "TEXTBOX") {
+            var optionValue = trimVal(
+              $(CurrentPageQuestions[n][m].optionSelector).val()
+            );
+            if (!optionValue) {
+              if (
+                errorCount < 1 &&
+                CurrentPageQuestions[n][m].questionText.toLowerCase() ===
+                  "quantity unit"
+              ) {
+                isqtutvalidate = true;
+                option_type = "quantity unit";
+              }
+              errorCount++;
+              errorObject["msg"] =
+                "Please enter " + CurrentPageQuestions[n][m].questionText;
+              if (IsChatbl(tmpId)) {
+                if (NumberofQuestions > 1 && m === 0)
+                  errorObject["error_block_class"] = " erchat";
+              }
+              if (
+                CurrentPageQuestions[n][m].questionText.toLowerCase() ===
+                "quantity"
+              )
+                isquantityfilled = false;
+              else if (
+                CurrentPageQuestions[n][m].questionText.toLowerCase() ===
+                "quantity unit"
+              )
+                isunitfilled = false;
+
+              errorSelect = CurrentPageQuestions[n][m].optionSelector;
+              tracking =
+                "Validation_Error" + CurrentPageQuestions[n][m].questionText;
+            } else if (
+              CurrentPageQuestions[n][m].questionText.toLowerCase() ===
+              "quantity"
+            ) {
+              if (
+                returnValidateTypeError(
+                  optionValue,
+                  CurrentPageQuestions[n][m].questionText.toLowerCase()
+                ) === "1"
+              ) {
+                errorCount++;
+                errorObject["msg"] = "Enter a valid Quantity";
+                errorSelect = CurrentPageQuestions[n][m].optionSelector;
+                tracking =
+                  "Validation_Error" + CurrentPageQuestions[n][m].questionText;
+                isqtutvalidate = true;
+                break;
+              }
+              if (
+                CurrentPageQuestions[n][m].questionText.toLowerCase() ===
+                "quantity"
+              )
+                isquantityfilled = true;
+            } else if (
+              CurrentPageQuestions[n][m].questionText.toLowerCase() ===
+              "quantity unit"
+            ) {
+              if (isScriptTag(optionValue)) {
+                errorCount = 1;
+                errorObject["msg"] = "Enter a valid Quantity Unit";
+                errorSelect = CurrentPageQuestions[n][m].optionSelector;
+                qunutvalid = true;
+                option_type = "quantity unit";
+                break;
+              } else isunitfilled = true;
+            } else if (
+              staticQues &&
+              CurrentPageQuestions[n][m].questionText.toLowerCase() ===
+                "quantity" &&
+              (parseInt(optionValue, 10) === 0 ||
+                !ValidNumber(optionValue) ||
+                !(parseInt(optionValue, 10) > 0))
+            ) {
+              errorCount++;
+              if (isHindi(optionValue))
+                errorObject["msg"] = "Please do not use special symbols";
+              else {
+                if (parseInt(optionValue, 10) === 0)
+                  errorObject["msg"] = "Quantity should be numeric except 0";
+                else if (
+                  !ValidNumber(optionValue) ||
+                  !(parseInt(optionValue, 10) > 0)
+                )
+                  errorObject["msg"] = "Quantity should be numeric except 0";
+              }
+              if (IsChatbl(tmpId)) {
+                if (NumberofQuestions > 1 && m === 0)
+                  errorObject["error_block_class"] = " erchat";
+              }
+              isquantityfilled = true;
+              errorSelect = CurrentPageQuestions[n][m].optionSelector;
+              tracking =
+                "Validation_Error" + CurrentPageQuestions[n][m].questionText;
+              break;
+            } else if (
+              IsChatbl(tmpId) &&
+              CurrentPageQuestions[n][m].questionText.toLowerCase() ===
+                "quantity" &&
+              !isAllNumbers(optionValue)
+            ) {
+              errorCount++;
+              errorObject["msg"] =
+                "Please enter " + CurrentPageQuestions[n][m].questionText;
+              if (IsChatbl(tmpId)) {
+                if (NumberofQuestions > 1 && m === 0)
+                  errorObject["error_block_class"] = " erchat";
+              }
+              isquantityfilled = true;
+              errorSelect = CurrentPageQuestions[n][m].optionSelector;
+              tracking =
+                "Validation_Error" + CurrentPageQuestions[n][m].questionText;
+            } else {
+              isquantityfilled = false;
+              if (isScriptTag(optionValue)) {
+                textovalid = true;
+                option_type = "text";
+                errorObject["msg"] = "Enter a valid details";
+                errorSelect = CurrentPageQuestions[n][m].optionSelector;
+                if (IsChatbl(tmpId)) {
+                  if (NumberofQuestions > 1)
+                    errorObject["error_block_class"] = " erchat";
+                }
+                break;
+              }
+            }
+          } else if (CurrentPageQuestions[n][m].type === "SELECT") {
+            var selectbx_val = "";
+            var optionId = IsChatbl(tmpId)
+              ? trimVal(
+                  $(CurrentPageQuestions[n][m].optionSelector).attr("value")
+                ).toLowerCase()
+              : trimVal(
+                  $(
+                    CurrentPageQuestions[n][m].optionSelector +
+                      " option:selected"
+                  ).attr("value")
+                ).toLowerCase();
+            if (optionId === "other" || optionId === "others")
+              selectbx_val = IsChatbl(tmpId)
+                ? trimVal($(CurrentPageQuestions[n][m].optionSelector).val())
+                : trimVal($(CurrentPageQuestions[n][m].others[0]).val());
+            else
+              selectbx_val = trimVal(
+                $(CurrentPageQuestions[n][m].optionSelector).val()
+              );
+            if (!selectbx_val) {
+              errorCount++;
+              errorObject["msg"] =
+                "Please enter " + CurrentPageQuestions[n][m].questionText;
+              if (IsChatbl(tmpId)) {
+                if (NumberofQuestions > 1 && m === 0)
+                  errorObject["error_block_class"] = " erchat";
+              }
+              errorSelect = CurrentPageQuestions[n][m].optionSelector;
+              tracking =
+                "Validation_Error" + CurrentPageQuestions[n][m].questionText;
+              isunitfilled = false;
+            } else isunitfilled = true;
+          }
+
+          //keep this for future
+          else if (CurrentPageQuestions[n][m].type === "CHECKBOX") {
+            if (
+              $(CurrentPageQuestions[n][m]["others"][0]).val() &&
+              isScriptTag($(CurrentPageQuestions[n][m]["others"][0]).val())
+            ) {
+              option_type = "checkbox";
+              checkovalid = true;
+              errorObject["msg"] = "Enter a valid details";
+              errorSelect = CurrentPageQuestions[n][m]["others"][0];
+              if (IsChatbl(tmpId)) {
+                if (NumberofQuestions > 1)
+                  errorObject["error_block_class"] = " erchat";
+              }
+              break;
+            }
+          } else if (
+            CurrentPageQuestions[n][m].type === "RADIO" &&
+            CurrentPageQuestions[n].questionText != "Looking for suppliers"
+          ) {
+            if (
+              $(CurrentPageQuestions[n][m]["others"][0]).val() &&
+              isScriptTag($(CurrentPageQuestions[n][m]["others"][0]).val())
+            ) {
+              radioovalid = true;
+              option_type = "radio";
+              errorObject["msg"] = "Enter a valid details";
+              errorSelect = CurrentPageQuestions[n][m]["others"][0];
+              if (IsChatbl(tmpId)) {
+                if (NumberofQuestions > 1)
+                  errorObject["error_block_class"] = " erchat";
+              }
+              break;
+            }
+          }
+        }
+
+        if (
+          isqtutvalidate ||
+          qunutvalid ||
+          checkovalid ||
+          radioovalid ||
+          textovalid
+        ) {
+          isqtutvalidate = false;
+          handleQuantityUiErrorMsg({
+            data: {
+              tmpId: tmpId,
+              option_type: option_type,
+              errorObject: errorObject,
+              errorSelect: errorSelect,
+              errorClass: "beerrp",
+            },
+          });
+          //return false;
+          iserrorcr = false;
+        } else if (!isquantityfilled && isunitfilled) {
+          //do nothing no validation needed
+          ReqObj.Form[tmpId].qtutsave = false;
+        } else if (errorCount && errorCount < CurrentPageQuestions[n].length) {
+          var el = IsChatbl(tmpId)
+            ? $("#t" + tmpId + "verify_error")
+            : $(errorSelect);
+          IsChatbl(tmpId)
+            ? ""
+            : isSSB(tmpId)
+            ? isnewSSB(tmpId)
+              ? el.addClass("mb-erbrd")
+              : el.addClass("mb-erbrd")
+            : el
+                .addClass("highlight-err")
+                .focus()
+                .siblings("label")
+                .addClass("redc");
+          if (
+            isSSB(tmpId) &&
+            errorObject.msg.toLowerCase() === "please enter currency"
+          ) {
+            $("#t" + tmpId + "_curr_err").html(errorObject.msg);
+          } else if (!(el.siblings(".isq_error_block").length > 0)) {
+            el.parent().append(errorBlockFunction(errorObject, tmpId));
+          }
+          blenqGATracking(form_type,tracking + StepNumber + "|IsqValidate",getEventLabel(),0,tmpId);
+          iserrorcr = false;
+        }
+        if (
+          (CurrentPageQuestions[n].type == "RADIO" ||
+            CurrentPageQuestions[n][0].type == "RADIO") &&
+          (CurrentPageQuestions[n].questionText == "Looking for suppliers" ||
+            CurrentPageQuestions[n][0].questionText ==
+              "Looking for suppliers") &&
+          $("#t" + tmpId + "_enrich_city1").length
+        ) {
+          var iserr = true,
+            ediv = 0;
+          for (var i = 1; i < 4; i++) {
+            if (isScriptTag($("#t" + tmpId + "_enrich_city" + i).val())) {
+              var cls = "highlight-err";
+              iserr = false;
+              $("#t" + tmpId + "_enrich_city" + i).addClass(cls);
+              //if (isSSB(tmpId)) $("#t" + tmpId + "_enrich_city" + i).focus();
+            }
+          }
+          if (!iserr) {
+            if ($("#t" + tmpId + "_enrich_city_err").length == 0) {
+              var html = "";
+              html += returnContainer(
+                "t" + tmpId,
+                "_enrich_city_err",
+                "texterr errpdg",
+                "",
+                ""
+              );
+              html += returnContainer(
+                "t" + tmpId,
+                "_enrich_city_errmsg",
+                "",
+                "content",
+                ""
+              );
+              html += "</div>Please enter valid city name</div>";
+              var inputid = CurrentPageQuestions[n].optionSelector
+                ? $(CurrentPageQuestions[n].optionSelector).attr("id")
+                : $(CurrentPageQuestions[n][0].optionSelector).attr("id");
+              $("#spcity").after(html);
+            }
+            iserrorcr = iserr;
+            $("#t" + tmpId + "_enrich_city_err").removeClass("bedsnone");
+            if (isSSB(tmpId)) $("#t" + tmpId + "_enrich_city_err").focus();
+            $("#t" + tmpId + "_enrich_city1")
+              .off("click keyup")
+              .on("click keyup", function () {
+                $("#t" + tmpId + "_enrich_city_err").addClass("bedsnone");
+                $("#t" + tmpId + "_enrich_city1").removeClass("highlight-err");
+              });
+            $("#t" + tmpId + "_enrich_city2")
+              .off("click keyup")
+              .on("click keyup", function () {
+                $("#t" + tmpId + "_enrich_city_err").addClass("bedsnone");
+                $("#t" + tmpId + "_enrich_city2").removeClass("highlight-err");
+              });
+            $("#t" + tmpId + "_enrich_city3")
+              .off("click keyup")
+              .on("click keyup", function () {
+                $("#t" + tmpId + "_enrich_city_err").addClass("bedsnone");
+                $("#t" + tmpId + "_enrich_city3").removeClass("highlight-err");
+              });
+          }
+        }
+      }
+    }
+    return iserrorcr;
+  }
+  return true;
+}
+
+function returnValidateTypeError(optionValue, questionText) {
+  if (questionText === "quantity") {
+    if (parseInt(optionValue) === 0) return "1";
+    if (isHindi(optionValue) === true || isAllNumbers(optionValue) === false)
+      return "1";
+  }
+  if (questionText === "quantity unit") {
+    if (
+      isHindi(optionValue) === true ||
+      /^[a-zA-Z0-9 ]*$/.test(optionValue) === false
+    )
+      return "1";
+  }
+  return "2";
+}
+// Isq proto

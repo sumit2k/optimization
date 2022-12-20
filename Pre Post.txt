@@ -9,6 +9,7 @@ Post.js -:
 	- Generation
 	- LeftSide and RightSide
 	- FormSeq Post
+	- EnquireNow
 
 Pre.js -:
 	- Global variables
