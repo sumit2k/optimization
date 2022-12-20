@@ -1464,6 +1464,17 @@ function initializeForm(formArray) {
         : "IN";
     return iso;
   }
+  function toAskCname(tmpId) {
+    return typeof ReqObj.UserDetail.cName === "undefined" ||
+      (isSet(ReqObj.UserDetail.cName) && ReqObj.UserDetail.cName === "")
+      ? true
+      : false;
+  }
+  /*--------------------------------------- Pass mcat id to get image if available---------------------------------------------- */
+function getImage(key) {
+  return ReqObj.ImageKey[key];
+}
+
   function ConstructorName(obj) {
     if (isSet(obj)) {
       if (obj.constructor.name) {

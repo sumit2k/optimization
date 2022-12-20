@@ -230,10 +230,6 @@ function leftSideTransition(step, tmpId, fromwhere) {
   var formType = ReqObj.Form[tmpId].formType.toLowerCase();
   updateDispZoomImage(tmpId, formType, step, fromwhere);
 }
-/*--------------------------------------- Pass mcat id to get image if available---------------------------------------------- */
-function getImage(key) {
-  return ReqObj.ImageKey[key];
-}
 /*--------------------------------------------left Side load zoom ---------------------------------------------------------------- */
 function leftSideLoadZoom(tmpId) {
   $("#t" + tmpId + "_zoomimage").on("load", function () {
@@ -297,13 +293,6 @@ function updateToAsk(tmpId) {
       (isSet(ReqObj.UserDetail.cName) && ReqObj.UserDetail.cName === ""))
       ? true
       : false;
-}
-
-function toAskCname(tmpId) {
-  return typeof ReqObj.UserDetail.cName === "undefined" ||
-    (isSet(ReqObj.UserDetail.cName) && ReqObj.UserDetail.cName === "")
-    ? true
-    : false;
 }
 
 function cNameIsq(tmpId) {
