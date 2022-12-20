@@ -554,6 +554,13 @@ var section_number = {
     right: 2,
   },
 };
+  //This will be available as global variable
+  var webAddressLocation = location.hostname;
+  var appsServerName = webAddressLocation.match(/^dev/)
+    ? "//dev-apps.imimg.com/"
+    : webAddressLocation.match(/^stg/)
+    ? "//stg-apps.imimg.com/"
+    : "//apps.imimg.com/";
 // var webAddressLocation = location.hostname;
   // var userNameList = (webAddressLocation.match(/^dev/) || webAddressLocation.match(/^stg/)) ?  ["9839932616","9490340610"] : ["9811829818" , "8765471607","9618837669"];
   function getTimeZone() {
@@ -714,7 +721,105 @@ function isSticky(tmpId) {
       return true;
     } else return false;
   }
+  function isImageEnqDIR(tmpId){
+    return ReqObj.Form[tmpId].formType.toLowerCase() === "enq" &&
+      isSet(ReqObj.Form[tmpId].typeofform) &&
+      (ReqObj.Form[tmpId].typeofform.toLowerCase() === "image" ||
+      ReqObj.Form[tmpId].typeofform.toLowerCase() === "video")
+      ? true
+      : false;
+  }  
+
+  function isOtherEnq(tmpId) {
+    return ReqObj.Form[tmpId].formType.toLowerCase() === "enq" ? true : false;
+  }
+
+  function flagsugcall(tmpId, ctname, ciso) {
+    if (ctname != "India" && ctname !== ReqObj.Form[tmpId].ctn) {
+      $("#t" + tmpId + "country_dropd").html("");
+      ReqObj.changeUserIso = ciso;
+      ReqObj.setflag = 1;
+      flagsugg.setFlagSuggestor(tmpId, "load");
+    }
+  }
+
+  function ChatblfooterAns(tmpId) {
+    $("#t" + tmpId + "_blchatfooter").hasClass("focus")
+      ? ""
+      : setTimeout(function () {
+          $("#t" + tmpId + "_blchatfooter").addClass("focus");
+        }, 1000);
+    $("#t" + tmpId + "_typhere").hasClass("dn")
+      ? ""
+      : setTimeout(function () {
+          $("#t" + tmpId + "_typhere").addClass("dn");
+          $("#t" + tmpId + "_newblchatReply").removeClass("cbl_vh");
+        }, 1099);
+  }
+
+  function StaticQuesForeignUser(tmpId) {
+    // if (currentISO() !== "IN" && (tmpId.substring(0, 2) === "09" || IsChatbl(tmpId))) return true;
+    // else false;
   
+    return false;
+  }
+
+  function IsProduction() {
+    var isProd = webAddressLocation.match(/^dev/)
+      ? false
+      : webAddressLocation.match(/^stg/)
+      ? false
+      : true;
+    return isProd;
+  }
+  
+  /**
+  for future if we need to replace all duplicate tracking fired
+  then replace numberToFind with number
+  */
+  function binaryArraySearch(array, number) {
+    if (isSet(array)) {
+      var numberToFind = number;
+      var start = 0,
+        end = array.length - 1;
+      while (start <= end) {
+        var mid = Math.floor((start + end) / 2);
+        if (array[mid] === numberToFind) return mid;
+        else if (array[mid] > numberToFind) {
+          end = mid - 1;
+        } else if (array[mid] < numberToFind) {
+          start = mid + 1;
+        }
+      }
+      return -1;
+    }
+    return -1;
+  }
+
+  function updateEnrichShownKey(tmpId, isStatic, isAttachment) {
+    ReqObj.Form[tmpId].flags.isEnrichShown.isStaticShown = isStatic;
+    ReqObj.Form[tmpId].flags.isEnrichShown.isAttachmentShown = isAttachment;
+  
+    //is showAttachment is 1 we need to show the attachment
+    if (ReqObj.Form[tmpId].showAttachment === "1") {
+      ReqObj.Form[tmpId].flags.isEnrichShown.isAttachmentShown = false;
+    } else if (ReqObj.Form[tmpId].showAttachment === "0") {
+      ReqObj.Form[tmpId].flags.isEnrichShown.isAttachmentShown = true;
+    } else if (
+      ReqObj.Form[tmpId].showAttachment === "-1" &&
+      ReqObj.Form[tmpId].formType.toLowerCase() === "bl"
+    ) {
+      if (StaticQuesForeignUser(tmpId)) {
+        ReqObj.Form[tmpId].flags.isEnrichShown.isAttachmentShown = true;
+      } else ReqObj.Form[tmpId].flags.isEnrichShown.isAttachmentShown = false;
+    } else if (
+      ReqObj.Form[tmpId].showAttachment === "-1" &&
+      ReqObj.Form[tmpId].formType.toLowerCase() === "enq"
+    ) {
+      ReqObj.Form[tmpId].flags.isEnrichShown.isAttachmentShown = true;
+    }
+  }
+    
   function CounterScreenId(tmpId, adder) {
     if (isSet(tmpId) && IsPrevBtnImplemented(tmpId)) {
       if (!isSet(adder)) adder = 0;
@@ -9472,3 +9577,3499 @@ function returnValidateTypeError(optionValue, questionText) {
   return "2";
 }
 // Isq proto
+
+// RequirementDtl
+function RequirementDtl(tmpId) {
+  this.className = "RequirementDtl";
+  this.RequirementDtlObj = {
+    OuterWrapper: "",
+    UserInput: "",
+    ClosingWrapper: "",
+    Label: "",
+  };
+  this.Rdbox = "";
+  this.setValue = "";
+  this.countclick = 0;
+  this.QuestionArray = [];
+}
+
+RequirementDtl.prototype.hasHtml = function (RdObj) {
+  if (isSet(RdObj)) {
+    ReqObj.Form[RdObj.tmpId].ReqDtl.HasHtmlCalled = true; // whether hashtml called or not.
+    if (this.getHtml(RdObj.tmpId) !== "") {
+      ReqObj.Form[RdObj.tmpId].flags.isReqHtmlPresent = true;
+      if (
+        isSet(RdObj.object.countlastUpdated) &&
+        RdObj.object.countlastUpdated === false
+      )
+        ReqObj.Form[RdObj.tmpId].currentclassCount++;
+      this.ifHtmlPresent(RdObj);
+    } else {
+      ReqObj.Form[RdObj.tmpId].flags.isReqHtmlPresent = false;
+      this.ifHtmlNotPresent(RdObj);
+    }
+  }
+};
+
+RequirementDtl.prototype.displayHtml = function (tmpId) {
+  if (isSet(tmpId)) {
+    ReqObj.Form[tmpId].flags.isDescDivShown = true;
+    this.getHtml(tmpId);
+    if (!IsChatbl(tmpId)) {
+      var clsnm = isSSB(tmpId)
+        ? ssbClass("wrprClass", tmpId)
+        : isBlInline(tmpId)
+        ? isBlInlineFr(tmpId)
+          ? "fmb15"
+          : "idsf pfstrt mb20 inTxAr"
+        : pdpInactiveBL(tmpId)
+        ? "bepdpreq bemb10 bemt5"
+        : "bepdpreq bemt15 ";
+      var cdiv =
+        isSSB(tmpId) ||
+        (ReqObj.Form[tmpId].formType.toLowerCase() === "enq" &&
+          tmpId.substring(0, 2) === "09")
+          ? "<div id='t" + tmpId + "_cdiv'></div>"
+          : "";
+      if (
+        ReqObj.Form[tmpId].FormSequence.StepCounter === 0 &&
+        isImageVidEnq(tmpId)
+      )
+        cdiv = "";
+      var RequirementDtlSuffixHtmlObj = {
+        SuffixOuterHtml:
+          "<div  id='t" + tmpId + "_reqbox' class='" + clsnm + "'>",
+        SuffixClosingHtml: "</div>" + cdiv,
+        suffix: "_reqbox",
+      };
+      this.Rdbox = MakeWrapper(
+        [[this.RequirementDtlObj]],
+        tmpId,
+        RequirementDtlSuffixHtmlObj,
+        ""
+      );
+    } else {
+      this.RdboxQues = MakeWrapper(
+        [[this.RequirementDtlObj]],
+        tmpId,
+        WrapperObj(
+          "<div  id='t" + tmpId + "_reqbox' class='cbl_ques cbl_vh'>",
+          "</div>",
+          "_reqbox"
+        ),
+        "ques"
+      );
+
+      this.RdboxInput = MakeWrapper(
+        [[this.RequirementDtlObj]],
+        tmpId,
+        WrapperObj(
+          "<div  id='t" +
+            tmpId +
+            "_reqboxInput ' class='cbl_dtls cbl_name cbl_df t" +
+            tmpId +
+            "_userInput cbl_br10 dn'>",
+          "</div>",
+          "_reqbox"
+        ),
+        "input"
+      );
+
+      this.Rdbox = this.RdboxQues + this.RdboxInput;
+
+      return [this.RdboxQues, this.RdboxInput];
+    }
+
+    return [this.Rdbox];
+  }
+};
+RequirementDtl.prototype.ifHtmlPresent = function (RdObj) {
+  RdObj.that.NumberofClassCalled -= 1;
+  AttachObject(RdObj.object, RdObj.tmpId);
+  if (isSet(RdObj.AfterService)) {
+    for (var i = 0; i < RdObj.AfterService.length; i++) {
+      RdObj.that.MakeSeq(RdObj.AfterService[i], RdObj.tmpId);
+    }
+  }
+  if (RdObj.that.NumberofClassCalled === 0) {
+    makeFinalSeq(RdObj, RdObj.tmpId);
+  }
+};
+
+RequirementDtl.prototype.ifHtmlNotPresent = function (RdObj) {
+  if (RdObj.hasFallback) {
+    CreateSeq(RdObj.FallbackObj);
+  }
+};
+
+RequirementDtl.prototype.getHtml = function (tmpId) {
+  this.getInput(tmpId);
+  this.getLabel(tmpId);
+};
+
+RequirementDtl.prototype.getPrefilledText = function (tmpId) {
+  var text = "Hi," + "\n";
+  if (ReqObj.Form[tmpId].modrefType.toLowerCase() === "product") {
+    text += "I am interested in buying " + ReqObj.Form[tmpId].prodName;
+  } else {
+    text +=
+      "I am looking for service provider for " + ReqObj.Form[tmpId].prodName;
+  }
+  text += "\n" + "Kindly send me quotations.";
+
+  return text;
+};
+
+RequirementDtl.prototype.getInput = function (tmpId) {
+  //fghdjhggg
+  var input = "";
+  var placeholdertext = this.getPlaceHolderText(tmpId);
+  if (IsChatbl(tmpId)) {
+    input +=
+      "<input class='cbl_name cbl_txt' id = 't" +
+      tmpId +
+      "_reqBoxTemplates' placeholder='" +
+      placeholdertext +
+      "'></input>";
+    // only for RequirementDtl input
+    if (ReqObj.Form[tmpId].currentScreen === "RequirementDtl") {
+      var FormId = "#t" + tmpId + "_newblchatReply";
+      if ($(FormId).children(".cbl_resend.cbl_skip")) {
+        $(FormId).children(".cbl_resend.cbl_skip").remove();
+      }
+      input += skipDiv1(tmpId); //chat bl bug
+    }
+  } else {
+    var stickycss = isSticky(tmpId) ? "FM_be-slbox" : "be-slbox";
+    var cls =
+      ReqObj.Form[tmpId].formType.toLowerCase() === "bl" &&
+      tmpId.substr(0, 2) !== "01" &&
+      currentISO() !== "IN"
+        ? stickycss + " be-txtarea blFh90"
+        : stickycss + " be-txtarea";
+    
+    if(pdpInactiveBL(tmpId)){
+        cls += " cpNm cbl_br8 wid_600"
+    }
+    input += isSSB(tmpId)
+      ? isnewSSB(tmpId)
+        ? "<textarea type='text'  id='t" +
+          tmpId +
+          "_reqBoxTemplates' placeholder='" +
+          placeholdertext +
+          "'></textarea>"
+        : "<div class='mb-InCon'><textarea type='text'  id='t" +
+          tmpId +
+          "_reqBoxTemplates' placeholder='" +
+          placeholdertext +
+          "'></textarea></div>"
+      : isBlInline(tmpId) && !isBlInlineFr(tmpId)
+      ? returnContainer("", "", "pflx1", "", "", "") +
+        returnContainer("", "", "pr", "", "", "") +
+        "<textarea  id='t" +
+        tmpId +
+        "_reqBoxTemplates' placeholder='" +
+        placeholdertext +
+        "'></textarea></div>"
+      : returnContainer("", "", "betarea", "", "", "") +
+        returnTextarea("t" + tmpId, "_reqBoxTemplates", cls, placeholdertext);
+  }
+
+  input += "</div>";
+  this.RequirementDtlObj["UserInput"] = input;
+};
+
+RequirementDtl.prototype.getPlaceHolderText = function (tmpId) {
+  if (isBlInline(tmpId) || (isSSB(tmpId) && isnewSSB(tmpId))) {
+    return "Additional details about your requirement...";
+  }
+  if (currentISO() !== "IN") {
+    /*if(isSSB(tmpId) && isnewSSB(tmpId))
+    return "";*/
+    if (IsChatBLInline(tmpId)) return "You can enter specific details here..";
+    return "Briefly describe what you are looking to buy...";
+  }
+  if (isOtherEnq(tmpId)) {
+    return "Additional details about your requirement...";
+  }
+  if (IsChatbl(tmpId)) {
+    return "You can enter specific details here...";
+  } else if (currentISO() === "IN") {
+    return "";
+  }
+  return "";
+};
+
+RequirementDtl.prototype.getLabel = function (tmpId) {
+  if (!IsChatbl(tmpId))
+    this.RequirementDtlObj["Label"] =
+      "<div class='be-erbx beerrp6 bedsnone' id='t" +
+      tmpId +
+      "_textarea_error'><div id='t" +
+      tmpId +
+      "_textarear_cont' data-role='content'>Please enter your requirement in Detail</div><a class='be-erarw' data-role='arrow'></a></div>";
+  var LabelObj = {
+    lblClass: isBlInline(tmpId)
+      ? isBlInlineFr(tmpId)
+        ? "fs15 cl11 wf"
+        : ""
+      : isSticky(tmpId)
+      ? "FM_be-lbl"
+      : "be-lbl",
+    labelId: "t" + tmpId + "_textarea",
+    QuestionDesc: isBlInline(tmpId)
+      ? "Briefly describe your requirement"
+      : "Requirement Details",
+    flag: "1",
+  };
+  if (
+    isOtherEnq(tmpId) &&
+    tmpId.substring(0, 2) === "09" &&
+    (ReqObj.Form[tmpId].disableIsq === "1" ||
+      ReqObj.Form[tmpId].IsqArray === [] ||
+      ReqObj.Form[tmpId].IsqArray === null)
+  )
+    LabelObj["QuestionDesc"] = "Write your message here";
+  this.RequirementDtlObj["Label"] = isSSB(tmpId)
+    ? "<label class='" +
+      ssbClass("reqBxLbl", tmpId) +
+      "'>" +
+      LabelObj["QuestionDesc"] +
+      "</label>"
+    : MakeLabel(LabelObj, "", tmpId);
+};
+
+RequirementDtl.prototype.resetClass = function (tmpId) {
+  ReqObj.Form[tmpId].flags.isDescDivShown = false;
+  if (ReqObj.Form[tmpId].flags.isDescDivShown) {
+    ReqObj.Form[tmpId].prevCount -= ReqObj.Form[tmpId].IsqStepN; //isqstepn
+  } else {
+    ReqObj.Form[tmpId].prevCount -= ReqObj.Form[tmpId].IsqStep1; //isqstep1
+  }
+};
+
+RequirementDtl.prototype.defaultEvents = function (tmpId) {
+  if (isSet(tmpId)) {
+    this.handleUI({
+      data: {
+        tmpId: tmpId,
+        todo: "defaults",
+        obj: this,
+      },
+    });
+    ChatblfooterAns(tmpId);
+    var RdEl = $("#t" + tmpId + "_reqBoxTemplates");
+    if (StaticQuesForeignUser(tmpId) && !IsChatbl(tmpId)) {
+      var attrdiv = $("#t" + tmpId + "_reqBoxTemplates").attr("isqattr");
+      if (attrdiv === "true") {
+        RdEl.height(100);
+        RdEl.css("line-height", "16px");
+      } else RdEl.height(80);
+    }
+    if (isSet(ReqObj.Form[tmpId].ReqDtlBox)) {
+      RdEl.text(ReqObj.Form[tmpId].ReqDtlBox);
+    } else {
+      ReqObj.Form[tmpId].ReqDtlBox = "";
+    }
+    RdEl.off("blur").on("blur", function (event) {
+      ReqObj.Form[tmpId].ReqDtlBox = $("#t" + tmpId + "_reqBoxTemplates").val();
+    });
+    if (ReqObj.Form[tmpId].afflId === "-126")
+      currentISO() !== "IN"
+        ? RdEl.attr(
+            "placeholder",
+            "Briefly describe what you are looking to buy..."
+          )
+        : RdEl.attr("placeholder", "Type your message here...");
+    RdEl.on("focus", function () {
+      var errorcls = isSSB(tmpId)
+        ? isnewSSB(tmpId)
+          ? "nb-erbrd"
+          : "mb-erbrd"
+        : "highlight-err";
+      RdEl.removeClass(errorcls);
+      $("#t" + tmpId + "_reqBoxTemplates_err").addClass("bedsnone");
+      $("#t" + tmpId + "_textarea").removeClass("redc");
+      $("#t" + tmpId + "_textarea_error").addClass("bedsnone");
+    });
+    if (IsChatbl(tmpId)) {
+      setTimeout(function () {
+        RdEl.focus();
+      }, 1800);
+    }
+  }
+  if (
+    !Enq09(tmpId) ||
+    (Enq09(tmpId) &&
+      $("#t" + tmpId + "_reqbox").length > 0 &&
+      currentISO() !== "IN")
+  )
+    manipulateWidth(tmpId, ReqObj.Form[tmpId].cName.cnameId);
+  if (
+    (isSSB(tmpId) ||
+      (isImageVidEnq(tmpId) &&
+        (ReqObj.Form[tmpId].isQtutShown === true ||
+          (ReqObj.Form[tmpId].isQtutShown === false &&
+            ReqObj.Form[tmpId].cName.qtut === false)))) &&
+    currentISO() !== "IN"
+  )
+    if (!Enq09(tmpId)) onCName(tmpId, "", "rbox");
+  if (isSSB(tmpId)) onURLName(tmpId);
+  get_buyer_info(tmpId);
+  if (imeshExist() !== "" && !pdpInactiveBL(tmpId))
+    $("#t" + tmpId + "_leftR").removeClass("lftMgn");
+};
+
+RequirementDtl.prototype.EventIfScreenPresent = function (tmpId) {
+  if (isOtherEnq(tmpId)) {
+    this.handleHeading(tmpId);
+    ButtonNameUI("isq", tmpId);
+  }
+  //onCName(tmpId);
+};
+
+RequirementDtl.prototype.handleHeading = function (tmpId) {
+  ReqObj.Form[tmpId].ctaheadingappend = false;
+  if (ReqObj.Form[tmpId].formType.toLowerCase() !== "enq")
+    $("#t" + tmpId + "_hdg")
+      .removeClass("bedsnone")
+      .html(getFormHeading(tmpId, ReqObj.Form[tmpId].currentScreen));
+  else {
+    if (
+      isMoglixUi(tmpId) &&
+      ReqObj["Form"][tmpId].currentScreen != "userverification" &&
+      $("#t" + tmpId + "OtpMainHeading").is(":visible")
+    )
+      $("#t" + tmpId + "OtpMainHeading").remove();
+    if (
+      ReqObj.Form[tmpId].currentScreen.toLowerCase() === "isqrequirementdtl" ||
+      ReqObj.Form[tmpId].currentScreen.toLowerCase() ===
+        "isqrequirementdtlmoredetails"
+    ) {
+      if (
+        $("#isq_first_screen").attr("type") === "hidden" &&
+        $("#isq_first_screen").attr("value") === "Screen1"
+      ) {
+        if (ReqObj.Form[tmpId].IsqLength < 3) {
+          ReqObj.Form[tmpId].ctaheadingappend =
+            ReqObj.Form[tmpId].FormSequence.StepCounter === 0 ? true : false;
+          if (
+            isImageVidEnq(tmpId) &&
+            ReqObj.Form[tmpId].FormSequence.StepCounter === 0
+          )
+            $("#t" + tmpId + "_hdg")
+              .addClass("bedsnone")
+              .html("");
+          else
+            $("#t" + tmpId + "_hdg")
+              .removeClass("bedsnone")
+              .html(getFormHeading(tmpId, "Isq"));
+        } else {
+          if (
+            isImageVidEnq(tmpId) &&
+            ReqObj.Form[tmpId].FormSequence.StepCounter === 0
+          )
+            $("#t" + tmpId + "_hdg")
+              .addClass("bedsnone")
+              .html("");
+          else {
+            $("#t" + tmpId + "_hdg")
+              .removeClass("bedsnone")
+              .html(getFormHeading(tmpId, "isqrequirementdtl"));
+          }
+        }
+      } else
+        $("#t" + tmpId + "_hdg")
+          .removeClass("bedsnone")
+          .html(getFormHeading(tmpId, "isqrequirementdtl"));
+    } else if (
+      ReqObj.Form[tmpId].currentScreen.toLowerCase() === "requirementdtl" ||
+      ReqObj.Form[tmpId].currentScreen.toLowerCase() ===
+        "requirementdtlrequirementdtl" ||
+      ReqObj.Form[tmpId].currentScreen.toLowerCase() ===
+        "requirementdtlmoredetails"
+    ) {
+      if (
+        $("#isq_first_screen").attr("type") === "hidden" &&
+        $("#isq_first_screen").attr("value") === "Screen1"
+      )
+        $("#t" + tmpId + "_hdg")
+          .removeClass("bedsnone")
+          .html(getFormHeading(tmpId, "isqrequirementdtl"));
+      else
+        $("#t" + tmpId + "_hdg")
+          .removeClass("bedsnone")
+          .html(getFormHeading(tmpId, "requirementdtl"));
+    }
+  }
+};
+
+RequirementDtl.prototype.handleButton = function (tmpId) {
+  ButtonNameUI("requirementdtl", tmpId);
+};
+
+RequirementDtl.prototype.handleEvents = function (event) {};
+
+RequirementDtl.prototype.handleUI = function (event) {
+  var tmpId = event.data.tmpId;
+  var todo = event.data.todo;
+  var obj = event.data.obj;
+  if (todo === "defaults") {
+    if (obj.setValue === "yes") {
+      if ($("#t" + tmpId + "_reqBoxTemplates").val() === "") {
+      }
+    }
+  }
+};
+
+RequirementDtl.prototype.validate = function (tmpId) {
+  if (isSet(tmpId) && isSet(ReqObj.Form[tmpId])) {
+    var sel = $("#t" + tmpId + "_reqBoxTemplates");
+    if (!isSet(validation)) createGlobalObject();
+    var description = validation.isDescriptionFilled(sel.val());
+    if (description["type"] === false) {
+      // this.fireTracking({
+      //   data: {
+      //     tmpId: tmpId,
+      //     todo: "default",
+      //   },
+      // });
+      if (
+        !$("#t" + tmpId + "_reqBoxTemplates_err").length &&
+        !IsChatbl(tmpId)
+      ) {
+        var html = "";
+        var cls = isMoglixUi(tmpId) ? "be-erbx beerrp" : "texterr errpdg";
+        html += returnContainer(
+          "t" + tmpId,
+          "_reqBoxTemplates_err",
+          cls,
+          "",
+          ""
+        );
+        html += returnContainer(
+          "t" + tmpId,
+          "_reqBoxTemplates_errmsg",
+          "",
+          "content",
+          ""
+        );
+        html += "</div>" + description["error"] + "</div>";
+        sel.after(html);
+      }
+      if (IsChatbl(tmpId)) {
+        addChatblError(tmpId, description["error"]);
+      } else {
+        $("#t" + tmpId + "_reqBoxTemplates_err").removeClass("bedsnone");
+        var errorcls = isSSB(tmpId)
+          ? isnewSSB(tmpId)
+            ? "nb-erbrd"
+            : "mb-erbrd"
+          : "highlight-err";
+        sel.addClass(errorcls);
+        if (
+          new RegExp("isq").test(ReqObj.Form[tmpId].currentScreen.toLowerCase())
+        )
+          ReqObj.Form[tmpId].isret++;
+        //(isSSB(tmpId)) ? sel.focus() : "";
+      }
+      return false;
+    } else return true;
+  }
+
+  return true;
+};
+
+RequirementDtl.prototype.fireTracking = function (event) {
+  var todo = event.data.todo;
+  var tmpId = event.data.tmpId;
+
+  var form_type =
+    ReqObj.Form[tmpId].formType === "Enq" ? "Send Enquiry" : "Post Buy Leads";
+  if (todo === "default") {
+    var StepNumber = ReqObj.Form[tmpId].FormSequence.StepCounter + 1;
+    blenqGATracking(form_type,"Validation_Error_Desc|" + StepNumber + "|RequirementDetail",getEventLabel(),0,tmpId);
+  }
+  if (todo === "onsuggselect") {
+    var text = event.data.text;
+    var prodName =
+      ReqObj.Form[tmpId].modrefType.toLowerCase() === "product"
+        ? ReqObj.Form[tmpId].prodName
+        : ReqObj.Form[tmpId].mcatName;
+    blenqGATracking(form_type,"|Suggselected-" + text + "|mcat-" + prodName,getEventLabel(),0,tmpId);
+  }
+};
+
+RequirementDtl.prototype.SaveDetails = function (tmpId) {
+  if (isSet(tmpId)) {
+    ReqObj.Form[tmpId].ReqDtlBox = $("#t" + tmpId + "_reqBoxTemplates").val();
+    if (isSet(ReqObj.Form[tmpId].ReqDtlBox) && ReqObj.Form[tmpId].ReqDtlBox)
+      ReqObj.Form[tmpId].ReqDtlBox = ReqObj.Form[tmpId].ReqDtlBox.trim();
+    var type = isSet(ReqObj.UserDetail.fn) && ReqObj.UserDetail.fn !== "" && ReqObj.UserDetail.uv !== "V" && isSecondEnq(tmpId) ? "intent" : "";
+    if ( Enq04(tmpId) && ReqObj.Form[tmpId].intentCalled === false && imeshExist() !== "")
+      toFireGeneration(tmpId, type);
+  }
+};
+
+RequirementDtl.prototype.displayAnswer = function (tmpId) {
+  var ReqBoxAns = NotFilled;
+  if (isSet(ReqObj.Form[tmpId].ReqDtlBox) && ReqObj.Form[tmpId].ReqDtlBox)
+    ReqBoxAns = ReqObj.Form[tmpId].ReqDtlBox;
+  var classtotest = chatBlClass(tmpId, "right");
+  var leftright = IsChatbl(tmpId) ? "cbl_ansr" : "";
+  return [
+    ConversationRightWrapper(tmpId, ReqBoxAns, {
+      classtotest: classtotest,
+      leftright: leftright,
+    }),
+  ];
+};
+
+RequirementDtl.prototype.getData = function (tmpId) {
+  var data = {
+    offer_id: ReqObj.Form[tmpId].generationId,
+    s_glusrid: usercookie.getParameterValue(imeshExist(), "glid"),
+    modid: ReqObj.Form[tmpId].modId,
+    blEnqFlag: IsChatbl(tmpId) ? "BL" : ReqObj.Form[tmpId].formType,
+  };
+  var Comma =
+    trimVal(ReqObj.Form[tmpId].ReqDtlBox) !== "" &&
+    trimVal(ReqObj.Form[tmpId].EnrichmentVal) !== ""
+      ? ", "
+      : "";
+  data["enrichDesc"] =
+    ReqObj.Form[tmpId].ReqDtlBox + Comma + ReqObj.Form[tmpId].EnrichmentVal;
+  if (
+    isSet(ReqObj.Form[tmpId].formType) &&
+    ReqObj.Form[tmpId].formType.toLowerCase() === "enq"
+  ) {
+    data["r_glusrid"] = ReqObj.Form[tmpId].rcvGlid;
+    data["q_dest"] = ReqObj.Form[tmpId].query_destination;
+  }
+  return ObjectTrim(data);
+};
+
+RequirementDtl.prototype.onSubmit = function (tmpId, after) {
+  if (isSet(tmpId)) {
+    var data = this.getData(tmpId);
+    var PreRdObj =
+      isSet(after) && after === true ? "" : PreAjax("RequirementDtl", tmpId);
+    var hitfinserv = "";
+
+    $("#yajaca").hide(); // click away message on pns form
+
+    if (
+      ReqObj.Form[tmpId].ReqDtlBox &&
+      ValidGenId(ReqObj.Form[tmpId].generationId)
+    ) {
+      if (isBl(tmpId) && ReqObj.Form[tmpId].flags.isEnrichCalled) return;
+      ReqObj.Form[tmpId].waitFinServ += 1;
+      ReqObj.Form[tmpId].flags.isEnrichCalled = true;
+      fireAjaxRequest({
+        data: {
+          ga: {
+            s: true,
+            f: true,
+            gatype: "saveEnrichment",
+            source: "",
+          },
+          tmpId: tmpId,
+          ajaxObj: {
+            obj: PreRdObj,
+            s: {
+              ss: 1,
+              sf: {
+                af: 1,
+                pa: 0,
+              },
+              f: 1,
+            },
+            f: {
+              f: 1,
+            },
+          },
+          ajaxtimeout: 0,
+          ajaxdata: data,
+          hitfinserv: hitfinserv,
+          type: 1,
+        },
+      });
+    } else PostAjax(PreRdObj, tmpId);
+  }
+};
+
+// RequirementDtl
+
+// ProductName
+
+function ProductName(tmpId, from) {
+  this.ProductNameHTML = "";
+  this.onselect = 0;
+  this.tmpId = "";
+  ReqObj.Form[tmpId].productObject = this;
+  if (
+    !isSSB(tmpId) &&
+    !(tmpId.substr(0, 2) === "01" && isGlIdEven(tmpId)) &&
+    from !== "enter"
+  )
+    $("#t" + tmpId + "_prodtitle").html("");
+  this.className = "ProductName";
+  this.isProdNameChanged = false;
+  this.ProductNameHtmlObj = {
+    Label: "",
+    UserInput: "",
+    OuterWrapper: "",
+    ClosingWrapper: "",
+  };
+  this.ProductNameHtmlObjArray = [];
+}
+
+ProductName.prototype.addHtmlObjToArray = function (htmlObj) {
+  this.ProductNameHtmlObjArray.push(htmlObj);
+};
+
+ProductName.prototype.displayAnswer = function (tmpId) {
+  var classtotest = chatBlClass(tmpId, "right");
+  var leftright = IsChatbl(tmpId) ? "cbl_ansr" : "";
+  return [
+    ConversationRightWrapper(tmpId, returnAnswer(tmpId, "ProductName"), {
+      classtotest: classtotest,
+      leftright: leftright,
+    }),
+  ];
+};
+
+ProductName.prototype.hasHtml = function (ProductNameObj) {
+  if (isSet(ProductNameObj)) {
+    this.tmpId = ProductNameObj.tmpId;
+    var tmpId = ProductNameObj.tmpId;
+    // if (isSet(ReqObj.UserHtml[tmpId])) {
+    // ReqObj.UserHtml[tmpId]["ProductSugg"] = true;
+    this.addHtmlObjToArray(this.getProductHtml(tmpId));
+    // var ProductNameSuffixObj = {
+    //   "suffix": "_prodtitle",
+    //   "class": ""
+    // };
+    if (!IsChatbl(tmpId)) {
+      var clasnm = isSSB(tmpId)
+        ? ssbClass("wrprClass", tmpId)
+        : isBlInline(tmpId)
+        ? isBlInlineFr(tmpId)
+          ? "fmb15"
+          : "idsf pfstrt mb20"
+        : "porlt";
+      var ProductNameSuffixOuterHtml =
+        "<div  id='t" + tmpId + "_prodtitle' class='" + clasnm + "'>";
+      var ProductNameSuffixClosingHtml = "</div>";
+      var ProductNameSuffixHtmlObj = {
+        SuffixOuterHtml: ProductNameSuffixOuterHtml,
+        SuffixClosingHtml: ProductNameSuffixClosingHtml,
+        suffix: "_prodtitle",
+      };
+
+      this.ProductNameHTML = MakeWrapper(
+        [this.ProductNameHtmlObjArray],
+        tmpId,
+        ProductNameSuffixHtmlObj,
+        ""
+      );
+    } else {
+      this.ProductNameHTMLQues = MakeWrapper(
+        [this.ProductNameHtmlObjArray],
+        tmpId,
+        WrapperObj(
+          "<div  id='t" + tmpId + "_prodtitle' class = 'cbl_ques cbl_vh'>",
+          "</div>",
+          "_prodtitle"
+        ),
+        "ques"
+      );
+
+      this.ProductNameHTMLInput = MakeWrapper(
+        [this.ProductNameHtmlObjArray],
+        tmpId,
+        WrapperObj(
+          "<div class = 'cbl_dtls cbl_prdchng cbl_df t" +
+            tmpId +
+            "_userInput cbl_br10 dn'>",
+          "</div>",
+          "_prodtitle"
+        ),
+        "input"
+      );
+
+      this.ProductNameHTML =
+        this.ProductNameHTMLQues + this.ProductNameHTMLInput;
+    }
+    // var ProdNameHtml = this.ProductNameHTML;
+    // ReqObj.UserHtml[tmpId] = {
+    //   "ProductSugg": true,
+    //   "ProductName": ProdNameHtml
+    // };
+    // }
+    // else {
+    //   ReqObj.UserHtml[tmpId]["ProductSugg"] = false;
+
+    //   this.ProductNameHTML = ReqObj.UserHtml[tmpId]["ProductName"];
+    // }
+    if (this.ProductNameHTML !== "") {
+      ReqObj.Form[tmpId].currentclassCount++;
+      this.ifHtmlPresent(ProductNameObj, tmpId);
+    } else {
+      this.ifHtmlNotPresent(ProductNameObj, tmpId);
+    }
+  }
+};
+
+ProductName.prototype.ifHtmlPresent = function (ProductNameObj, tmpId) {
+  ProductNameObj.that.NumberofClassCalled -= 1;
+  AttachObject(ProductNameObj.object, tmpId);
+  if (isSet(ProductNameObj.AfterService)) {
+    for (var i = 0; i < ProductNameObj.AfterService.length; i++) {
+      ProductNameObj.that.MakeSeq(ProductNameObj.AfterService[i], tmpId);
+    }
+  }
+  if (ProductNameObj.that.NumberofClassCalled === 0) {
+    makeFinalSeq(ProductNameObj, tmpId);
+  }
+};
+
+ProductName.prototype.ifHtmlNotPresent = function (ProductNameObj, tmpId) {
+  if (ProductNameObj.hasFallback) {
+    CreateSeq(ProductNameObj.FallbackObj);
+  } else ProductNameObj.that.NumberofClassCalled -= 1;
+};
+
+ProductName.prototype.returnProductInput = function (tmpId, inputclass) {
+  var placehold = "Enter Product / Service name";
+  var html =
+    '<input templateId="' +
+    tmpId +
+    '" class="' +
+    inputclass +
+    '" type="text" name="q_title" id="t' +
+    tmpId +
+    'prodtitle" onblur="" maxlength="100" placeholder="' +
+    placehold +
+    '" autocomplete="off" spellcheck="true" role="textbox" aria-autocomplete="list" aria-haspopup="true">';
+  if (isSSB(tmpId) && !isnewSSB(tmpId)) return '<div class="mb-InCon">' + html;
+  return html;
+};
+
+ProductName.prototype.returnProductError = function (
+  tmpId,
+  formType,
+  errorclass
+) {
+  var div =
+    '<div class="' +
+    errorclass +
+    '" id="t' +
+    tmpId +
+    '_error_title"><div data-role="content"';
+  div += isSSB(tmpId)
+    ? 'class="mb-ertxt mb-mt10">Enter product/service name</div>'
+    :">Enter product/service name</div>";
+  return div;
+};
+
+ProductName.prototype.getInput = function (tmpId, formType) {
+  this.ProductNameHtmlObj["UserInput"] = IsChatbl(tmpId)
+    ? this.returnProductInput(tmpId, "") + "</div>"
+    : this.getBlEnqInputHtml(tmpId, formType);
+};
+
+ProductName.prototype.getBlEnqInputHtml = function (tmpId, formType) {
+  var html = "";
+  html +=
+    isSSB(tmpId) || isBlInline(tmpId)
+      ? this.returnProductInput(tmpId, "")
+      : !pdpInactiveBL(tmpId)
+      ? this.returnProductInput(tmpId, "be-slbox inpt_errorbx be-row")
+      : this.returnProductInput(
+          tmpId,
+          "be-slbox inpt_errorbx be-row bed_input cpNm wid_600"
+        );
+  var errorcls = isSSB(tmpId) ? "" : "beerrp4 bedsnone be-erbx";
+  html += this.returnProductError(tmpId, formType, errorcls);
+  html += isSSB(tmpId)
+    ? isnewSSB(tmpId)
+      ? "</div>"
+      : "</div></div>"
+    : '<a class="be-erarw" data-role="arrow"></a></div>';
+  if (isBlInline(tmpId)) {
+    var cls = isBlInlineFr(tmpId) ? "flx1" : "pr pflx1";
+    html = "<div class = '" + cls + "'>" + html + "</div>";
+  }
+  return html;
+};
+
+ProductName.prototype.getLabel = function (tmpId, formType) {
+  var cls = isBlInline(tmpId) ? isBlInlineFr(tmpId) ? "fs0 wf" : "fs15 cl11" : "be-lbl";
+  if (pdpInactiveBL(tmpId)) {
+    cls = "be-lbl be-lbl2";
+  }
+  var label = isBlInline(tmpId) || (isSSB(tmpId) && isnewSSB(tmpId)) ? "I want quotes for" : isSSB(tmpId) ? "Product/Service name"
+      : (pdpInactiveBL(tmpId)) ? "Enter Product/Service name <span class='redc'>*</span>" : "Enter Product/Service name";
+  this.ProductNameHtmlObj["Label"] = IsChatbl(tmpId)
+    ? returnLabel("t" + tmpId, "Please enter Product/Service name", "_name-l","") : isSSB(tmpId)
+    ? returnLabel("t" + tmpId, label, "_name-l", ssbClass("label", tmpId))
+    : returnLabel("t" + tmpId, label, "_name-l", cls);
+};
+
+ProductName.prototype.getProductHtml = function (tmpId) {
+  this.getLabel(tmpId, ReqObj.Form[tmpId].formType.toLowerCase());
+  this.getInput(tmpId, ReqObj.Form[tmpId].formType.toLowerCase());
+  this.ProductNameHtmlObj["ClosingWrapper"] = "";
+  this.ProductNameHtmlObj["OuterWrapper"] = "";
+  return this.ProductNameHtmlObj;
+};
+
+ProductName.prototype.displayHtml = function () {
+  return IsChatbl(this.tmpId)
+    ? [this.ProductNameHTMLQues, this.ProductNameHTMLInput]
+    : [this.ProductNameHTML];
+};
+
+ProductName.prototype.handleUI = function (event) {
+  var tmpId = event.data.tmpId;
+  var todo = event.data.todo;
+  if (todo === "default") {
+    // if (ReqObj.UserHtml[tmpId]["ProductSugg"])
+    this.setTitleSuggester(tmpId);
+    $("#t" + tmpId + "_error_title").addClass("bedsnone");
+    isSSB(tmpId)
+      ? $("#t" + tmpId + "prodtitle").removeClass("mb-erbrd nb-erbrd")
+      : $("#t" + tmpId + "prodtitle").removeClass("highlight-err");
+    $("#t" + tmpId + "_name-l").removeClass("redc");
+    this.showMcatFilled(tmpId);
+  }
+};
+
+ProductName.prototype.handleHeading = function (tmpId) {
+  if (isOtherEnq(tmpId)) ButtonNameUI(ReqObj.Form[tmpId].currentScreen, tmpId);
+};
+
+ProductName.prototype.defaultEvents = function (tmpId) {
+  this.handleUI({
+    data: {
+      tmpId: tmpId,
+      todo: "default",
+    },
+  });
+  this.handleEvents(tmpId);
+  $(document)
+    .off("click.prodName keypress.prodName keydown.prodName")
+    .on(
+      "click.prodName keypress.prodName keydown.prodName",
+      ".inpt_errorbx",
+      function () {
+        $("#t" + tmpId + "_error_title").addClass("bedsnone");
+        $("#t" + tmpId + "prodtitle").removeClass("highlight-err");
+        $("#t" + tmpId + "_name-l").removeClass("redc");
+      }
+    );
+
+  isSSB(tmpId)
+    ? $("#t" + tmpId + "prodtitle")
+        .off("keyup")
+        .on("keyup", function () {
+          $("#t" + tmpId + "_error_title").addClass("bedsnone");
+          $("#t" + tmpId + "prodtitle").removeClass("mb-erbrd nb-erbrd");
+        })
+    : "";
+};
+
+ProductName.prototype.handleButton = function (tmpId) {
+  if (Bl04(tmpId)) ButtonNameUI(ReqObj.Form[tmpId].currentScreen, tmpId);
+};
+
+function Callblur(event) {
+  var keycode = event.keyCode ? event.keyCode : event.which;
+  if (
+    keycode === 13 &&
+    event.target.id === "t" + event.data.param1 + "prodtitle"
+  ) {
+    if (isSet($("#t" + event.data.param1 + "prodtitle")[0])) {
+      var EventArray = $._data(
+        $("#t" + event.data.param1 + "prodtitle")[0],
+        "events"
+      );
+      var BLurEvent = isSet(EventArray.blur) ? EventArray.blur : [];
+      for (var b = 0; b < BLurEvent.length; b++) {
+        BLurEvent[b].handler(BLurEvent[b]);
+      }
+      HideSuggester();
+    }
+  }
+}
+
+ProductName.prototype.AddBlur = function (tmpId) {
+  var that = this;
+  $("#t" + tmpId + "prodtitle")
+    .off("blur.blEnqProdNameBlur")
+    .on(
+      "blur.blEnqProdNameBlur",
+      {
+        param1: tmpId,
+        param2: "blur",
+        pnObject: that,
+      },
+      that.checkMcatIDJquery
+    );
+};
+
+ProductName.prototype.RemoveBlur = function (tmpId) {
+  $("#t" + tmpId + "prodtitle").off("blur.blEnqProdNameBlur");
+};
+
+ProductName.prototype.handleEvents = function (tmpId) {
+  this.IsEnterPressed = false;
+  var that = this;
+  var BLurEvents = [];
+  if (
+    document.readyState === "complete" ||
+    document.readyState === "interactive"
+  ) {
+    ChatblfooterAns(tmpId);
+
+    if (ReqObj.Form[tmpId].flags.autofocusPName) {
+      $("#t" + tmpId + "prodtitle").focus();
+    }
+    if (IsChatbl(tmpId)) {
+      setTimeout(function () {
+        $("#t" + tmpId + "prodtitle").focus();
+      }, 1800);
+    } else {
+      that.AddBlur(tmpId);
+
+      // $('#t' + tmpId + 'prodtitle').off("blur.BlEnqEvent").on("blur.BlEnqEvent", { param1: tmpId, param2: "blur", pnObject: that }, that.checkMcatIDJquery);
+
+      $("#t" + tmpId + "prodtitle")
+        .off("mouseleave.BlEnqEvent")
+        .on("mouseleave.BlEnqEvent", function () {
+          $("#t" + tmpId + "_cls").each(function () {
+            if (
+              $(this).css("display") === "block" ||
+              $(this).css("display") === "inline-block"
+            ) {
+              $(this)
+                .off("mouseenter.BlEnqEvent")
+                .on("mouseenter.BlEnqEvent", function (event) {
+                  that.RemoveBlur(tmpId);
+                });
+              $(this)
+                .off("mouseleave.BlEnqEvent")
+                .on("mouseleave.BlEnqEvent", function () {
+                  that.AddBlur(tmpId);
+                });
+            }
+          });
+        });
+
+      $(document)
+        .off("mouseenter.BlEnqEvent")
+        .on(
+          "mouseenter.BlEnqEvent",
+          ".t" + tmpId + "_prodName",
+          function (event) {
+            if (
+              $(this).css("display") === "block" ||
+              $(this).css("display") === "inline-block"
+            ) {
+              that.RemoveBlur(tmpId);
+            }
+          }
+        );
+
+      $(document)
+        .off("mouseleave.BlEnqEvent")
+        .on("mouseleave.BlEnqEvent", ".t" + tmpId + "_prodName", function () {
+          if (
+            $(this).css("display") === "block" ||
+            $(this).css("display") === "inline-block"
+          ) {
+            that.AddBlur(tmpId);
+          }
+        });
+
+      var SubmitDisplay = $("#t" + tmpId + "_submit").css("display");
+      if (SubmitDisplay === "block" || SubmitDisplay === "inline-block") {
+        $("#t" + tmpId + "_submit")
+          .off("mouseenter.BlEnqEvent")
+          .on("mouseenter.BlEnqEvent", function () {
+            that.RemoveBlur(tmpId);
+          });
+
+        $("#t" + tmpId + "_submit")
+          .off("mouseleave.SubmitBtn")
+          .on("mouseleave.SubmitBtn", function () {
+            that.AddBlur(tmpId);
+          });
+      }
+    }
+
+    $("#t" + tmpId + "prodtitle")
+      .off("keypress.BlEnqEvent")
+      .on("keypress.BlEnqEvent", function (event) {
+        var keycode = event.keyCode ? event.keyCode : event.which;
+        if (keycode === 13) {
+          // if (that.isProdNameChanged)
+          //   // RefactorFormArrays(tmpId);
+          if (!$("#t" + tmpId + "_submit").is(":disabled")) {
+            that.IsEnterPressed = true;
+            $("#t" + tmpId + "prodtitle").off("blur");
+            HideSuggester();
+          }
+        }
+      });
+  }
+};
+
+ProductName.prototype.setTitleSuggester = function (tmpId) {
+  // $("#t" + tmpId + "prodtitle").html("");
+  var that = this;
+  var title_sugg = "sugg_title_" + tmpId;
+
+  var title_count = setInterval(function () {
+    if (typeof Suggester !== "undefined") {
+      var ProductNameSuffix = "_prodName";
+      //remove all existing product name suggestor
+      $(".t" + tmpId + ProductNameSuffix).each(function () {
+        $(this).remove();
+      });
+      //upto here
+      var autocompleteClass = SetAutoCompleteClass(tmpId, ProductNameSuffix);
+      var row_num = BlAutoSuggRowNum(tmpId);
+      window[title_sugg] = new Suggester({
+        element: "t" + tmpId + "prodtitle",
+        getQuotation: false,
+        onSelect: that.selectTitle,
+        fields: "",
+        type: "product",
+        module: "BL-FORM",
+        rowsToDisplay: row_num,
+        recentData: 1,
+        autocompleteClass: autocompleteClass,
+      });
+      if (JSON.stringify(title_sugg)) {
+        if (
+          isSet(tmpId) &&
+          isSet(ReqObj.Form[tmpId]) &&
+          isSet(ReqObj.Form[tmpId].flags)
+        )
+          ReqObj.Form[tmpId].flags.isTitleSuggSet = true;
+        clearInterval(title_count);
+      }
+    }
+  }, 1000);
+};
+
+ProductName.prototype.selectTitle = function (event, ui) {
+  var that = ReqObj.Form[$(this).attr("templateId")].productObject;
+  if (isSet(that)) {
+    if (isSSB(that.tmpId) && IsBlEnqProdNameChanged(that.tmpId))
+      ReqObj.Form[that.tmpId].url.html = false;
+    if (
+      $("#t" + that.tmpId + "prodtitle").length &&
+      ReqObj.Form[that.tmpId].prodName !==
+        $("#t" + that.tmpId + "prodtitle").val()
+    ) {
+      if (isSet(ui) && isSet(ui.item)) {
+        if (ui.item.value) {
+          $("#t" + that.tmpId + "prodtitle").val(ui.item.value);
+          if (IsChatbl(that.tmpId))
+            ReqObj.Form[that.tmpId].UserInputs["ProductName"] = ui.item.value;
+          ReqObj.Form[that.tmpId].prodName = ui.item.value;
+          ReqObj.Form[that.tmpId].prodDispName = "";
+          ReqObj.Form[that.tmpId].mcatName = "";
+        }
+        if (
+          isSet(ui.item.mcat_id) &&
+          isSet(ui.item.mcat_id[0]) &&
+          isSet(ui.item.cat_id) &&
+          isSet(ui.item.cat_id[0])
+        ) {
+          ReqObj.Form[that.tmpId].mcatId = ui.item.mcat_id[0];
+          ReqObj.Form[that.tmpId].catId = ui.item.cat_id[0];
+          ReqObj.Form[that.tmpId].callLeftSide = false;
+          that.getMcatImage(that.tmpId, "select");
+          if (isSet(that.tmpId) && that.tmpId.substring(0, 2) === "09")
+            AfterFormDefaults(that.tmpId);
+          $("#t" + that.tmpId + "prodtitle").focus();
+        } else {
+          ReqObj.Form[that.tmpId].IsProdNameChanged = true;
+          that.getMcatDetail(
+            $("#t" + that.tmpId + "prodtitle").val(),
+            that.tmpId,
+            "select"
+          );
+        }
+      } else {
+        ReqObj.Form[that.tmpId].IsProdNameChanged = true;
+        that.getMcatDetail(
+          $("#t" + that.tmpId + "prodtitle").val(),
+          that.tmpId,
+          "select"
+        );
+      }
+    }
+  }
+};
+
+ProductName.prototype.SaveDetails = function (tmpId, event) {
+  if (IsChatbl(tmpId)) {
+    ReqObj.Form[tmpId].UserInputs["ProductName"] = $(
+      "#t" + tmpId + "prodtitle"
+    ).val(); /* for chat bl*/
+  }
+  //
+};
+
+ProductName.prototype.getMcatImage = function (tmpId) {
+  if (
+    isSet(tmpId) &&
+    isSet(ReqObj.Form[tmpId]) &&
+    isSet(ReqObj.Form[tmpId].formType)
+  ) {
+    //POPUPCHATBL
+    var form_type =
+      ReqObj.Form[tmpId].formType === "Enq" ? "Send Enquiry" : "Post Buy Leads";
+    $("#t" + tmpId + "_imglodr").removeClass("bedsnone");
+    ReqObj.Form[tmpId].mcatImage = "";
+    if (
+      !isSSB(tmpId) &&
+      isSet(ReqObj.Form[tmpId].mcatId) &&
+      parseInt(ReqObj.Form[tmpId].mcatId) !== -1
+    ) {
+      getMcatImage(tmpId, "", 1);
+    } else if (parseInt(ReqObj.Form[tmpId].mcatId, 10) === -1) {
+      ReqObj.Form[tmpId].displayImage = "";
+      ReqObj.Form[tmpId].zoomImage = "";
+      $("#t" + tmpId + "_imglodr").addClass("bedsnone");
+      leftSideTransition(0, tmpId);
+    }
+  }
+};
+/***
+ * Function ID - 2
+ *
+ * Usage: Function to fetch mcat detail
+ *
+ * Output: It will set Mcat-ID, Cat-ID, Type in global object
+ ***/
+ProductName.prototype.getMcatDetail = function (
+  mcatMatch,
+  tmpId,
+  eventName,
+  prdnmObj,
+  from
+) {
+  var that = this;
+  // /var submit_url = appsServerName + 'models/mcatid-suggestion.php?search_param=' + encodeURIComponent(mcatMatch);
+  if (isSet(ReqObj.Form[tmpId].isBlQtutShown)) {
+    ReqObj.Form[tmpId].isBlQtutShown = false;
+  }
+  if (isSet(mcatMatch) && mcatMatch !== "") {
+    var submit_url =
+      "//apps.imimg.com/models/mcatid-suggestion.php?search_param=" +
+      encodeURIComponent(mcatMatch);
+    addBlLoader(tmpId, "center");
+    ReqObj.Form[tmpId].mcatId = -2;
+    if (IsChatbl(tmpId)) {
+      $("#t" + tmpId + "prodtitle")
+        .prop("disabled", true)
+        .addClass("chatblur");
+      $("#t" + tmpId + "_submit")
+        .prop("disabled", true)
+        .addClass("chatblur");
+    }
+    $.ajax({
+      cache: false,
+      url: submit_url,
+      type: "GET",
+      //timeout: 3000,
+      dataType: "json",
+      success: function (data) {
+        if (isSet(data) && data !== "") {
+          ReqObj.Form[tmpId].mcatId = isSet(data["mcatid"])
+            ? data["mcatid"]
+            : -1;
+          ReqObj.Form[tmpId].catId = isSet(data["catid"]) ? data["catid"] : -1;
+          ReqObj.Form[tmpId].mcatType = isSet(data["type"]) ? data["type"] : "";
+          ReqObj.Form[tmpId].prodDispName = "";
+          ReqObj.Form[tmpId].mcatName = "";
+        } else {
+          ReqObj.Form[tmpId].mcatId = -1;
+          ReqObj.Form[tmpId].catId = -1;
+          ReqObj.Form[tmpId].mcatType = "";
+        }
+      },
+      error: function (o, st, e) {
+        ReqObj.Form[tmpId].mcatId = -1;
+        ReqObj.Form[tmpId].catId = -1;
+        ReqObj.Form[tmpId].mcatType = "";
+        return;
+      },
+      complete: function (res) {
+        //this is the case for enter functionality of the form
+        ReqObj.Form[tmpId].isProdNameChanged = true;
+        addDetachedFlag(tmpId);
+        //detachFlag2(tmpId);
+        ReqObj.Form[tmpId].cName.prodServ = ReqObj.Form[tmpId].mcatType;
+        if (IsChatbl(tmpId)) {
+          $("#t" + tmpId + "prodtitle")
+            .prop("disabled", false)
+            .removeClass("chatblur");
+          $("#t" + tmpId + "_submit")
+            .prop("disabled", false)
+            .removeClass("chatblur");
+        }
+        if (StaticQuesForeignUser(tmpId)) {
+          if (ReqObj.Form[tmpId].mcatType.toLowerCase() === "p")
+            ReqObj.Form[tmpId].modrefType = "product";
+          else ReqObj.Form[tmpId].modrefType = "company";
+        }
+        removeBLLoader(tmpId, "center");
+        if (isBl(tmpId) || isSSB(tmpId)) {
+          savenem(tmpId);
+          if (isSet(ReqObj.Form[tmpId].ReqDtlBox))
+            ReqObj.Form[tmpId].ReqDtlBox = "";
+          if (
+            isSet(ReqObj.Form[tmpId].userFilledIsq) &&
+            ReqObj.Form[tmpId].userFilledIsq.length
+          )
+            ReqObj.Form[tmpId].userFilledIsq = [];
+          if (isSSB(tmpId) && currentISO() == "IN") savemc(tmpId);
+        }
+        if (that.isProdNameChanged) {
+          DirectSubmitWithoutBlur(tmpId);
+        }
+        ReqObj.Form[tmpId].prodName = mcatMatch;
+        ReqObj.Form[tmpId].callLeftSide = false;
+        if (IsChatbl(tmpId)) {
+          "" !== ReqObj.Form[tmpId].mcatName
+            ? updateChatBlProdName(tmpId)
+            : $(".productname").text(ReqObj.Form[tmpId].prodName); //
+        }
+
+        that.getMcatImage(tmpId);
+        if (isSet(prdnmObj)) PostAjax(prdnmObj, tmpId);
+
+        if (
+          isSet(eventName) &&
+          (eventName === "blur" || eventName === "select")
+        ) {
+          ReqObj.Form[tmpId].flags.autofocusPName = true;
+          if (
+            $("#t" + tmpId + "prodtitle").length > 0 &&
+            $("#t" + tmpId + "prodtitle").val() === mcatMatch
+          ) {
+            if (!IsChatbl(tmpId)) {
+              if (isBl(tmpId) && NEC()) {
+                ReqObj.Form[tmpId].flags.isNECShown = false;
+              }
+              AfterFormDefaults(tmpId);
+              // if (tmpId.substring(0, 2) === "09")
+
+              // // OpenForm(ReqObj.Form[tmpId]);
+              // else InlineForm(ReqObj.Form[tmpId]);
+            } else {
+              GetIsqFromService(tmpId);
+            }
+          }
+
+          // if (!IsChatbl(tmpId)) $('#t' + that.tmpId + 'prodtitle').focus();
+          // $('#t' + that.tmpId + 'prodtitle').focus();
+
+          if (IsChatbl(tmpId)) {
+            // $('#t' + that.tmpId + 'prodtitle').off("focus");
+            // $('#t' + that.tmpId + 'prodtitle').focus();
+            // that.setTitleSuggester(that.tmpId);
+          }
+        }
+
+        //}
+      },
+    });
+  }
+};
+
+ProductName.prototype.showMcatFilled = function (tmpId) {
+  var name = "";
+  if (ReqObj.Form[tmpId].prodName !== "") {
+    if (
+      typeof ReqObj.Form[tmpId].prodServ !== "undefined" &&
+      ReqObj.Form[tmpId].prodServ !== "C"
+    ) {
+      name = ReqObj.Form[tmpId].prodName;
+    } else if (
+      ReqObj.Form[tmpId].prodServ === "C" &&
+      ReqObj.Form[tmpId].formType === "BL"
+    )
+      name = ReqObj.Form[tmpId].prodName;
+  }
+  if (!IsChatbl(tmpId))
+    if (isSSB(tmpId) && ReqObj.Form[tmpId].flags.prodSecNochange) {
+      ReqObj.Form[tmpId].flags.prodSecNochange = false;
+    } else {
+      $("#t" + tmpId + "prodtitle").val(name);
+      /*if(isSSB(tmpId) && isnewSSB(tmpId) && $('#t' + tmpId + 'prodtitle').val() !== "")
+      $('#t' + tmpId + 'prodtitle').parent().addClass("focused");*/
+    }
+};
+
+ProductName.prototype.onSubmit = function (tmpId) {
+  var that = this;
+  var prdnmObj = PreAjax("ProductName", tmpId);
+  if (IsBlEnqProdNameChanged(tmpId)) {
+    this.isProdNameChanged = true;
+  }
+  if (pdpInactiveBL(tmpId)) {
+    $("#recommendProd").css({
+      display: "none",
+    });
+    $("#t" + tmpId + "_helpQuest").css({
+      display: "block",
+    });
+  }
+
+  this.checkMcatID(
+    {
+      param1: tmpId,
+      param2: "submit",
+    },
+    prdnmObj
+  );
+};
+
+ProductName.prototype.validate = function (tmpId, event) {
+  var form_type =
+    ReqObj.Form[tmpId].formType === "Enq" ? "Send Enquiry" : "Post Buy Leads";
+  var productName = $("#t" + tmpId + "prodtitle").val();
+  if (!isSet(validation)) createGlobalObject();
+  var isProductNameValid = validation.isProductNameValid(productName);
+  var StepNumber = ReqObj.Form[tmpId].FormSequence.StepCounter + 1;
+  if (isProductNameValid["type"] === false) {
+    blenqGATracking(form_type,"Validation_Error_Prd_Title|" + StepNumber + "|ProductName",getEventLabel(),1,tmpId);
+    if (IsChatbl(tmpId)) {
+      addChatblError(tmpId, isProductNameValid.error);
+    } else {
+      var errorcls = isSSB(tmpId)
+        ? isnewSSB(tmpId)
+          ? "nb-erbrd"
+          : "mb-erbrd"
+        : "highlight-err";
+      $("#t" + tmpId + "_error_title")
+        .removeClass("bedsnone")
+        .focus();
+      var prderrm = isProductNameValid["specialcase"]
+        ? "Enter valid product/service name"
+        : "Enter product/service name";
+      $("#t" + tmpId + "_error_title")
+        .children("div")
+        .first()
+        .text(prderrm);
+      $("#t" + tmpId + "prodtitle").addClass(errorcls);
+      isSSB(tmpId) ? $("#t" + tmpId + "prodtitle").focus() : "";
+    }
+    if (!isSSB(tmpId) && !IsChatbl(tmpId))
+      $("#t" + tmpId + "_name-l").addClass("redc");
+    ReqObj.Form[tmpId].validateArray.push("t" + tmpId + "prodtitle");
+    return false;
+  } else {
+    // var isMandatory = true;
+    // return IsTNCChecked(tmpId, isMandatory, usercookie.getParameterValue(imeshExist(), "fn"));
+    return true;
+  }
+};
+
+ProductName.prototype.checkMcatIDJquery = function (event) {
+  event.data.pnObject.checkMcatID(event.data);
+};
+
+ProductName.prototype.checkMcatID = function (eventData, prdnmObj) {
+  var tmpId = eventData.param1;
+  var eventName = eventData.param2;
+  if (isScriptTag($("#t" + tmpId + "prodtitle").val())) {
+    if (IsChatbl(tmpId)) {
+      addChatblError(tmpId, isProductNameValid.error);
+    } else {
+      var errorcls = isSSB(tmpId)
+        ? isnewSSB(tmpId)
+          ? "nb-erbrd"
+          : "mb-erbrd"
+        : "highlight-err";
+      $("#t" + tmpId + "_error_title")
+        .removeClass("bedsnone")
+        .focus();
+      var prderrm = "Enter valid product/service name";
+      $("#t" + tmpId + "_error_title")
+        .children("div")
+        .first()
+        .text(prderrm);
+      $("#t" + tmpId + "prodtitle").addClass(errorcls);
+      isSSB(tmpId) ? $("#t" + tmpId + "prodtitle").focus() : "";
+    }
+    if (!isSSB(tmpId) && !IsChatbl(tmpId))
+      $("#t" + tmpId + "_name-l").addClass("redc");
+
+    return;
+  }
+
+  if (IsBlEnqProdNameChanged(tmpId)) {
+    this.getMcatDetail(
+      $("#t" + tmpId + "prodtitle").val(),
+      tmpId,
+      eventName,
+      prdnmObj
+    );
+  } else {
+    if (isSet(prdnmObj)) PostAjax(prdnmObj, tmpId);
+  }
+};
+
+function IsBlEnqProdNameChanged(tmpId) {
+  if (isSet(tmpId)) {
+    if (
+      $("#t" + tmpId + "prodtitle").length &&
+      $("#t" + tmpId + "prodtitle").val() !== "" &&
+      $("#t" + tmpId + "prodtitle").val() !== "Enter product/service name" &&
+      ReqObj.Form[tmpId].prodName !== $("#t" + tmpId + "prodtitle").val()
+    ) {
+      ReqObj.Form[tmpId].populate = false;
+      return true;
+    } else {
+      ReqObj.Form[tmpId].populate = true;
+      return false;
+    }
+  }
+}
+// ProductName
+
+// ContactDetail
+ /*------------------Contact-Detail--------------------------*/
+  
+ function ContactDetail(name, email, city) {
+  this.setName = "";
+  this.setEmail = "";
+  this.setCity = "";
+  this.setMobile = "";
+
+  this.imeshCookie = "";
+  this.iplocCookie = "";
+
+  this.usercountry = "";
+  this.geoip_country_iso = "";
+
+  this.name = name;
+  this.email = email;
+  this.city = city;
+  this.shownHtml = [];
+  this.contactdetailhtml = "";
+  this.className = "ContactDetail";
+
+  this.ContactDetailHtmlNameObj = {
+    Label: "",
+    UserInput: "",
+    OuterWrapper: "",
+    ClosingWrapper: "",
+  };
+  this.ContactDetailHtmlEmailObj = {
+    Label: "",
+    UserInput: "",
+    OuterWrapper: "",
+    ClosingWrapper: "",
+  };
+  this.ContactDetailHtmlCityObj = {
+    Label: "",
+    UserInput: "",
+    OuterWrapper: "",
+    ClosingWrapper: "",
+  };
+  this.ContactDetailHtmlObjArray = [];
+  this.nonMandatory = false;
+  this.classCount = 0;
+  this.templateId = "";
+  this.phonecalled = false;
+}
+
+ContactDetail.prototype.getClassCount = function (tmpId) {
+  if ($.isEmptyObject(ReqObj.Form[tmpId].ContactDetail)) this.classCount = 1;
+  else this.classCount = returnObjectSize(ReqObj.Form[tmpId].ContactDetail) + 1;
+  ReqObj.Form[tmpId].nec.classCount = this.classCount;
+};
+
+ContactDetail.prototype.returnKey = function (tmpId) {
+  var key = "";
+  if (this.name === 1 && this.email === 0 && this.city === 0) {
+    key = "Name";
+  }
+  if (this.name === 0 && this.email === 1 && this.city === 0) {
+    if (currentISO() === "IN") {
+      key = "Email";
+    } else {
+      key = "Mobile";
+    }
+  }
+  if (this.name === 0 && this.email === 0 && this.city === 1) {
+    key = "City";
+  }
+  return key;
+};
+
+ContactDetail.prototype.displayAnswer = function (tmpId) {
+  var key = this.returnKey(tmpId);
+  var name = "";
+
+  if (this.name === 1 && this.email === 0 && this.city === 0) {
+    name = ReturnBlUserName(tmpId);
+  }
+  var classtotest = chatBlClass(tmpId, "right");
+  var leftright = IsChatbl(tmpId) ? "cbl_ansr" : "";
+  return [
+    ConversationRightWrapper(tmpId, returnAnswer(tmpId, key), {
+      classtotest: classtotest,
+      leftright: leftright,
+    }),
+    name,
+  ];
+};
+ContactDetail.prototype.SaveDetails = function (tmpId, event) {
+  if (IsChatbl(tmpId) || isSSB(tmpId)) {
+    ReqObj.Form[tmpId].UserInputs["Name"] = $(
+      "#t" + tmpId + "_q_first_nm" + this.classCount
+    ).val();
+    ReqObj.Form[tmpId].UserInputs["Mobile"] = $(
+      "#t" + tmpId + "_q_mobile_f" + this.classCount
+    ).val();
+    ReqObj.Form[tmpId].UserInputs["Email"] = $(
+      "#t" + tmpId + "_q_email_in" + this.classCount
+    ).val()
+      ? $("#t" + tmpId + "_q_email_in" + this.classCount)
+          .val()
+          .trim()
+      : "";
+    ReqObj.Form[tmpId].UserInputs["City"] =
+      isSet(ReqObj.Form[tmpId].UserInputs["City"]) &&
+      ReqObj.Form[tmpId].UserInputs["City"] !== ""
+        ? ReqObj.Form[tmpId].UserInputs["City"]
+        : $("#t" + tmpId + "_q_city_oth" + this.classCount).val();
+    IsChatBLInline(tmpId) &&
+    isSet($("#t" + tmpId + "_q_city_oth" + this.classCount).val()) &&
+    isSet($(".t0801_CitySuggestor"))
+      ? $(".t0801_CitySuggestor").css("display", "none")
+      : "";
+    /* OptiNeeded-this change is not related to save details functions - write it in appropriate place */
+  }
+};
+
+ContactDetail.prototype.displayHtml = function (tmpId) {
+  this.templateId = tmpId;
+  if (tmpId.substring(0, 2) === "09") {
+    if (this.name === 1 && this.email === 1 && this.city === 1)
+      ReqObj.Form[tmpId].flags.isNECShown = true;
+  } else {
+    if (this.name === 1 && this.email === 1 && this.city === 1)
+      ReqObj.Form[tmpId].flags.isNECShown = true;
+    else {
+      ReqObj.Form[tmpId].flags.isNECShown = false;
+    }
+  }
+  if (IsChatbl(tmpId)) {
+    return [this.contactdetailLabelhtml, this.contactdetailInputhtml];
+  }
+  if (isOtherEnq(tmpId)) {
+    ReqObj.Form[tmpId].calledClassName[
+      ReqObj.Form[tmpId].FormSequence.StepCounter
+    ] = this.className;
+  }
+  return [this.contactdetailhtml];
+};
+ContactDetail.prototype.addHtmlObjToArray = function (htmlObj) {
+  if (isSet(htmlObj)) this.ContactDetailHtmlObjArray.push([htmlObj]);
+};
+ContactDetail.prototype.getContactDetailHtml = function (tmpId) {
+  var changeiso = currentISO();
+  if (
+    this.imeshCookie &&
+    this.name === 1 &&
+    this.email === 1 &&
+    this.city === 1
+  ) {
+    if (this.setName === "") this.addHtmlObjToArray(this.showName(tmpId));
+    if (
+      (this.setEmail === "" && changeiso === "IN") ||
+      (this.setMobile === "" &&
+        changeiso !== "IN" &&
+        ReqObj.Form[tmpId].OnCloseStep === true &&
+        !isEnq(tmpId)) ||
+      (this.setMobile === "" && changeiso !== "IN" && isnewSSB(tmpId)) ||
+      (this.setMobile === "" &&
+        changeiso !== "IN" &&
+        (isEnq(tmpId) || isBl(tmpId)))
+    )
+      this.addHtmlObjToArray(this.showEmailOrMobile(tmpId));
+    if (
+      ((isSet(changeiso) && changeiso === "IN") || this.usercountry === "IN") &&
+      this.setCity === ""
+    )
+      this.addHtmlObjToArray(this.showCity(tmpId));
+  } else if (this.name === 1 && this.email === 0 && this.city === 0) {
+    if (this.setName === "") this.addHtmlObjToArray(this.showName(tmpId));
+  } else if (this.email === 1 && this.name === 0 && this.city === 0) {
+    this.addHtmlObjToArray(this.showEmailOrMobile(tmpId));
+  } else if (this.email === 0 && this.name === 0 && this.city === 1) {
+    if (changeiso === "IN") this.addHtmlObjToArray(this.showCity(tmpId));
+  } else if (this.name === 1 && this.email === 1 && this.city === 1) {
+    if (this.setName === "") this.addHtmlObjToArray(this.showName(tmpId));
+    if (
+      (this.setEmail === "" && changeiso === "IN") ||
+      (this.setMobile === "" &&
+        changeiso !== "IN" &&
+        ReqObj.Form[tmpId].OnCloseStep === true &&
+        !isEnq(tmpId)) ||
+      isSSB(tmpId) ||
+      (this.setMobile === "" &&
+        changeiso !== "IN" &&
+        (isEnq(tmpId) || isBl(tmpId)))
+    )
+      this.addHtmlObjToArray(this.showEmailOrMobile(tmpId));
+    if (
+      ((isSet(changeiso) && changeiso === "IN") || this.usercountry === "IN") &&
+      this.setCity === ""
+    )
+      this.addHtmlObjToArray(this.showCity(tmpId));
+  }
+
+  if (this.ContactDetailHtmlObjArray.length > 0) {
+    if (!IsChatbl(tmpId)) {
+      var clsnm =
+        pdpenqImage(tmpId) ||
+        isFirstImgVidCTA(tmpId) ||
+        isSSB(tmpId) ||
+        isFirstImgVidCTAFR(tmpId) ||
+        isBlInlineFr(tmpId) ||
+        ((isEnq(tmpId) || Bl09(tmpId)) &&
+          currentISO() !== "IN" &&
+          imeshExist() === "")
+          ? ""
+          : isMoglixUi(tmpId)
+          ? "bemt10"
+          : "beW5"; //tmpid to be replaced by formtype
+      if (pdpInactiveBL(tmpId)) clsnm = "";
+      if (
+        ReqObj.Form[tmpId].ctaName.toLowerCase() === "middle" &&
+        Bl04(tmpId) &&
+        ReqObj.Form[tmpId].FormSequence._screenCounter === 0
+      )
+        clsnm = "";
+      var wrapperclass =
+        isSSB(tmpId) || isBlInline(tmpId) || isMoglixUi(tmpId)
+          ? ""
+          : pdpInactiveBL(tmpId)
+          ? "belft beW11 bemgb15"
+          : "belft beW11 beclr";
+      if (
+        tmpId.substring(0, 2) === "09" &&
+        !imeshExist() &&
+        currentISO() === "IN"
+      )
+        wrapperclass += " bedsnone";
+      var appendDiv =
+        !isImageVidEnq(tmpId) &&
+        isEnq(tmpId) &&
+        currentISO() !== "IN" &&
+        ReqObj.Form[tmpId].FormSequence._stepCounter === 0 &&
+        !imeshExist()
+          ? "<div class='berow'></div>"
+          : "";
+      var ContactInfoSuffixOuterHtml =
+        "<div class='" +
+        wrapperclass +
+        "' id='t" +
+        tmpId +
+        "_contactinfo" +
+        this.classCount +
+        "'>" +
+        appendDiv +
+        "<div id='t" +
+        tmpId +
+        "_idcontactscreen" +
+        this.classCount +
+        "' class='" +
+        clsnm +
+        "'>";
+      var countryDiv = this.countryDiv(tmpId);
+      var cntflg = flagd(countryDiv, tmpId);
+      var ContactInfoSuffixClosingHtml =
+        Bl04(tmpId) &&
+        ReqObj["Form"][tmpId].modId === "DIR" &&
+        !isNotfoundBl(tmpId) &&
+        ReqObj.Form[tmpId].flag
+          ? "</div></div >" + cntflg
+          : "</div></div >";
+      var ContactInfoSuffixHtmlObj = {
+        SuffixOuterHtml: ContactInfoSuffixOuterHtml,
+        SuffixClosingHtml: ContactInfoSuffixClosingHtml,
+        suffix: "_contactinfo",
+        isPhone: this.phonecalled,
+      };
+      var contactdetailhtml = MakeWrapper(
+        this.ContactDetailHtmlObjArray,
+        tmpId,
+        ContactInfoSuffixHtmlObj,
+        ""
+      );
+    } else {
+      var contactcls = "beW5";
+      var ContactInfoSuffixOuterHtml =
+        "<div class='cbl_ques cbl_vh' id='t" +
+        tmpId +
+        "_contactinfo" +
+        this.classCount +
+        "'> <div id='t" +
+        tmpId +
+        "_idcontactscreen" +
+        this.classCount +
+        "' class='" +
+        contactcls +
+        "'>";
+      var ContactInfoSuffixClosingHtml = "</div></div > ";
+      var appendExtra = "";
+      var suggCity = "";
+      if (
+        isSet(this.ContactDetailHtmlObjArray[0]) &&
+        isSet(this.ContactDetailHtmlObjArray[0][0]) &&
+        isSet(this.ContactDetailHtmlObjArray[0][0].appendExtra)
+      ) {
+        appendExtra = this.ContactDetailHtmlObjArray[0][0].appendExtra;
+      }
+      if (
+        isSet(this.ContactDetailHtmlObjArray[0]) &&
+        isSet(this.ContactDetailHtmlObjArray[0][0]) &&
+        isSet(this.ContactDetailHtmlObjArray[0][0].suggCity)
+      ) {
+        suggCity = this.ContactDetailHtmlObjArray[0][0].suggCity;
+      }
+      this.contactdetailLabelhtml =
+        MakeWrapper(
+          this.ContactDetailHtmlObjArray,
+          tmpId,
+          WrapperObj(
+            ContactInfoSuffixOuterHtml,
+            ContactInfoSuffixClosingHtml,
+            "_contactinfo"
+          ),
+          "ques"
+        ) +
+        appendExtra +
+        suggCity +
+        "</div>";
+
+      var ContactInfoSuffixOuterHtml =
+        "<div class='t" +
+        tmpId +
+        "_userInput cbl_br10 dn' id='t" +
+        tmpId +
+        "_contactinfo" +
+        this.classCount +
+        "'> <div id='t" +
+        tmpId +
+        "_idcontactscreen" +
+        this.classCount +
+        "' class='beW5 cbl_dtls cbl_name cbl_df cbl_w1 cbl_br10'>";
+      var ContactInfoSuffixClosingHtml = "</div></div > ";
+      this.contactdetailInputhtml = MakeWrapper(
+        this.ContactDetailHtmlObjArray,
+        tmpId,
+        WrapperObj(
+          ContactInfoSuffixOuterHtml,
+          ContactInfoSuffixClosingHtml,
+          "_contactinfo"
+        ),
+        "input"
+      );
+      var contactdetailhtml =
+        this.contactdetailLabelhtml + this.contactdetailInputhtml;
+    }
+    ReqObj.Form[tmpId].ContactDetail[this.classCount] = contactdetailhtml;
+    return contactdetailhtml;
+  } else return "";
+};
+
+ContactDetail.prototype.hasHtml = function (ContactDetailObj) {
+  if (isSet(ContactDetailObj)) {
+    var tmpId = ContactDetailObj.tmpId;
+    this.type = isSet(ContactDetailObj.type)
+      ? ContactDetailObj.type
+      : { code: "", step: "" };
+    this.getClassCount(tmpId);
+    this.nonMandatory =
+      typeof ContactDetailObj.nonMandatory !== "undefined"
+        ? ContactDetailObj.nonMandatory
+        : "";
+    this.captureDetails(tmpId);
+    this.cookies(tmpId);
+    this.onlastscreen =
+      isSet(ContactDetailObj.additionalkey) &&
+      isSet(ContactDetailObj.additionalkey.onlastscreen)
+        ? ContactDetailObj.additionalkey.onlastscreen
+        : false;
+    this.contactdetailhtml = this.getContactDetailHtml(tmpId);
+
+    ContactDetailObj.that.NumberofClassCalled -= 1;
+
+    if (this.contactdetailhtml !== "") {
+      ReqObj.Form[tmpId].currentclassCount++;
+      this.ifHtmlPresent(ContactDetailObj, tmpId);
+    } else {
+      this.ifHtmlNotPresent(ContactDetailObj, tmpId);
+    }
+  }
+};
+
+ContactDetail.prototype.ifHtmlPresent = function (ContactDetailObj, tmpId) {
+  AttachObject(ContactDetailObj.object, tmpId);
+  if (isSet(ContactDetailObj.AfterService)) {
+    for (var i = 0; i < ContactDetailObj.AfterService.length; i++) {
+      ContactDetailObj.that.MakeSeq(ContactDetailObj.AfterService[i], tmpId);
+    }
+  }
+  if (ContactDetailObj.that.NumberofClassCalled === 0) {
+    makeFinalSeq(ContactDetailObj, tmpId);
+  }
+};
+
+ContactDetail.prototype.ifHtmlNotPresent = function (ContactDetailObj, tmpId) {
+  if (ContactDetailObj.hasFallback) {
+    CreateSeq(ContactDetailObj.FallbackObj);
+  }
+};
+
+ContactDetail.prototype.defaultEvents = function (tmpId) {
+  var that = this;
+  if (ReqObj.Form[tmpId].afflId === "-126")
+    $("#t" + tmpId + "_q_first_nm").attr("placeholder", "Enter your Name");
+  that.handleUI({
+    data: {
+      obj: that,
+      todo: "nameUI",
+      tmpId: tmpId,
+    },
+  });
+  that.handleUI({
+    data: {
+      obj: that,
+      todo: "default",
+      tmpId: tmpId,
+    },
+  });
+  if (ReqObj.Form[tmpId].OnCloseStep === true) {
+    that.handleUI({
+      data: {
+        obj: that,
+        todo: "cityOthers",
+        tmpId: tmpId,
+      },
+    });
+  }
+  if (IsChatbl(tmpId)) {
+    that.handleUI({
+      data: {
+        obj: that,
+        todo: "focus",
+        tmpId: tmpId,
+      },
+    });
+    ChatblfooterAns(tmpId);
+  }
+  that.handleEvents(this, tmpId);
+  if (isOtherEnq(tmpId)) {
+    if (NEC()) $("#t" + tmpId + "_hdg").addClass("ln26");
+  }
+  if (imeshExist() !== "" && !pdpInactiveBL(tmpId))
+    $("#t" + tmpId + "_leftR").removeClass("lftMgn");
+  get_buyer_info(tmpId);
+};
+ContactDetail.prototype.validate = function (tmpId) {
+  this.classCount = returnObjectSize(ReqObj.Form[tmpId].ContactDetail);
+  ReqObj.Form[tmpId].nec.classCount = this.classCount;
+  this.cookies(tmpId);
+  var isValid = this.validateUserDetails(tmpId);
+  if (isValid === true) this.captureDetails(tmpId);
+  return isValid;
+};
+ContactDetail.prototype.onSubmit = function (tmpId) {
+  $("#yajaca").hide(); // click away message
+  var CDObject = PreAjax("ContactDetail", tmpId);
+  this.sendRequest(CDObject, tmpId);
+};
+
+ContactDetail.prototype.cookies = function (tmpId) {
+  this.imeshCookie = imeshExist();
+  this.iplocCookie = usercookie.getCookie("iploc");
+  this.geoip_country_iso = usercookie.getParameterValue(
+    this.iplocCookie,
+    "gcniso"
+  );
+  if (this.imeshCookie !== "") {
+    this.setName = ReqObj.UserDetail["fn"];
+    this.setEmail = ReqObj.UserDetail["em"];
+    this.setCity =
+      ReqObj.UserDetail["ctid"] !== ""
+        ? ReqObj.UserDetail["ctid"]
+        : ReqObj.UserDetail["cityname"] !== ""
+        ? ReqObj.UserDetail["cityname"]
+        : ReqObj.UserDetail["ctoth"] !== ""
+        ? ReqObj.UserDetail["ctoth"]
+        : "";
+    this.setMobile = ReqObj.UserDetail["mb1"];
+    this.usercountry = usercookie.getParameterValue(this.imeshCookie, "iso");
+  }
+};
+
+ContactDetail.prototype.captureDetails = function (tmpId) {
+  var iso = currentISO();
+  var imeshcookie = imeshExist();
+  if (iso === "IN") {
+    var email =
+      $("#t" + tmpId + "_q_email_in" + this.classCount).length > 0
+        ? $("#t" + tmpId + "_q_email_in" + this.classCount).val()
+        : ReqObj.UserDetail["em"];
+    ReqObj.UserDetail["em"] = ReturnCorrectVal(
+      usercookie.getParameterValue(imeshcookie, "em"),
+      email
+    );
+    if (typeof ReqObj.UserDetail["em"] === "undefined")
+      ReqObj.UserDetail["em"] = "";
+  } else {
+    var mobile =
+      $("#t" + tmpId + "_q_mobile_f" + this.classCount).length > 0
+        ? $("#t" + tmpId + "_q_mobile_f" + this.classCount).val()
+        : ReqObj.UserDetail["mb1"];
+    ReqObj.UserDetail["mb1"] = ReturnCorrectVal(
+      usercookie.getParameterValue(imeshcookie, "mb1"),
+      mobile
+    );
+    if (typeof ReqObj.UserDetail["mb1"] === "undefined")
+      ReqObj.UserDetail["mb1"] = "";
+  }
+
+  var fn =
+    $("#t" + tmpId + "_q_first_nm" + this.classCount).length > 0
+      ? $("#t" + tmpId + "_q_first_nm" + this.classCount).val()
+      : ReqObj.UserDetail["fn"];
+  ReqObj.UserDetail["fn"] = ReturnCorrectVal(
+    usercookie.getParameterValue(imeshcookie, "fn"),
+    fn
+  );
+  ReqObj.UserDetail["fn"] !== ""
+    ? $(".gd").removeClass("dn")
+    : $(".gd").addClass("dn");
+  if (typeof ReqObj.UserDetail["fn"] === "undefined")
+    ReqObj.UserDetail["fn"] = "";
+
+  var ctid =
+    $("#t" + tmpId + "city_id_sugg" + this.classCount).length > 0
+      ? $("#t" + tmpId + "city_id_sugg" + this.classCount).val()
+      : ReqObj.UserDetail["ctid"];
+  ReqObj.UserDetail["ctid"] = ReturnCorrectVal(
+    usercookie.getParameterValue(imeshcookie, "ctid"),
+    ctid
+  );
+  if (typeof ReqObj.UserDetail["ctid"] === "undefined")
+    ReqObj.UserDetail["ctid"] = "";
+
+  ReqObj.UserDetail["cityname"] =
+    !isSSB(tmpId) &&
+    $("#t" + tmpId + "_q_city_oth" + this.classCount).length > 0
+      ? $("#t" + tmpId + "_q_city_oth" + this.classCount).val()
+      : ReqObj.UserDetail["cityname"];
+  if (typeof ReqObj.UserDetail["cityname"] === "undefined")
+    ReqObj.UserDetail["cityname"] = "";
+
+  ReqObj.UserDetail["ctoth"] =
+    ReqObj.UserDetail["ctid"] === "" ? ReqObj.UserDetail["cityname"] : "";
+};
+ContactDetail.prototype.toUpdate = function (tmpId) {
+  if (imeshExist()) return true;
+  return false;
+};
+ContactDetail.prototype.showName = function (tmpId) {
+  var that = this;
+  var formType = ReqObj.Form[tmpId].formType.toLowerCase();
+  that.getLabelName(tmpId, formType);
+  that.getInputName(tmpId, formType);
+  that.ContactDetailHtmlNameObj["OuterWrapper"] = "";
+  that.ContactDetailHtmlNameObj["ClosingWrapper"] = "";
+  that.shownHtml.push("name");
+  return that.ContactDetailHtmlNameObj;
+};
+
+ContactDetail.prototype.getLabelName = function (tmpId, formType) {
+  var that = this;
+  var name = returnSpan("t" + tmpId,"login_span_bold" + this.classCount,"Name","befwt");
+  var labeltext = IsChatbl(tmpId) ? "Please tell us your " + name : (pdpInactiveBL(tmpId)) ? "Name <span class='redc'>*</span>" : "Name";
+  if (isBlInlineFr(tmpId)) {
+    labeltext += "*";
+  }
+  var labelclass = IsChatbl(tmpId) || isSSB(tmpId) ? ssbClass("label", tmpId) : isBlInline(tmpId) ? isBlInlineFr(tmpId) ? "fs0 wf fadLbl" : "fs15 cl11"
+      : isSticky(tmpId) ? "FM_be-lbl" : isBlFirstfold(tmpId) ? "be-lbl dn" : "be-lbl"; //ff_here
+  var namehtml = returnLabel( "t" + tmpId, labeltext, "_name-lb" + this.classCount, labelclass);
+  that.ContactDetailHtmlNameObj["Label"] = namehtml;
+};
+
+ContactDetail.prototype.getInputName = function (tmpId, formType) {
+  var that = this;
+  var placeholder = IsChatbl(tmpId)
+    ? " Enter your Name"
+    : isEnq(tmpId) && isSet(this.type) && this.type.code !== "name"
+    ? ""
+    : "Enter your Name";
+  if (
+    (isOtherEnq(tmpId) && tmpId.substring(0, 2) === "09") ||
+    (isOtherEnq(tmpId) &&
+      tmpId.substring(0, 2) !== "09" &&
+      ReqObj.Form[tmpId].FormSequence.StepCounter > 0)
+  )
+    placeholder = "";
+  var sticky = isSticky(tmpId) ? "FM_be-slbox" : "be-slbox";
+  var inputclass = IsChatbl(tmpId)
+    ? "blchat-inpt"
+    : isSSB(tmpId) || isBlInline(tmpId)
+    ? ""
+    : sticky + " inpt_errorbx";
+  if (isOtherEnq(tmpId)) {
+    inputclass = inputclass + " inPlace";
+  }
+  if (pdpInactiveBL(tmpId)) {
+    inputclass = inputclass + " bed_input cpNm";
+    if(currentISO()!="IN" && isSet(ReqObj.UserDetail.em) && ReqObj.UserDetail.em==''){
+        inputclass += " wid_255"
+    }
+    else if(currentISO()!="IN" ){
+        inputclass += " wid_320"
+    }
+  }
+  var namehtml = "";
+  // namehtml += (isSSB(tmpId)) ? "<div class=' mb-wdIn'>" : returnInput("t" + tmpId, "_q_first_nm_hidden" + this.classCount, "hidden", " ", " ", " ", " ", " ", " ");
+  namehtml += isSSB(tmpId)
+    ? ""
+    : returnInput(
+        "t" + tmpId,
+        "_q_first_nm_hidden" + this.classCount,
+        "hidden",
+        " ",
+        " ",
+        " ",
+        " ",
+        " ",
+        " "
+      );
+  var fname = rvalue(tmpId, "fname");
+  var nameInput = returnInput(
+    "t" + tmpId,
+    "_q_first_nm" + this.classCount,
+    "text",
+    "q_first_nm",
+    placeholder,
+    inputclass,
+    fname,
+    " ",
+    " "
+  );
+  namehtml += isBlInline(tmpId)
+    ? "<div class ='pflx1 pr'><div class ='inW240'>" + nameInput + "</div>"
+    : nameInput;
+  if (IsChatbl(tmpId)) {
+    var html = "";
+    namehtml += html;
+    // var errorhtml = this.getChatblNameErrorDiv(tmpId);
+    // namehtml += errorhtml;
+  } else {
+    var errorhtml = this.getNameErrorDiv(tmpId);
+    namehtml += isBlInline(tmpId) ? errorhtml + " </div>" : errorhtml;
+  }
+  that.ContactDetailHtmlNameObj["UserInput"] = namehtml;
+  if (ReqObj.Form[tmpId].FormSequence._stepCounter === 0)
+    ReqObj.Form[tmpId]._NCOnFrstScrn = true;
+};
+
+ContactDetail.prototype.getNameErrorDiv = function (tmpId) {
+  var html = "";
+  if (isSSB(tmpId)) {
+    return nameErrorDivSSB(tmpId, this);
+  }
+  var sticky = isSticky(tmpId) ? "FM_beerrp1" : (pdpInactiveBL(tmpId)) ? (currentISO()!='IN') ? "namerrfn" : "nmerrin" :  "beerrp1";
+  if(pdpInactiveBL(tmpId)){
+      if(currentISO()!='IN' && ReqObj.UserDetail.em!="" && isSet(ReqObj.UserDetail.fn) && ReqObj.UserDetail.fn==''){
+          sticky += " lft"
+      }
+      if(currentISO()=="IN"){
+        if(ReqObj.Form[tmpId].currentclassCount!=1){
+            sticky +=" top-16"
+        }
+      }
+  }
+  
+
+  html =(isOtherEnq(tmpId) && tmpId.substring(0, 2) === "09") || (isOtherEnq(tmpId) && ReqObj.Form[tmpId].FormSequence.StepCounter > 0)
+      ? html + returnContainer( "t" + tmpId, "_error_first_name" + this.classCount, "be-erbx beerrp bedsnone", "", "")
+      : html + returnContainer( "t" + tmpId, "_error_first_name" + this.classCount, sticky + " be-erbx bedsnone", "", "");
+  html += returnContainer( "t" + tmpId, "_fname_errmsg" + this.classCount, "", "content", "" );
+  html += "</div >";
+  html = (isOtherEnq(tmpId) && tmpId.substring(0, 2) === "09") || (isOtherEnq(tmpId) && ReqObj.Form[tmpId].FormSequence.StepCounter > 0) ? html
+    : html + '<a class="be-erarw" data-role="arrow"></a>';
+  html += "</div >";
+  return html;
+};
+
+ContactDetail.prototype.getChatblNameErrorDiv = function (tmpId) {
+  var html = "";
+  html += returnContainer(
+    "t" + tmpId,
+    "_error_first_name" + this.classCount,
+    "redc bltperor",
+    "",
+    ""
+  );
+  html += returnContainer(
+    "t" + tmpId,
+    "_fname_errmsg" + this.classCount,
+    "",
+    "content",
+    ""
+  );
+  html += "</div >";
+  html += "</div>";
+  return html;
+};
+
+ContactDetail.prototype.showEmailOrMobile = function (tmpId) {
+  var that = this;
+  var changeiso = currentISO();
+  var formType = ReqObj.Form[tmpId].formType.toLowerCase();
+
+  that.getLabelEmailMobile(tmpId, formType, changeiso);
+  that.getInputEmailMobile(tmpId, formType, changeiso);
+  that.ContactDetailHtmlEmailObj["OuterWrapper"] = "";
+  that.ContactDetailHtmlEmailObj["ClosingWrapper"] = "";
+  if (changeiso === "IN") that.shownHtml.push("email");
+  else that.shownHtml.push("phone");
+  return that.ContactDetailHtmlEmailObj;
+};
+
+ContactDetail.prototype.getLabelEmailMobile = function (tmpId,formType,changeiso) {
+  var that = this;
+  var label = "";
+  if (changeiso === "IN") {
+    label = "Email";
+  } else {
+    if (currentISO() !== "IN" && (tmpId.substring(0, 2) === "09" || IsChatbl(tmpId)))
+      label = "Phone Number";
+    else if(pdpInactiveBL(tmpId)){
+      label = "Mobile <span class='redc'>*</span>";
+    } 
+    else label = "Mobile";
+  }
+  var labelelement = changeiso === "IN" ? "_email-lb" : "_mobile-lb";
+  var labeltext = IsChatbl(tmpId) ? "Please share your " + returnSpan("t" + tmpId, "login_span_bold" + this.classCount,label + " ID ","befwt"): label;
+  var labelclass = IsChatbl(tmpId)? "" : isSSB(tmpId) ? ssbClass("label", tmpId) : "be-lbl";
+  that.phonecalled = changeiso === "IN" ? false : true;
+  that.ContactDetailHtmlEmailObj["Label"] = returnLabel( "t" + tmpId, labeltext, labelelement + this.classCount,labelclass);
+};
+ContactDetail.prototype.getInputEmailMobile = function (
+  tmpId,
+  formType,
+  changeiso
+) {
+  var that = this;
+  var inputelement = changeiso === "IN" ? "_q_email_in" : "_q_mobile_f";
+  var emvalue = isSSB(tmpId)
+    ? changeiso === "IN"
+      ? rvalue(tmpId, "evalue")
+      : rvalue(tmpId, "mobval")
+    : "";
+  var inputclass = IsChatbl(tmpId)
+    ? "blchat-inpt"
+    : isSSB(tmpId)
+    ? ""
+    : changeiso === "IN"
+    ? "be-slbox inpt_errorbx"
+    : isMoglixUi(tmpId)
+    ? "be-input beW3 beh32"
+    : "be-input benords beW3 beh32";
+  if (isOtherEnq(tmpId)) {
+    inputclass = inputclass + " inPlace";
+  }
+  if (changeiso === "IN") {
+    label = "Email";
+  } else {
+    if (
+      currentISO() !== "IN" &&
+      (tmpId.substring(0, 2) === "09" || IsChatbl(tmpId))
+    )
+      label = "Phone";
+    else label = "Mobile";
+  }
+  if (pdpInactiveBL(tmpId)) {
+    if (inputelement == "_q_mobile_f")
+      inputclass = "be-slbox inpt_errorbx bed-input benords cpNm";
+    else{
+        inputclass = "be-slbox inpt_errorbx bed_input cpNm";
+    }
+  }
+  // var label = (changeiso === "IN") ? "Email" : "Phone";
+  var emailmobilehtml = "";
+
+  if (!isSSB(tmpId) && changeiso !== "IN") {
+    ReqObj.isoFlag = usercookie.getParameterValue(that.imeshCookie, "phcc");
+    //ReqObj.isoFlag = (ReqObj.isoFlag !== "") ? ReqObj.isoFlag : usercookie.getParameterValue(that.imeshCookie, "phcc"); //iso reload error
+    ReqObj.isoFlag =
+      ReqObj.isoFlag.substring(0, 1) === "+"
+        ? ReqObj.isoFlag
+        : "+" + ReqObj.isoFlag;
+    var isoclass = IsChatbl(tmpId) ? "beiso" : (pdpInactiveBL(tmpId)) ? "be-flisq iso brdlft8" : "be-flisq iso";
+    emailmobilehtml += returnIsoHtml(tmpId, isoclass, ReqObj.isoFlag);
+  }
+
+  var placeholder = changeiso==="IN" && (IsChatbl(tmpId) || pdpInactiveBL(tmpId))
+      ? "Enter your Email"
+      : changeiso !== "IN" && !isOtherEnq(tmpId)
+      ? "Enter your Phone"
+      : "";
+  // emailmobilehtml += (isSSB(tmpId)) ? '<div class="mb-wdIn">' : ""
+  var instyle =
+    Bl09(tmpId) && imeshExist() === "" ? "width: calc(100% - 52px);" : "";
+
+  emailmobilehtml += returnInput(
+    "t" + tmpId,
+    inputelement + this.classCount,
+    "text",
+    inputelement + this.classCount,
+    placeholder,
+    inputclass,
+    emvalue,
+    instyle,
+    ""
+  );
+  if (IsChatbl(tmpId)) {
+    var html = "";
+    emailmobilehtml += html;
+    var errorhtml = this.getChatblEmailMobileErrorDiv(tmpId, changeiso);
+    emailmobilehtml += errorhtml;
+  } else {
+    if (
+      changeiso === "IN" &&
+      ReqObj.Form[tmpId].typeofform.toLowerCase() !== "bl"
+    ) {
+      emailmobilehtml +=
+        returnContainer(
+          "t" + tmpId,
+          "_helpmsg",
+          "be-msghlp",
+          "",
+          "Supplier will contact you on this email",
+          ""
+        ) + "</div>";
+    }
+    var errorhtml = this.getEmailMobileErrorDiv(tmpId, changeiso);
+    emailmobilehtml += errorhtml;
+    emailmobilehtml += isSSB(tmpId) ? "</div>" : "";
+  }
+  that.ContactDetailHtmlEmailObj["UserInput"] = emailmobilehtml;
+};
+
+ContactDetail.prototype.getEmailMobileErrorDiv = function (tmpId, changeiso) {
+  if (isSSB(tmpId)) {
+    return emailMobileErrorDivSSB(tmpId, changeiso, this);
+  }
+  var html = "";
+  var errorconatiner = changeiso === "IN" ? "_err_email" : "_error_mobile";
+  html =
+    (isOtherEnq(tmpId) && tmpId.substring(0, 2) === "09") ||
+    (isOtherEnq(tmpId) && ReqObj.Form[tmpId].FormSequence.StepCounter > 0)
+      ? html +
+        returnContainer(
+          "t" + tmpId,
+          errorconatiner + this.classCount,
+          "be-erbx beerrp bedsnone",
+          "",
+          ""
+        )
+      : html +
+        returnContainer(
+          "t" + tmpId,
+          errorconatiner + this.classCount,
+          "beerrp1 be-erbx bedsnone error_blck",
+          "",
+          ""
+        );
+  errorconatiner = changeiso === "IN" ? "_email_errmsg" : "_mobile_errmsg";
+  html += returnContainer(
+    "t" + tmpId,
+    errorconatiner + this.classCount,
+    "",
+    "content",
+    ""
+  );
+  html += "</div>";
+  html =
+    (isOtherEnq(tmpId) && tmpId.substring(0, 2) === "09") ||
+    (isOtherEnq(tmpId) && ReqObj.Form[tmpId].FormSequence.StepCounter > 0)
+      ? html + "</div>"
+      : html + '<a class="be-erarw" data-role="arrow"></a></div>';
+  return html;
+};
+
+ContactDetail.prototype.getChatblEmailMobileErrorDiv = function (
+  tmpId,
+  changeiso
+) {
+  var html = "";
+  var errorconatiner = changeiso === "IN" ? "_err_email" : "_error_mobile";
+  html += returnContainer(
+    "t" + tmpId,
+    errorconatiner + this.classCount,
+    "beerrp1 be-erbx bedsnone error_blck",
+    "",
+    ""
+  );
+  errorconatiner = changeiso === "IN" ? "_email_errmsg" : "_mobile_errmsg";
+  html += returnContainer(
+    "t" + tmpId,
+    errorconatiner + this.classCount,
+    "",
+    "content",
+    ""
+  );
+  html += "</div>";
+  html += "</div>";
+  return html;
+};
+
+ContactDetail.prototype.showCity = function (tmpId) {
+  var that = this;
+  if (!usercookie.getParameterValue(this.imeshCookie, "ctid")) {
+    /* City Already Exists. */
+    var formType = ReqObj.Form[tmpId].formType.toLowerCase();
+    that.getLabelCity(tmpId, formType);
+    that.getInputCity(tmpId, formType);
+    that.ContactDetailHtmlCityObj["OuterWrapper"] = IsChatbl(tmpId) ? "" : "";
+    that.ContactDetailHtmlCityObj["ClosingWrapper"] = IsChatbl(tmpId) ? "" : "";
+    that.shownHtml.push("city");
+    var form_type =
+      ReqObj.Form[tmpId].formType === "Enq" ? "Send Enquiry" : "Post Buy Leads";
+    blenqGATracking(form_type, "Cityshown", getEventLabel(), 1, tmpId);
+    return that.ContactDetailHtmlCityObj;
+  }
+};
+
+ContactDetail.prototype.getPrefillCity = function (tmpId, formType) {
+  var city = "";
+  if (ReqObj.Form[tmpId].OnCloseStep !== true) {
+    city =
+      ReqObj.UserDetail["ipcityname"] !== "" &&
+      ReqObj.UserDetail["ipcityname"] !== "null"
+        ? ReqObj.UserDetail["ipcityname"]
+        : ReqObj.Form[tmpId].cityOth !== ""
+        ? ReqObj.Form[tmpId].cityOth
+        : "";
+    if (
+      usercookie.getCookie("xnHist") !== "" &&
+      (!isSet(city) || city === "")
+    ) {
+      var xnHistCity = usercookie.getParameterValue(
+        usercookie.getCookie("xnHist"),
+        "city"
+      );
+      xnHistCity = xnHistCity.charAt(0).toUpperCase() + xnHistCity.slice(1);
+      city = xnHistCity;
+    }
+    if (city.toLowerCase() === "undefined") city = "";
+    return city;
+  }
+  city =
+    ReqObj.Form[tmpId].cityOth !== ""
+      ? ReqObj.Form[tmpId].cityOth
+      : ReqObj.UserDetail["ipcityname"] !== "" &&
+        ReqObj.UserDetail["ipcityname"] !== "null"
+      ? ReqObj.UserDetail["ipcityname"]
+      : "";
+  return city;
+};
+
+ContactDetail.prototype.getLabelCity = function (tmpId, formType) {
+  var that = this;
+  var citybold = returnSpan("", "", "City", "befwt");
+  var labeltext = IsChatbl(tmpId) ? "Tell us your " + citybold + " to connect you to nearby sellers" :(pdpInactiveBL(tmpId))? "City <span class='redc'>*</span>" : "City";
+  var labelclass = IsChatbl(tmpId) ? "" : isSSB(tmpId) ? ssbClass("label", tmpId) : "be-lbl";
+  that.ContactDetailHtmlCityObj["Label"] = returnLabel("t" + tmpId, labeltext,"_for-city-lb" + this.classCount,labelclass);
+};
+
+ContactDetail.prototype.getInputCity = function (tmpId, formType) {
+  var that = this;
+  var prefilCity = that.getPrefillCity(tmpId, formType);
+  prefilCity = isSet(prefilCity) ? prefilCity : "";
+  if (isSet(prefilCity) && prefilCity !== "")
+    ReqObj.Form[tmpId].cityTracking = 1;
+  var inputclass = IsChatbl(tmpId)
+    ? "blchat-inpt"
+    : isSSB(tmpId)
+    ? "ui-autocomplete-input"
+    : "be-slbox inpt_errorbx ui-autocomplete-input";
+  if (isOtherEnq(tmpId)) {
+    inputclass = inputclass + " inPlace";
+  }
+  if (pdpInactiveBL(tmpId)) {
+    inputclass = inputclass + " bed_input cpNm wid_285";
+  }
+  var placeholder = IsChatbl(tmpId)
+    ? "Enter your City"
+    : isOtherEnq(tmpId)
+    ? ""
+    : "Enter City Name";
+  var spantext = IsChatBLInline(tmpId) ? "Detect City" : "Detect My City";
+  // var spantext = (IsChatbl(tmpId) || isSSB(tmpId)) ? "" : "Detect My City";
+  // var spantext = (IsChatbl(tmpId) || isSSB(tmpId)) ? "" : "Change Your City";
+  // var spanclass = (IsChatbl(tmpId)|| isSSB(tmpId)) ? "" : "beChtxt";
+  var spanclass = isBl(tmpId)
+    ? (pdpInactiveBL(tmpId))? "dml" :"beChtxt dc_mid"
+    : "beChtxt";
+  spanclass =
+    (isImageVidEnq(tmpId) &&
+      ReqObj.Form[tmpId].FormSequence._stepCounter === 0) ||
+    isMoglixUi(tmpId) ||
+    pdpenqImage(tmpId)
+      ? "clr_blue befs13 bemt5 disp-inl crP enq_ct"
+      : spanclass;
+  // var cityhtml = (isSSB(tmpId) ) ? '<div class="mb-wdIn">' : "";
+  var cityhtml = "";
+  if (isSSB(tmpId) && prefilCity == "") prefilCity = rvalue(tmpId, "cvalue");
+  cityhtml +=
+    '<input type="text" templateId="' +
+    tmpId +
+    '" name="q_city_oth' +
+    that.classCount +
+    '" id="t' +
+    tmpId +
+    "_q_city_oth" +
+    that.classCount +
+    '"' +
+    'placeholder="' +
+    placeholder +
+    '" value="' +
+    prefilCity +
+    '" class="' +
+    inputclass +
+    '" maxlength = "100" autocomplete = "off" role = "textbox" aria-autocomplete="list" aria-haspopup="true"';
+  if (IsChatbl(tmpId) || isSSB(tmpId)) {
+    cityhtml += ">";
+  } else {
+    cityhtml += ">";
+    // cityhtml += ' readonly="" disabled="disabled">';
+  }
+  if (isSSB(tmpId)) {
+    cityhtml += returnInput(
+      "t" + tmpId,
+      "city_id_sugg" + that.classCount,
+      "hidden",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    );
+    cityhtml += returnSpan(
+      "t" + tmpId,
+      "_detect_city" + that.classCount,
+      spantext,
+      spanclass
+    );
+    cityhtml +=
+      that.getCityErrorDiv(tmpId) + "</div>" + that.getCitySuggDiv(tmpId);
+  } else if (IsChatbl(tmpId)) {
+    var html = "";
+    cityhtml += html;
+    // cityhtml +=returnSpan("t" + tmpId, "_detect_city" + that.classCount, spantext, spanclass);
+    that.ContactDetailHtmlCityObj["suggCity"] = that.getCitySuggDiv(tmpId);
+    that.ContactDetailHtmlCityObj["appendExtra"] = returnSpan(
+      "t" + tmpId,
+      "_detect_city" + that.classCount,
+      spantext,
+      spanclass
+    );
+  } else {
+    cityhtml += returnInput(
+      "t" + tmpId,
+      "city_id_sugg" + that.classCount,
+      "hidden",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    );
+    cityhtml += returnSpan(
+      "t" + tmpId,
+      "_detect_city" + that.classCount,
+      spantext,
+      spanclass
+    );
+    var errorhtml = that.getCityErrorDiv(tmpId);
+    cityhtml += that.getCitySuggDiv(tmpId) + errorhtml;
+  }
+  if (ReqObj.Form[tmpId].FormSequence._stepCounter === 0)
+    ReqObj.Form[tmpId]._NCOnFrstScrn = true;
+  that.ContactDetailHtmlCityObj["UserInput"] = cityhtml;
+};
+
+ContactDetail.prototype.getCityErrorDiv = function (tmpId) {
+  var html = "";
+  if (isSSB(tmpId)) {
+    return cityErrorDivSSB(tmpId, this);
+  }
+  var cityerrcls = "beerrp1";
+  if(pdpInactiveBL(tmpId)){
+      cityerrcls="cityerr2";
+      if(ReqObj.Form[tmpId].currentclassCount==1){
+          cityerrcls =" cityerr"
+      }
+  }
+
+  html =(isOtherEnq(tmpId) && tmpId.substring(0, 2) === "09") || (isOtherEnq(tmpId) && ReqObj.Form[tmpId].FormSequence.StepCounter > 0)
+      ? html + returnContainer( "t" + tmpId, "_error_city" + this.classCount, "be-erbx beerrp bedsnone","","")
+      : html + returnContainer("t" + tmpId,"_error_city" + this.classCount, cityerrcls + " be-erbx bedsnone","","");
+  html += returnContainer("t" + tmpId,"_city_errmsg" + this.classCount,"","content","");
+  html = (isOtherEnq(tmpId) && tmpId.substring(0, 2) === "09") || (isOtherEnq(tmpId) && ReqObj.Form[tmpId].FormSequence.StepCounter > 0)
+      ? html + "</div>"
+      : html + '</div><a class="be-erarw" data-role="arrow"></a>';
+  html += "</div>";
+  return html;
+};
+
+ContactDetail.prototype.getCitySuggDiv = function (tmpId) {
+  var ipLoc = iplocExist();
+  var html = "";
+  var cityArr = {};
+  var hdCt = usercookie.getParameterValue(
+    usercookie.getCookie("xnHist"),
+    "city"
+  );
+  hdCt = hdCt.charAt(0).toUpperCase() + hdCt.slice(1);
+  cityArr[usercookie.getParameterValue(ipLoc, "lg_ct")] =
+    usercookie.getParameterValue(ipLoc, "lg_ctid");
+  cityArr[hdCt] = "";
+  cityArr[usercookie.getParameterValue(ipLoc, "gctnm")] =
+    usercookie.getParameterValue(ipLoc, "gctid");
+  var count = 0;
+  for (var ct in cityArr) {
+    if (
+      (ct.toLowerCase() !== "all india" || ct.toLowerCase() !== "undefined") &&
+      ct.toLowerCase() !== ""
+    ) {
+      html += count > 0 ? " | " : "";
+      html +=
+        "<span class = 'suggClr clr_blue' onClick='return prefilSuggCity(\"" +
+        tmpId +
+        '","' +
+        this.classCount +
+        '" ,"' +
+        cityArr[ct] +
+        '", "' +
+        ct +
+        "\")'>" +
+        ct +
+        "</span>";
+      count += 1;
+    }
+  }
+  return count > 0
+    ? "<div class = 'citySuggClr'>Suggestions: " + html + "</div>"
+    : "";
+};
+
+function prefilSuggCity(tmpId, classCount, ctid, city) {
+  $("#t" + tmpId + "_q_city_oth" + classCount).val(city);
+  $("#t" + tmpId + "_q_city_oth" + classCount)
+    .parent()
+    .addClass("eqfcsed");
+  $("#t" + tmpId + "city_id_sugg" + classCount).val(ctid);
+  $("#t" + tmpId + "_q_city_oth" + classCount).focus();
+  ReqObj.Form[tmpId].cityTracking = 2;
+}
+
+ContactDetail.prototype.getChatblCityErrorDiv = function (tmpId) {
+  var html = "";
+  html += returnContainer(
+    "t" + tmpId,
+    "_error_city" + this.classCount,
+    "redc bltperor",
+    "",
+    ""
+  );
+  html += returnContainer(
+    "t" + tmpId,
+    "_city_errmsg" + this.classCount,
+    "",
+    "content",
+    ""
+  );
+  html += "</div></div>";
+  return html;
+};
+
+ContactDetail.prototype.validateUserDetails = function (tmpId) {
+  if (!isSet(validation)) createGlobalObject();
+  var validate = "";
+  var that = this;
+  var form_type =
+    ReqObj.Form[tmpId].formType === "Enq" ? "Send Enquiry" : "Post Buy Leads";
+  var StepNumber =
+    ReqObj.Form[tmpId].OnCloseStep && isSet(ReqObj.Form[tmpId].FormSequence)
+      ? ReqObj.Form[tmpId].FormSequence.StepCounter +
+        1 +
+        ReqObj.Form[tmpId].FormSequence.OnCloseCounter +
+        1
+      : ReqObj.Form[tmpId].FormSequence.StepCounter + 1;
+  ReqObj.Form[tmpId].errorDivId = "";
+  if (
+    $("#t" + tmpId + "_q_first_nm" + that.classCount).length > 0 &&
+    (that.nonMandatory === "" ||
+      (isSet(that.nonMandatory) && that.nonMandatory["name"] === false) ||
+      $("#t" + tmpId + "_q_first_nm" + that.classCount).val() !== "" ||
+      isSSB(tmpId))
+  ) {
+    validate = validation.isNameValid(
+      $("#t" + tmpId + "_q_first_nm" + that.classCount).val()
+    );
+    if (!validate["type"]) {
+      ReqObj.Form[tmpId].validateArray.push(
+        "t" + tmpId + "_q_first_nm" + that.classCount
+      );
+      var nametypeele =
+        isOtherEnq(tmpId) &&
+        tmpId.substring(0, 2) !== "09" &&
+        ReqObj.Form[tmpId].FormSequence.StepCounter < 1
+          ? "inline"
+          : "";
+      blenqGATracking(form_type,"Validation_Error_Name|" + StepNumber + "|ContactDetail",getEventLabel(),0,tmpId);
+      that.handleUI({
+        data: {
+          tmpId: tmpId,
+          elementhtml: "_fname_errmsg" + that.classCount,
+          elementremoveClass: "_error_first_name" + that.classCount,
+          elementaddClass: "_q_first_nm" + that.classCount,
+          validate: validate,
+          todo: "showError",
+          formType: ReqObj.Form[tmpId].formType.toLowerCase(),
+          chatelement: "_name-lb" + that.classCount,
+          isinline: nametypeele,
+        },
+      });
+      if (isSet(validate["specialcase"]) && validate["specialcase"] === true) {
+        ReqObj.UserDetail["fn"] = "";
+      }
+      var err_obj = validate;
+    }
+  }
+
+  if (that.usercountry === "IN") {
+    if ($("#t" + tmpId + "_q_email_in" + that.classCount).length > 0) {
+      var email_val = $("#t" + tmpId + "_q_email_in" + that.classCount).val();
+      validate = validation.isEmailValid(email_val);
+      if (!validate["type"]) {
+        ReqObj.Form[tmpId].validateArray.push(
+          "t" + tmpId + "_q_email_in" + that.classCount
+        );
+        var nametypeele =
+          isOtherEnq(tmpId) &&
+          tmpId.substring(0, 2) !== "09" &&
+          ReqObj.Form[tmpId].FormSequence.StepCounter < 1
+            ? "inline"
+            : "";
+        blenqGATracking(form_type,"Validation_Error_Email|" + StepNumber + "|ContactDetail",getEventLabel(),0,tmpId);
+        that.handleUI({
+          data: {
+            tmpId: tmpId,
+            elementhtml: "_email_errmsg" + that.classCount,
+            elementremoveClass: "_err_email" + that.classCount,
+            elementaddClass: "_q_email_in" + that.classCount,
+            validate: validate,
+            todo: "showError",
+            formType: ReqObj.Form[tmpId].formType.toLowerCase(),
+            chatelement: "_email-lb" + that.classCount,
+            isinline: nametypeele,
+          },
+        });
+        if (
+          isSet(validate["specialcase"]) &&
+          validate["specialcase"] === true
+        ) {
+          ReqObj.UserDetail["em"] = "";
+        }
+        err_obj = validate;
+      }
+    }
+    if ($("#t" + tmpId + "_q_city_oth" + that.classCount).length > 0) {
+      if (
+        isSSB(tmpId) &&
+        $("#t" + tmpId + "_q_city_oth" + that.classCount)
+          .parent()
+          .parent()
+          .hasClass("cbl_vh")
+      ) {
+        return true;
+      }
+      validate = validation.isCityValid(
+        $("#t" + tmpId + "_q_city_oth" + that.classCount).val()
+      );
+      if (!validate["type"]) {
+        ReqObj.Form[tmpId].validateArray.push(
+          "t" + tmpId + "_q_city_oth" + that.classCount
+        );
+        var nametypeele =
+          isOtherEnq(tmpId) &&
+          tmpId.substring(0, 2) !== "09" &&
+          ReqObj.Form[tmpId].FormSequence.StepCounter < 1
+            ? "inline"
+            : "";
+        blenqGATracking(form_type,"Validation_Error_City |" + StepNumber + "|ContactDetail",getEventLabel(),0,tmpId);
+        that.handleUI({
+          data: {
+            tmpId: tmpId,
+            elementhtml: "_city_errmsg" + that.classCount,
+            elementremoveClass: "_error_city" + that.classCount,
+            elementaddClass: "_q_city_oth" + that.classCount,
+            validate: validate,
+            todo: "showError",
+            formType: ReqObj.Form[tmpId].formType.toLowerCase(),
+            chatelement: "_for-city-lb" + that.classCount,
+            isinline: nametypeele,
+          },
+        });
+        if (
+          isSet(validate["specialcase"]) &&
+          validate["specialcase"] === true
+        ) {
+          ReqObj.UserDetail["cityname"] = "";
+        }
+        err_obj = validate;
+      }
+    }
+  } else {
+    if ($("#t" + tmpId + "_q_mobile_f").length > 0) {
+      validate = validation.isMobileChValid(
+        $("#t" + tmpId + "_q_mobile_f").val()
+      );
+      if (!validate["type"]) {
+        var nametypeele =
+          isOtherEnq(tmpId) && ReqObj.Form[tmpId].FormSequence.StepCounter < 1
+            ? "inline"
+            : "";
+        that.handleUI({
+          data: {
+            tmpId: tmpId,
+            elementhtml: "_mobile_errmsg" + that.classCount,
+            elementremoveClass: "_error_mobile" + that.classCount,
+            elementaddClass: "_q_mobile_f" + that.classCount,
+            validate: validate,
+            todo: "showError",
+            formType: ReqObj.Form[tmpId].formType.toLowerCase(),
+            chatelement: "_mobile-lb" + that.classCount,
+            isinline: nametypeele,
+          },
+        });
+        if (
+          isSet(validate["specialcase"]) &&
+          validate["specialcase"] === true
+        ) {
+          ReqObj.UserDetail["mb1"] = "";
+        }
+        err_obj = validate;
+      }
+    }
+  }
+  if (isSet(err_obj) && !err_obj["type"]) return false;
+  else return true;
+};
+
+ContactDetail.prototype.getData = function (tmpId, which) {
+  var that = this;
+  this.cookies(tmpId);
+  var formType = ReqObj.Form[tmpId].formType.toLowerCase();
+  var data = {};
+  var iso = currentISO();
+  var cityid = usercookie.getParameterValue(this.imeshCookie, "ctid");
+  var ctid =
+    IsChatbl(tmpId) || isSSB(tmpId)
+      ? ReqObj.Form[tmpId].UserInputs["CityId"]
+      : ReqObj.UserDetail["ctid"];
+  data["s_city_id"] = isSet(ctid) && ctid !== "" ? ctid : cityid;
+  if (!isSet(data["s_city_id"]) || data["s_city_id"] === "") {
+    ReqObj.Form[tmpId].cityOth =
+      IsChatbl(tmpId) || isSSB(tmpId)
+        ? ReqObj.Form[tmpId].UserInputs["City"]
+        : ReqObj.UserDetail["ctoth"];
+  }
+  var name =
+    IsChatbl(tmpId) || isSSB(tmpId)
+      ? ReqObj.Form[tmpId].UserInputs["Name"]
+      : ReqObj.UserDetail["fn"] !== ""
+      ? ReqObj.UserDetail["fn"]
+      : $(
+          "#t" + tmpId + "_q_first_nm" + ReqObj.Form[tmpId].nec.classCount
+        ).val();
+  name = isSet(name) ? name.trim() : "";
+  if (name) {
+    if (name.indexOf(" ") !== -1) {
+      var fn = name.substr(0, name.indexOf(" "));
+      fn.trim();
+      $("#t" + tmpId + "_q_first_nm_hidden").val(fn);
+      var ln = name.substr(name.indexOf(" ") + 1);
+    } else $("#t" + tmpId + "_q_first_nm_hidden").val(name);
+  }
+  data["s_first_name"] = isSet(fn) && fn !== "" ? fn : name;
+  data["s_last_name"] = isSet(ln) && ln !== "" ? ln : "";
+
+  if (iso === "IN") {
+    data["s_email"] =
+      IsChatbl(tmpId) || isSSB(tmpId)
+        ? ReqObj.Form[tmpId].UserInputs["Email"]
+        : ReqObj.UserDetail["em"];
+    data["s_city_name"] =
+      IsChatbl(tmpId) || isSSB(tmpId)
+        ? ReqObj.Form[tmpId].UserInputs["City"]
+        : ReqObj.UserDetail["cityname"];
+    var primary = usercookie.getParameterValue(this.imeshCookie, "mb1");
+    data["s_mobile"] =
+      primary !== ""
+        ? primary
+        : IsChatbl(tmpId) || isSSB(tmpId)
+        ? ReqObj.Form[tmpId].UserInputs["PrimaryInfo"]
+        : ReqObj.UserDetail["mb1"];
+  } else {
+    data["s_mobile"] =
+      IsChatbl(tmpId) || isSSB(tmpId)
+        ? ReqObj.Form[tmpId].UserInputs["Mobile"]
+        : ReqObj.UserDetail["mb1"]; // check for foreign users..
+    var primary = usercookie.getParameterValue(this.imeshCookie, "em");
+    data["s_email"] =
+      primary !== ""
+        ? primary
+        : IsChatbl(tmpId) || isSSB(tmpId)
+        ? ReqObj.Form[tmpId].UserInputs["PrimaryInfo"]
+        : ReqObj.UserDetail["em"];
+  }
+  data["s_glusrid"] = usercookie.getParameterValue(this.imeshCookie, "glid");
+  data["curr_page_url"] = window.location.href;
+  data["s_ip"] = usercookie.getParameterValue(this.iplocCookie, "gip");
+  data["s_ip_country"] = usercookie.getParameterValue(
+    this.iplocCookie,
+    "gcnnm"
+  );
+  data["s_ip_country_iso"] = this.geoip_country_iso;
+  data["flag"] = ReqObj.Form[tmpId].formType;
+  data["modid"] = ReqObj.Form[tmpId].modId;
+  data["s_companyName"] =
+    isSet(ReqObj.Form[tmpId].mdObjErr) &&
+    $.inArray(0, ReqObj.Form[tmpId].mdObjErr) !== -1
+      ? ""
+      : isSet(ReqObj.Form[tmpId].companyName) &&
+        ReqObj.Form[tmpId].companyName !== ""
+      ? ReqObj.Form[tmpId].companyName
+      : "";
+  data["gst"] =
+    isSet(ReqObj.Form[tmpId].gst.number) &&
+    parseInt(ReqObj.Form[tmpId].gst.number) !== 0
+      ? ReqObj.Form[tmpId].gst.number
+      : "";
+  data["url"] =
+    isSet(ReqObj.Form[tmpId].mdObjErr) &&
+    $.inArray(2, ReqObj.Form[tmpId].mdObjErr) !== -1
+      ? ""
+      : isSet(ReqObj.Form[tmpId].url.name) &&
+        parseInt(ReqObj.Form[tmpId].url.name) !== ""
+      ? ReqObj.Form[tmpId].url.name
+      : "";
+  data["s_country_iso"] =
+    iso !== ""
+      ? iso
+      : usercookie.getParameterValue(usercookie.getCookie("iploc"), "gcniso");
+  data["s_email"] =
+    isSet(data["s_email"]) && data["s_email"].match(/\*/) !== null
+      ? ""
+      : data["s_email"];
+  data["s_mobile"] =
+    isSet(data["s_mobile"]) && data["s_mobile"].match(/\*/) !== null
+      ? ""
+      : data["s_mobile"];
+  data["replica"] = {
+    mobile: data["s_mobile"],
+    email: data["s_email"],
+    cname: data["s_companyName"],
+    url: data["url"],
+    name: data["s_first_name"],
+    city: data["s_city_name"],
+    gst: data["gst"],
+  };
+  return ObjectTrim(data);
+};
+
+function fireCityTracking(tmpId, data) {
+  var imesh = imeshExist();
+  var _case =
+    imesh === ""
+      ? 1
+      : usercookie.getParameterValue(imesh, "ctid") === ""
+      ? 1
+      : 0;
+  if (_case !== 0 &&isSet(data["s_city_name"]) &&data["s_city_name"] !== "" &&isSet(ReqObj.Form[tmpId].cityTracking)) {
+    var form_type = ReqObj.Form[tmpId].formType === "Enq" ? "Send Enquiry" : "Post Buy Leads";
+    if (ReqObj.Form[tmpId].cityTracking === 1)
+      blenqGATracking(form_type, "City|Prefilled", getEventLabel(), 1, tmpId);
+    else if (ReqObj.Form[tmpId].cityTracking === 2)
+      blenqGATracking(form_type, "City|Suggestion", getEventLabel(), 1, tmpId);
+    else if (ReqObj.Form[tmpId].cityTracking === 3)
+      blenqGATracking(form_type, "City|Suggester", getEventLabel(), 1, tmpId);
+    else if (ReqObj.Form[tmpId].cityTracking === 4)
+      blenqGATracking(form_type,"City|GeoLocFilled",getEventLabel(),1,tmpId);
+    else blenqGATracking(form_type, "City|Manual", getEventLabel(), 1, tmpId);
+  }
+}
+
+ContactDetail.prototype.sendRequest = function (CDObject, tmpId, type) {
+  var data = this.getData(tmpId);
+  var iso = currentISO();
+  var toFire = false;
+  fireCityTracking(tmpId, data);
+  if (
+    (iso !== "IN" &&
+      (data["s_first_name"] !== "" ||
+        data["s_mobile"] !== "" ||
+        data["url"] !== "" ||
+        data["s_companyName"] !== "")) ||
+    (iso === "IN" &&
+      (data["s_first_name"] !== "" ||
+        data["s_email"] !== "" ||
+        data["s_city_name"] !== "" ||
+        data["gst"] !== "" ||
+        data["s_companyName"] !== ""))
+  ) {
+    toFire = true;
+  }
+  if (toFire) {
+    var _data = this.multipleHitCases(data, type);
+    data = isEnq(tmpId) || isBl(tmpId) ? _data.data : data;
+    data["replica"] = "";
+    data = ObjectTrim(data);
+    fireAjaxRequest({
+      data: {
+        ga: {
+          s: true,
+          f: true,
+          gatype: "GlusrUpdate",
+          source: "",
+        },
+        tmpId: tmpId,
+        ajaxObj: {
+          obj: CDObject,
+          s: {
+            ss: 1,
+            sf: {
+              af: 0,
+              pa: 1,
+            },
+            f: 1,
+          },
+          f: {
+            f: 1,
+          },
+        },
+        ajaxtimeout: 0,
+        ajaxdata: data,
+        hitfinserv: "",
+        type: 6,
+      },
+    });
+    if ((isEnq(tmpId) || isBl(tmpId)) && _data.hitagain === true) {
+      this.sendRequest(CDObject, tmpId, "again");
+    }
+  }
+};
+ContactDetail.prototype.multipleHitCases = function (data, type, where) {
+  var iso = currentISO();
+  if (
+    iso !== "IN" &&
+    data.replica.mobile !== "" &&
+    (typeof type === "undefined" || type === "url" || type === "noturl")
+  ) {
+    data["s_mobile"] = "";
+    return { data: data, hitagain: where === "no" ? false : true };
+  } else if (
+    iso !== "IN" &&
+    data.replica.mobile !== "" &&
+    typeof type !== "undefined" &&
+    type === "again"
+  ) {
+    data["s_first_name"] = "";
+    data["url"] = "";
+    data["s_companyName"] = "";
+    data["s_email"] = data.replica.email;
+    data["s_mobile"] = data.replica.mobile;
+    return { data: data, hitagain: false };
+  } else if (
+    iso === "IN" &&
+    data.replica.gst !== "" &&
+    type === "again" &&
+    where === "notgst"
+  ) {
+    data["gst"] = "";
+    return { data: data, hitagain: true };
+  } else if (
+    iso === "IN" &&
+    data.replica.gst !== "" &&
+    typeof type === "undefined"
+  ) {
+    data["s_mobile"] = data.replica.mobile;
+    data["s_first_name"] = "";
+    data["s_email"] = "";
+    data["s_city_name"] = "";
+    data["s_companyName"] = "";
+    data["gst"] = data.replica.gst;
+    return { data: data, hitagain: false };
+  }
+  return { hitagain: false, data: data, remove: "none" };
+};
+ContactDetail.prototype.handleEvents = function (obj, tmpId) {
+  if (!isSet(validation)) createGlobalObject();
+  if (
+    document.readyState === "complete" ||
+    document.readyState === "interactive"
+  ) {
+    //  ChatblfooterAns(tmpId);
+    //if (IsChatbl(tmpId) || isSSB(tmpId)) {
+    obj.enableCity({
+      data: {
+        obj: obj,
+        tmpId: tmpId,
+      },
+    });
+    //}
+    /*------------------ FOCUS ---------------------- */
+    var nametypeele =
+      isOtherEnq(tmpId) &&
+      tmpId.substring(0, 2) !== "09" &&
+      ReqObj.Form[tmpId].FormSequence.StepCounter < 1
+        ? "inlinename"
+        : "";
+    var nameplaceholder = IsChatbl(tmpId)
+      ? " Enter your Name"
+      : "Enter your Name";
+
+    var validationevent = isSSB(tmpId) ? "click" : "focus keypress.Validation";
+    $("#t" + tmpId + "_q_first_nm" + obj.classCount)
+      .off(validationevent)
+      .on(
+        validationevent,
+        {
+          obj: obj,
+          todo: "removeError",
+          tmpId: tmpId,
+          ele: "_q_first_nm" + obj.classCount,
+          errorlabel: "_name-lb" + obj.classCount,
+          errorMainDiv: "_fname_errmsg" + obj.classCount,
+          errorSubDiv: "_error_first_name" + obj.classCount,
+          typeele: nametypeele,
+          placehold: nameplaceholder,
+        },
+        obj.handleUI
+      );
+    $("#t" + tmpId + "_q_city_oth" + obj.classCount)
+      .off("focus keypress.Validation")
+      .on(
+        "focus keypress.Validation",
+        {
+          obj: obj,
+          todo: "removeError",
+          tmpId: tmpId,
+          ele: "_q_city_oth" + obj.classCount,
+          errorlabel: "_for-city-lb" + obj.classCount,
+          errorMainDiv: "_city_errmsg" + obj.classCount,
+          errorSubDiv: "_error_city" + obj.classCount,
+          typeele: "city",
+        },
+        obj.handleUI
+      );
+    $("#t" + tmpId + "_q_email_in" + obj.classCount)
+      .off("focus keypress.Validation")
+      .on(
+        "focus keypress.Validation",
+        {
+          obj: obj,
+          todo: "removeError",
+          tmpId: tmpId,
+          ele: "_q_email_in" + obj.classCount,
+          errorlabel: "_email-lb" + obj.classCount,
+          errorMainDiv: "_email_errmsg" + obj.classCount,
+          errorSubDiv: "_err_email" + obj.classCount,
+          typeele: "email",
+        },
+        obj.handleUI
+      );
+    $("#t" + tmpId + "_q_mobile_f" + obj.classCount)
+      .off("focus.Validation")
+      .on(
+        "focus.Validation",
+        {
+          obj: obj,
+          todo: "removeError",
+          tmpId: tmpId,
+          ele: "_q_mobile_f" + obj.classCount,
+          errorlabel: "_mobile-lb" + obj.classCount,
+          errorMainDiv: "_mobile_errmsg" + obj.classCount,
+          errorSubDiv: "_error_mobile" + obj.classCount,
+        },
+        obj.handleUI
+      );
+
+    /*---------------- BLUR ----------------------- */
+    $("#t" + tmpId + "_q_first_nm" + obj.classCount)
+      .off("blur")
+      .on(
+        "blur",
+        {
+          obj: obj,
+          todo: "blurlabel",
+          tmpId: tmpId,
+          ele: "_q_first_nm" + obj.classCount,
+          placehold: nameplaceholder,
+          typeele: nametypeele,
+        },
+        obj.handleUI
+      );
+    $("#t" + tmpId + "_q_city_oth" + obj.classCount)
+      .off("blur")
+      .on(
+        "blur",
+        {
+          obj: obj,
+          todo: "blurlabel",
+          tmpId: tmpId,
+          ele: "_q_city_oth" + obj.classCount,
+        },
+        obj.handleUI
+      );
+    $("#t" + tmpId + "_q_email_in" + obj.classCount)
+      .off("blur")
+      .on(
+        "blur",
+        {
+          obj: obj,
+          todo: "blurlabel",
+          tmpId: tmpId,
+          ele: "_q_email_in" + obj.classCount,
+        },
+        obj.handleUI
+      );
+    $("#t" + tmpId + "_q_mobile_f" + obj.classCount)
+      .off("blur")
+      .on(
+        "blur",
+        {
+          obj: obj,
+          todo: "blurlabel",
+          tmpId: tmpId,
+          ele: "_q_mobile_f" + obj.classCount,
+        },
+        obj.handleUI
+      );
+
+    /*---------------Others----------------------- */
+    $("#t" + tmpId + "_detect_city" + obj.classCount)
+      .off("click")
+      .on(
+        "click",
+        {
+          obj: obj,
+          tmpId: tmpId,
+        },
+        obj.detectCity
+      );
+    $("#t" + tmpId + "_q_mobile_f" + obj.classCount)
+      .off("keypress.Validation")
+      .on("keypress.Validation", validation.isNumberKey);
+
+    if (IsChatbl(tmpId)) {
+      $("#t" + tmpId + "_q_first_nm" + obj.classCount).focus();
+    }
+  }
+};
+ContactDetail.prototype.handleUI = function (event) {
+  if (isSet(event) && isSet(event.data)) {
+    var keycode = event.keyCode ? event.keyCode : event.which;
+    if (keycode !== 13) {
+      var obj = event.data.obj;
+      var todo = event.data.todo;
+      var tmpId = event.data.tmpId;
+      if (todo === "nameUI") {
+        if ($("#t" + tmpId + "_q_first_nm" + obj.classCount).val() !== "") {
+          $("#t" + tmpId + "_q_first_nm" + obj.classCount).prop(
+            "disabled",
+            false
+          );
+          $("#t" + tmpId + "_q_first_nm" + obj.classCount).prop(
+            "readonly",
+            true
+          );
+        }
+        $("#t" + tmpId + "_q_first_nm" + obj.classCount)
+          .parent()
+          .removeClass("eqIsf eqIsMn");
+        if (isEnq(tmpId))
+          $("#t" + tmpId + "_q_first_nm" + obj.classCount)
+            .parent()
+            .addClass("mb15");
+      }
+      if (todo === "default") {
+        if ($("#t" + tmpId + "_q_city_oth" + obj.classCount).val() !== "") {
+          $("#t" + tmpId + "_q_city_oth" + obj.classCount)
+            .parents()
+            .addClass("eqfcsed");
+        }
+      }
+      if (todo === "focus") {
+        if (IsChatbl(tmpId)) {
+          setTimeout(function () {
+            $("#t" + tmpId + "_q_first_nm" + obj.classCount).focus();
+            $("#t" + tmpId + "_q_city_oth" + obj.classCount).focus();
+            $("#t" + tmpId + "_q_mobile_f" + obj.classCount).focus();
+            $("#t" + tmpId + "_q_email_in" + obj.classCount).focus();
+          }, 1800);
+        } else {
+          $("#t" + tmpId + "_q_first_nm" + obj.classCount).focus();
+          $("#t" + tmpId + "_q_city_oth" + obj.classCount).focus();
+          $("#t" + tmpId + "_q_mobile_f" + obj.classCount).focus();
+        }
+      }
+      if (todo === "removeError") {
+        removechatblerror(tmpId);
+        $("#t" + tmpId + event.data.errorSubDiv).addClass("bedsnone");
+        $("#t" + tmpId + event.data.ele).removeClass(
+          "highlight-err mb-erbrd nb-erbrd"
+        );
+        $("#t" + tmpId + event.data.errorlabel).removeClass("redc");
+        $("#t" + tmpId + event.data.ele)
+          .parents()
+          .addClass("eqfcsed"); //
+        if (event.data.typeele === "city" && keycode !== 0)
+          ReqObj.Form[tmpId].cityTracking = 0;
+        if (isOtherEnq(tmpId)) {
+          if (isSet(event.data.typeele) && event.data.typeele === "email")
+            $("#t" + tmpId + event.data.ele).attr(
+              "placeholder",
+              "For Example, abc@gmail.com"
+            );
+          else if (
+            isSet(event.data.typeele) &&
+            event.data.typeele === "inlinename"
+          )
+            $("#t" + tmpId + event.data.ele).attr(
+              "placeholder",
+              event.data.placehold
+            );
+          else $("#t" + tmpId + event.data.ele).attr("placeholder", "");
+        }
+        if (keycode === 8) {
+          var retval = ModifyUserDetail(event.data.toupdate, "empty", keycode);
+          if (retval === 1) {
+            $("#t" + tmpId + "city_id_sugg" + obj.classCount).val("");
+          }
+        }
+      }
+
+      if (todo === "blurlabel") {
+        if (isOtherEnq(tmpId)) {
+          if ($("#t" + tmpId + event.data.ele).val().length === 0)
+            $("#t" + tmpId + event.data.ele)
+              .parents()
+              .removeClass("eqfcsed");
+          if (isSet(event.data.typeele) && event.data.typeele === "inlinename")
+            $("#t" + tmpId + event.data.ele).attr(
+              "placeholder",
+              event.data.placehold
+            );
+          else $("#t" + tmpId + event.data.ele).attr("placeholder", "");
+        }
+      }
+
+      if (todo === "cityOthers") {
+        $("#t" + tmpId + "_q_city_oth" + obj.classCount).val(
+          ReqObj.Form[tmpId].cityOth
+        );
+        $("#t" + tmpId + "_q_city_oth" + obj.classCount).prop(
+          "disabled",
+          false
+        );
+      }
+      if (todo === "showError") {
+        $("#t" + tmpId + event.data.elementhtml).html(
+          event.data.validate["error"]
+        );
+        if (IsChatbl(tmpId)) {
+          addChatblError(tmpId, event.data.validate["error"]);
+        } else {
+          $("#t" + tmpId + event.data.elementremoveClass).removeClass(
+            "bedsnone"
+          );
+          if (!ReqObj.Form[tmpId].errorDivId)
+            ReqObj.Form[tmpId].errorDivId =
+              "t" + tmpId + event.data.elementremoveClass;
+          var errorcls = isSSB(tmpId)
+            ? isnewSSB(tmpId)
+              ? "nb-erbrd"
+              : "mb-erbrd"
+            : "highlight-err";
+          $("#t" + tmpId + event.data.elementaddClass).addClass(errorcls);
+          isSSB(tmpId)
+            ? $("#t" + tmpId + event.data.elementaddClass).focus
+            : "";
+          if (
+            !isSSB(tmpId) &&
+            (!isOtherEnq(tmpId) ||
+              (isSet(event.data.isinline) && event.data.isinline === "inline"))
+          )
+            $("#t" + tmpId + event.data.chatelement).addClass("redc");
+        }
+      }
+    }
+  }
+};
+
+ContactDetail.prototype.EventIfScreenPresent = function (tmpId) {
+  if (isOtherEnq(tmpId)) {
+    this.handleHeading(tmpId);
+    ButtonNameUI("isq", tmpId);
+  }
+};
+
+ContactDetail.prototype.handleHeading = function (tmpId) {
+  if (ReqObj.Form[tmpId].OnCloseStep === true) {
+    ReqObj.Form[tmpId].currentScreen =
+      currentISO() === "IN"
+        ? this.className + "onclosein"
+        : this.className + "onclosenotin";
+  }
+  if (isSet(this.onlastscreen) && this.onlastscreen && isBl(tmpId)) {
+    ReqObj.Form[tmpId].currentScreen =
+      currentISO() === "IN" ? this.className + "_last" : this.className;
+  }
+  if (ReqObj.Form[tmpId].formType.toLowerCase() !== "enq")
+    $("#t" + tmpId + "_hdg")
+      .removeClass("bedsnone")
+      .html(getFormHeading(tmpId, ReqObj.Form[tmpId].currentScreen));
+  else {
+    if (isSet(this.type) && this.type.step === "last") {
+      ReqObj.Form[tmpId].currentScreen =
+        currentISO() === "IN"
+          ? this.className + "onclosein"
+          : this.className + "onclosenotin";
+    }
+    if (
+      isImageVidEnq(tmpId) &&
+      ReqObj.Form[tmpId].FormSequence.StepCounter ===
+        0 /*&& !((new RegExp('contactdetail').test(ReqObj.Form[tmpId].currentScreen.toLowerCase())) || (new RegExp('userlogin').test(ReqObj.Form[tmpId].currentScreen.toLowerCase())))*/
+    )
+      $("#t" + tmpId + "_hdg")
+        .addClass("bedsnone")
+        .html("");
+    else
+      $("#t" + tmpId + "_hdg")
+        .removeClass("bedsnone")
+        .html(getFormHeading(tmpId, ReqObj.Form[tmpId].currentScreen));
+  }
+};
+
+ContactDetail.prototype.handleButton = function (tmpId) {
+  ButtonNameUI(ReqObj.Form[tmpId].currentScreen, tmpId);
+};
+
+ContactDetail.prototype.enableCity = function (event) {
+  if (isSet(event) && isSet(event.data)) {
+    var obj = event.data.obj;
+    var tmpId = event.data.tmpId;
+    //var cityvalue = $("#" +tmpId + "_q_city_oth").val();
+    // if(!isSSB(tmpId)) $("#t" + tmpId + "_q_city_oth" + obj.classCount).val("");
+    // $("#t" + tmpId + "_q_city_oth" + obj.classCount).prop("disabled", false);
+    // $("#t" + tmpId + "_q_city_oth" + obj.classCount).prop("readonly", false);
+    // if(!isSSB(tmpId))$("#t" + tmpId + "_q_city_oth" + obj.classCount).focus();
+    $("#t" + tmpId + "_detect_city" + obj.classCount).off("click");
+    obj.showCitySuggestions(obj, tmpId);
+  }
+};
+ContactDetail.prototype.detectCity = function (event) {
+  if (isSet(event) && isSet(event.data)) {
+    var obj = event.data.obj;
+    var tmpId = event.data.tmpId;
+    var form_type =
+      ReqObj.Form[tmpId].formType === "Enq" ? "Send Enquiry" : "Post Buy Leads";
+    blenqGATracking(form_type, "detectMyCity", getEventLabel(), 1, tmpId);
+    ReqObj.cityId = [];
+    ReqObj.cityId.push("#t" + tmpId + "_q_city_oth" + obj.classCount); //t0901city_id_sugg1
+    ReqObj.cityId.push("#t" + tmpId + "city_id_" + obj.classCount);
+    initGeolocationenq(tmpId);
+  }
+};
+ContactDetail.prototype.showCitySuggestions = function (obj, tmpId) {
+  var that = this;
+  var iso = obj.usercountry;
+  if (typeof Suggester === "undefined") {
+    setTimeout(function () {
+      that.showCitySuggestions(obj, tmpId);
+    }, 50);
+  } else {
+    if (typeof Suggester !== "undefined") {
+      var CitySuggSuffix = "_CitySuggestor";
+      $(".t" + tmpId + CitySuggSuffix).each(function () {
+        $(this).remove();
+      });
+      var row_num = BlAutoSuggRowNum(tmpId);
+      var autocompleteClass = SetAutoCompleteClass(tmpId, CitySuggSuffix);
+      if (IsChatBLInline(tmpId)) autocompleteClass += " smChtSg";
+      main_city_sugg = new Suggester({
+        element: "t" + tmpId + "_q_city_oth" + obj.classCount,
+        onSelect: obj.selectCity,
+        type: "city",
+        fields: "std,state,id,stateid",
+        minStringLengthToDisplaySuggestion: 1,
+        rowsToDisplay: row_num,
+        autocompleteClass: autocompleteClass,
+        displayFields: "value,state",
+        displaySeparator: " >> ",
+        filters: "iso:" + iso,
+        recentData: false,
+        rowsToDisplay: IsChatBLInline(tmpId) ? 3 : "",
+      });
+    }
+  }
+};
+ContactDetail.prototype.selectCity = function (event, ui) {
+  var tmpId = $(this).attr("templateId");
+  var classCount = returnObjectSize(ReqObj.Form[tmpId].ContactDetail);
+  $("#t" + tmpId + "_q_city_oth" + classCount).val(ui.item.value);
+  $("#t" + tmpId + "city_id_sugg" + classCount).val(ui.item.data.id);
+  ReqObj.UserDetail["statename"] = ui.item.data.state;
+  ReqObj.UserDetail["stateid"] = ui.item.data.stateid;
+  ReqObj.UserDetail["ctid"] = ui.item.data.id;
+  ReqObj.UserDetail["cityname"] = ui.item.value;
+  if (IsChatbl(tmpId)) {
+    ReqObj.Form[tmpId].UserInputs["City"] = ui.item.value;
+    ReqObj.Form[tmpId].UserInputs["CityId"] = ui.item.data.id;
+  }
+  ReqObj.Form[tmpId].cityTracking = 3;
+};
+  // ContactDetail
+

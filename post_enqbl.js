@@ -130,6 +130,903 @@ function blenqGATrackingMisc(eventCategory,eventAction,eventLabel,isinteraactive
     CD_Additional_Data: CD_Additional_Data,
   });
 }
+
+function thankYouTrack(tmpId, msg, sellerId) {
+  var formtype =
+    isSet(ReqObj.Form[tmpId].formType) &&
+    ReqObj.Form[tmpId].formType.toLowerCase() === "bl"? "Post Buy Leads": "Send Enquiry";
+  if (isSet(sellerId)) blenqGATracking(formtype, msg, sellerId, 1, tmpId);
+  else blenqGATracking(formtype, msg, getEventLabel(), 1, tmpId);
+  return true;
+}
+
+// Miscellaneous
+/*--------------------------------------------update disp zoom key-------------------------------------------------*/
+function updateDispZoomImage(tmpId, formType, step, fromwhere) {
+  var mcatimage = getImage(ReqObj.Form[tmpId].mcatId);
+
+  if (formType === "bl" || IsChatbl(tmpId)) {
+    if (typeof mcatimage === "undefined" || mcatimage === "") {
+      ReqObj.Form[tmpId].displayImage = "";
+      ReqObj.Form[tmpId].zoomImage = "";
+    } else if (isSet(mcatimage) && mcatimage !== "") {
+      ReqObj.Form[tmpId].displayImage = mcatimage;
+      ReqObj.Form[tmpId].zoomImage = mcatimage;
+    }
+  }
+
+  if (formType === "bl" || IsChatbl(tmpId)) {
+    if (
+      (ReqObj.Form[tmpId].displayImage === "" &&
+        ReqObj.Form[tmpId].zoomImage === "" &&
+        $("#t" + tmpId + "defaultimage").length === 0) ||
+      typeof mcatimage === "undefined" ||
+      mcatimage === ""
+    ) {
+      getMcatImage(tmpId, {
+        hasCallback: true,
+        cbfunc: update_image,
+      });
+
+      addImage(tmpId, step, fromwhere);
+    } else {
+      addImage(tmpId, step, fromwhere);
+    }
+  }
+}
+
+function addImage(tmpId, step, fromwhere) {
+  var type =
+    step === 1 || fromwhere === "fromservice"
+      ? "image"
+      : ReqObj.Form[tmpId].ctaType.toLowerCase();
+  var key = [
+    {
+      type: type,
+      displayImage: isSet(ReqObj.Form[tmpId].displayImage)
+        ? ReqObj.Form[tmpId].displayImage
+        : "",
+      zoomImage: isSet(ReqObj.Form[tmpId].zoomImage)
+        ? ReqObj.Form[tmpId].zoomImage
+        : "",
+      vidUrl: isSet(ReqObj.Form[tmpId].vidUrl) ? ReqObj.Form[tmpId].vidUrl : "",
+    },
+  ];
+  $("#t" + tmpId + "_prodimg").html(new ReqImage().displayHtml(tmpId, key, 0));
+  if (type !== "video") $("#t" + tmpId + "_prodimg").removeClass("bedsnone");
+}
+
+/*---------------------------------------------------- update_Image---------------------------------------------------------- */
+function update_image(tmpId) {
+  if (isSet(tmpId)) {
+    if (ReqObj.Form[tmpId].displayImage !== "") {
+      $("#t" + tmpId + "_prodimg").html(
+        new ReqImage().getImage(
+          tmpId + "_dispimage",
+          "",
+          ReqObj.Form[tmpId].displayImage
+        ) +
+          '<span class="be-blrprdimg"  style="background-image: url(' +
+          ReqObj.Form[tmpId].displayImage +
+          ');"></span>'
+      );
+    } else {
+      $("#t" + tmpId + "_prodimg").html(getDefaultImage(tmpId));
+    }
+  }
+}
+
+function getDefaultImage(tmpId) {
+  return (
+    "<div id='t" +
+    tmpId +
+    "defaultimage' class='be-nobgimg'><div class='blnewform_sprit be-noimg'></div></div>"
+  );
+}
+
+/*--------------------------------------------------MAIN LEFT SIDE FUNCTION CALLED------------------------------------------------ */
+
+function leftSideTransition(step, tmpId, fromwhere) {
+  var formType = ReqObj.Form[tmpId].formType.toLowerCase();
+  updateDispZoomImage(tmpId, formType, step, fromwhere);
+}
+/*--------------------------------------- Pass mcat id to get image if available---------------------------------------------- */
+function getImage(key) {
+  return ReqObj.ImageKey[key];
+}
+/*--------------------------------------------left Side load zoom ---------------------------------------------------------------- */
+function leftSideLoadZoom(tmpId) {
+  $("#t" + tmpId + "_zoomimage").on("load", function () {
+    if ($("#t" + tmpId + "_prodimg > img")) {
+      $("#t" + tmpId + "_prodimg > #t" + tmpId + "_dispimage").remove();
+      $("#t" + tmpId + "_prodimg > #t" + tmpId + "_zoomimage").show();
+    }
+  });
+}
+
+function funcOth(id) {
+  if ($("#" + id + " option:selected").val() === "Other") {
+    $("#other_" + id + "_1").css("display", "block");
+    $("#other_" + id + "_1").focus();
+  } else {
+    $("#other_" + id + "_1").css("display", "none");
+  }
+}
+
+function funcClick(event, tmpId, count) {
+  if (
+    !$("#t" + tmpId + "_selectDD" + count).prop("readonly") &&
+    event.id !== ""
+  )
+    return;
+  removechatblerror(tmpId);
+  $("#t" + tmpId + "select_name" + count).removeClass("dn");
+  $(".cbl_sclBr").removeClass("dn");
+  var list = $("#t" + tmpId + "select_name" + count);
+  var link = $("#t" + tmpId + "_selectDD" + count);
+  var firstchild = list[0].firstChild;
+  list.find("li").click(function (e) {
+    if (e.currentTarget === firstchild) {
+      e.preventDefault();
+      return;
+    }
+    var text = $(this).html();
+    $(this).siblings().removeClass("cbl_selected");
+    $(this).addClass("cbl_selected");
+    $("._ul_select").addClass("dn");
+    $(".cbl_sclBr").addClass("dn");
+    if (text.toLowerCase() === "other") {
+      $(link).removeAttr("readonly");
+      $(link).prop("placeholder", "enter the unit");
+      $(link).focus();
+      text = "";
+    } else {
+      $(link).attr("readonly", "true");
+    }
+    link.val(text);
+    $(".cbl_skip").addClass("dn");
+    tov1(tmpId, text);
+  });
+}
+
+
+function updateToAsk(tmpId) {
+  ReqObj.Form[tmpId].cName.toask =
+    imeshExist() !== "" &&
+    (typeof ReqObj.UserDetail.cName === "undefined" ||
+      (isSet(ReqObj.UserDetail.cName) && ReqObj.UserDetail.cName === ""))
+      ? true
+      : false;
+}
+
+function toAskCname(tmpId) {
+  return typeof ReqObj.UserDetail.cName === "undefined" ||
+    (isSet(ReqObj.UserDetail.cName) && ReqObj.UserDetail.cName === "")
+    ? true
+    : false;
+}
+
+function cNameIsq(tmpId) {
+  return ReqObj.Form[tmpId].cName.rb === true ||
+    ReqObj.Form[tmpId].cName.qtut === false ||
+    ReqObj.Form[tmpId].cName.tov === false ||
+    ReqObj.Form[tmpId].cName.tov1 === true ||
+    ReqObj.Form[tmpId].cName.isq === false
+    ? true
+    : false;
+}
+
+function cNameConditions(tmpId) {
+  var isoCurrent = currentISO();
+  var isqc = cNameIsq(tmpId);
+  ReqObj.Form[tmpId].cName.toask =
+    imeshExist() !== "" &&
+    ReqObj.Form[tmpId].cName.isShown === false &&
+    (typeof ReqObj.UserDetail.cName === "undefined" ||
+      (isSet(ReqObj.UserDetail.cName) && ReqObj.UserDetail.cName === ""))
+      ? true
+      : false;
+  if (currentISO() !== "IN" && ReqObj.Form[tmpId].cName.toask === true)
+    return true;
+  ReqObj.Form[tmpId].cName.toask =
+    ReqObj.Form[tmpId].cName.toask === true &&
+    ReqObj.Form[tmpId].cName.cdiv === false
+      ? true
+      : false;
+  if (
+    ReqObj.Form[tmpId].cName.toask === true &&
+    ReqObj.Form[tmpId].cName.prodServ === "P" &&
+    isoCurrent === "IN"
+  ) {
+    return isqc;
+  }
+  return false;
+}
+
+function gstConditions(tmpId) {
+  return currentISO() === "IN" &&
+    ReqObj.UserDetail.cName !== "" &&
+    ReqObj.Form[tmpId].gst.html === false &&
+    ReqObj.gst.toask === true
+    ? true
+    : false;
+}
+function gstConditionsSSB(tmpId) {
+  return currentISO() === "IN" &&
+    ReqObj.UserDetail.cName !== "" &&
+    ReqObj.gst.toask === true
+    ? true
+    : false;
+}
+
+function urlConditions(tmpId) {
+  return currentISO() !== "IN" &&
+    ReqObj.Form[tmpId].url.html === false &&
+    ReqObj.url.toask === true
+    ? { ask: true, what: "Website Url", key: 2 }
+    : { ask: false, what: "", key: -1 };
+}
+
+function isRadioOtherClicked(revent) {
+  var RadioBoxEl = $(revent);
+  RadioBoxEl.children("input").prop("checked", false);
+  RadioBoxEl.children("input").removeClass("waschecked");
+  RadioBoxEl.removeClass("sl-box chksl");
+  RadioBoxEl.children().children(".bechk-in").children().hide();
+}
+function RadioClick(tmpId) {
+  $(".radioClick")
+    .off("click")
+    .on("click", function (event) {
+      var tempId = event.target.id;
+      tempId = tempId.substr(1, 4);
+      var imeshcookie = imeshExist();
+      if (IsChatbl(tmpId))
+        $("#t" + tmpId + "_submitNo2") //chat bl bug
+          .parent()
+          .addClass("dn");
+      var curEl = this;
+      var name = $(this).attr("name");
+      var isSelected = $(curEl).hasClass("waschecked");
+
+      $("input[name='" + name + "']").each(function () {
+        $(this).prop("checked", false).removeClass("waschecked");
+        $(this).parent().removeClass("sl-box chksl");
+        $(this).siblings("label").children(".bechk-in").children().hide();
+      });
+      var crb = false;
+      if (!isSelected) {
+        if (
+          $("#t" + tmpId + "ques" + name.charAt(name.length - 1))
+            .text()
+            .toLowerCase() === "why do you need this"
+        )
+          crb = true;
+        if (
+          $("#" + curEl.id)
+            .val()
+            .toLowerCase() === "for reselling" ||
+          $("#" + curEl.id)
+            .val()
+            .toLowerCase() === "for business use"
+        ) {
+          ReqObj.Form[tempId].cName.rb = true;
+        } else {
+          ReqObj.Form[tempId].cName.rb = false;
+        }
+        $(curEl).prop("checked", true).addClass("waschecked");
+        $(curEl).parent().siblings(".oth_bx").children("input").val("");
+        IsChatbl(tempId) || isSSB(tempId)
+          ? ""
+          : $(curEl).parent().addClass("sl-box chksl");
+        $(curEl).siblings("label").children(".bechk-in").children().show();
+        if (crb === true && !isEnq(tmpId)) onCName(tmpId, true);
+      } else if (!IsChatbl(tmpId) && crb === true && !isEnq(tmpId)) {
+        ReqObj.Form[tempId].cName.rb = false;
+        onCName(tmpId, true);
+      }
+    });
+}
+
+function CheckBoxClick(tmpId) {
+  setTimeout(function () {
+    $(".cbl_chekbx").focus();
+  }, 1800);
+  $(".cbl_chekbx_btn ")
+    .off("click")
+    .on("click", function () {
+      if (IsChatbl(tmpId)) {
+        $("#t" + tmpId + "_submitNo1") //chat bl bug
+          .parent()
+          .addClass("dn");
+      }
+    });
+  $(".CheckboxClick")
+    .off("click")
+    .on("click", function () {
+      if (IsChatbl(tmpId)) {
+        $("#t" + tmpId + "_submitNo1") //chat bl bug
+          .parent()
+          .addClass("bedsnone");
+      }
+      var checkBox = $(this);
+      if (checkBox.siblings("input").prop("checked")) {
+        checkBox.children(".bechk-in").children().hide();
+        checkBox.parent().removeClass("chksl");
+      } else {
+        checkBox.children(".bechk-in").children().show();
+        IsChatbl(tmpId) || isSSB(tmpId)
+          ? ""
+          : checkBox.parent().addClass("chksl");
+      }
+    });
+}
+
+function radCheck(el) {
+  if (isSet(el)) {
+    var id = $(el).children("span").attr("id");
+    var str = id;
+    var templateId = str.slice(0, 5);
+    pfArr = ["", "", ""];
+    if (isSet(ReqObj.Form[str.slice(1, 5)].staticPrefilledCity))
+      enrichCityhtml(
+        id,
+        templateId,
+        0,
+        ReqObj.Form[str.slice(1, 5)].staticPrefilledCity
+      );
+    else enrichCityhtml(id, templateId, 0, pfArr);
+  }
+}
+
+function enrichCityhtml(id, templateId, type, pfArr) {
+  var ctid = templateId + "_enrich_city";
+  var html_city = "";
+  var err_id = templateId + "_error_city_locpref";
+  if (
+    $("#" + id).html() === "Anywhere in India" ||
+    $("#" + id).html() === "Local Only" ||
+    $("#" + id).text() === "Specific City"
+  )
+    $("#spcity").html("");
+  if ($("#" + id).text() === "Specific City") {
+    var cityId = "";
+    let beWbl = pdpInactiveBL(templateId.substr(1, 5))? "beW10bl" :"beW15";
+    for (i = 1; i < 4; i++) {
+      cityId = "";
+      cityId = ctid + i;
+      if (templateId.substr(1, 2) === "06") {
+        html_city +=
+          "<div class='" +
+          ssbClass("speccity", templateId.substr(1, 5)) +
+          "'><label class=''>City " +
+          i +
+          "</label><input type='text' id=" +
+          cityId +
+          " name=" +
+          cityId +
+          " autocomplete='off'  class='' onblur='chckval(" +
+          cityId +
+          ",this.value);'><input type='hidden' id='" +
+          cityId +
+          "specificcity_hidden'></div>";
+      } else {
+        html_city +=
+          "<div class='bepr "+ beWbl + " belft text_bx'><label class='be-lbl'>City " +
+          i +
+          "</label><input type='text' value = '" +
+          pfArr[i - 1] +
+          "' id=" +
+          cityId +
+          " name=" +
+          cityId +
+          " autocomplete='off'  class='be-slbox' onblur='chckval(" +
+          cityId +
+          ",this.value);'><input type='hidden' id='" +
+          cityId +
+          "specificcity_hidden'></div>";
+      }
+    }
+    let bemt = pdpInactiveBL(templateId.substr(1, 5)) ? " bemt15" : " bemt5" ;
+    if (!($("#spcity").length > 0))
+      var citydiv =
+        templateId.substr(1, 2) === "06" ? isnewSSB(templateId.substr(1, 5))
+            ? "<div id='spcity' class='nb-flex nb-mt10' ></div>"
+            : "<div id='spcity' class='mb-flex mb-mt10' style='height:54px;'></div>"
+          : "<div id='spcity' class='be-row " + bemt + "' style='height:54px;'></div>";
+    $("#" + id)
+      .parent()
+      .parent()
+      .parent()
+      .append(citydiv);
+    $("#spcity").html(html_city);
+  }
+  if (
+    $("#" + id).text() === "Local Only" ||
+    $("#" + id).text() === "Anywhere in India"
+  ) {
+    $("#spcity").remove();
+    if ($("#" + ctid + "_err").length)
+      $("#" + ctid + "_err").addClass("bedsnone");
+  } else if ($("#" + id).text() === "Specific City" && type !== 1) {
+    var isSelected = $("#" + id)
+      .parent()
+      .siblings("input")
+      .hasClass("waschecked");
+    if (isSelected) $("#spcity").remove();
+  }
+  enrichCityMultiple(templateId);
+}
+function enrichCityMultiple(templateId) {
+  var autosuggcls =
+    templateId.substr(1, 2) === "06"
+      ? isnewSSB(templateId.substr(1, 5))
+        ? "be-sugg nb-spctysugg"
+        : "be-sugg mb-spctysugg"
+      : "be-sugg";
+  for (var i = 1; i <= 3; i++) {
+    if (document.getElementById(templateId + "_enrich_city" + i) !== null) {
+      if (typeof Suggester !== "undefined") {
+        window[templateId + "city_sugg_" + i] = new Suggester({
+          element: templateId + "_enrich_city" + i,
+          onSelect: selecttext_city_enrich,
+          type: "city",
+          fields: "std,state,id,stateid",
+          placeholder: "",
+          minStringLengthToDisplaySuggestion: 1,
+          autocompleteClass: autosuggcls,
+          displayFields: "value,state",
+          displaySeparator: " >> ",
+          filters: "iso:IN",
+          recentData: false,
+        });
+      }
+    }
+  }
+}
+
+function selecttext_city_enrich(event, ui) {
+  if (isSet(ui)) {
+    this.value = ui.item.value;
+    // $("#" + this.id + "specificcity_hidden").val(ui.item.value);
+    $("#" + this.id + "specificcity_hidden").val(ui.item.data.id);
+
+    // var cityid = this.id;
+    //$("#")
+    // document.getElementById(cityid).value = ui.item.data.id;
+  }
+}
+
+function chckval(cityid, val) {
+  // if (val == '') {
+  //   $('#' + cityid).val('');
+  // }
+}
+
+function blkerr(templateId) {
+  // if ($('#' + templateId + 'error_city_locpref').css('display') == 'block') {
+  //   $('#' + templateId + 'error_city_locpref').css('display', 'none');
+  //   $('#' + templateId + 'enrich_city1').removeClass("highlight-err");
+  // }
+}
+function successCallbackenq(position) {
+  lt = position.coords.latitude;
+  lt = lt.toFixed(5);
+  lg = position.coords.longitude;
+  lg = lg.toFixed(5);
+  accu = position.coords.accuracy;
+  accu = accu.toFixed(5);
+  if (isSet(lt) && isSet(lg) && lt !== "" && lg !== "") {
+    gloc_city = "";
+    gloc_cityid = "";
+    var data = {
+      token: "imartenquiryprovider",
+      S_lat: lt,
+      S_long: lg,
+      GET_CITY: "Y",
+      modid: modid,
+    };
+    var url = appsServerName + "index.php?r=Newreqform/GeoLocation";
+    $.ajax({
+      url: url,
+      data: data,
+      type: "POST",
+      dataType: "json",
+      success: function (res) {
+        if (isSet(res) && parseInt(res.CODE) === 200) {
+          loc_cityid = res["cityid"];
+          loc_iso = res["countryiso"];
+          gloc_city = res["cityname"];
+          gloc_cityid = res["cityid"];
+          newVal =
+            "GeoLoc=lt%3D" +
+            lt +
+            "%7Clg%3D" +
+            lg +
+            "%7Caccu%3D" +
+            accu +
+            "%7Clg_ct%3D" +
+            gloc_city +
+            "%7Clg_ctid%3D" +
+            gloc_cityid;
+          var geolocdecode =
+            "GeoLoc_lt=" +
+            lt +
+            "|lg=" +
+            lg +
+            "|accu=" +
+            accu +
+            "|lg_ct=" +
+            gloc_city +
+            "|lg_ctid=" +
+            gloc_cityid;
+          ReqObj.UserDetail["ipcityname"] = gloc_city;
+          ReqObj.UserDetail["ipctid"] = gloc_cityid;
+          var ipLoc = readCookie("iploc");
+          if (ipLoc.includes("|GeoLoc_lt"))
+            ipLoc = ipLoc.substr(0, ipLoc.indexOf("|GeoLoc_lt"));
+          ipLoc += "|" + geolocdecode;
+          var d = new Date();
+          d.setTime(d.getTime() + 3 * 60 * 60 * 1000);
+          var expires = "expires=" + d.toUTCString();
+          document.cookie =
+            "iploc=" +
+            ipLoc +
+            ";" +
+            expires +
+            "; domain=.indiamart.com; path=/";
+          if (isSet(ReqObj.cityId) && isSet(ReqObj.cityId[0])) {
+            ReqObj.UserDetail.ipcitid = gloc_cityid;
+            ReqObj.UserDetail.ipcityname = gloc_city;
+            $(ReqObj.cityId[0]).val(gloc_city);
+            $(ReqObj.cityId[0]).focus();
+            $(ReqObj.cityId[0]).parent().addClass("eqfcsed");
+            if (isSet(ReqObj.cityId[1])) $(ReqObj.cityId[1]).val(gloc_cityid);
+            ReqObj.Form[ReqObj.cityId[0].substr(2, 4)].cityTracking = 4;
+          }
+        } else {
+          blenqGATracking("geoloc","service:GeoLocation:failure",res,1,ReqObj.cityId[0].substr(2, 4));
+        }
+      },
+      error: function (res) {
+        res = isSet(res) ? res : "response undefined";
+        blenqGATracking("geoloc","service:GeoLocation:failure",JSON.stringify(res),1,ReqObj.cityId[0].substr(2, 4));
+      },
+    });
+  }
+}
+
+function isHindi(str) {
+  var split = str.split("");
+  for (i = 0; i < split.length; i++) {
+    var code = split[i].charCodeAt();
+    if (code >= 2309 && code <= 2361) return true;
+  }
+  return false;
+}
+
+function isAllCharacters(str) {
+  var exp = /^[a-zA-Z ]+$/;
+  return exp.test(str);
+}
+
+function isAllNumbers(str) {
+  var exp = /^[0-9]*$/;
+  return exp.test(str);
+}
+
+function isAllSpecialChars(str) {
+  var exp = /^[^a-zA-Z0-9]+$/;
+  return exp.test(str);
+}
+
+function initGeolocationenq(tmpId) {
+  if (navigator && navigator.geolocation) {
+    var x_navigator = navigator.geolocation.getCurrentPosition(
+      successCallbackenq,
+      function () {
+        console.log("error");
+      },
+      {
+        timeout: 10000,
+      }
+    );
+  }
+}
+
+/*
+   *
+   * YANDEX TRACKING
+   *
+   */
+function yandex_impression_track(userType, formType, modId, data_arr) {
+  // Yandex
+  if (typeof ym !== "function") {
+    (function (b, o, j, n, h, g, f) {
+      b[h] =
+        b[h] ||
+        function () {
+          (b[h].a = b[h].a || []).push(arguments);
+        };
+      b[h].l = 1 * new Date();
+      (g = o.createElement(j)),
+        (f = o.getElementsByTagName(j)[0]),
+        (g.async = 1),
+        (g.src = n),
+        f.parentNode.insertBefore(g, f);
+    })(window, document, "script", "https://mc.yandex.ru/metrika/tag.js", "ym");
+    ym(51115208, "init", {
+      id: 51115208,
+      clickmap: true,
+      trackLinks: true,
+      accurateTrackBounce: true,
+      webvisor: true,
+    });
+  }
+  window.yaParams = {
+    formType: formType, // "MODID-FromScroll"
+    //"userType": [userType, { "formType": [formType, { "modId": [modId, data_arr] }] }]
+    //"A": [userType, formType, modId, data_arr]
+  };
+  //userType: userType [ formType: formType { modId: data_arr } }
+  ym(51115208, "params", window.yaParams || {});
+}
+/*
+ *
+ * YANDEX Parameter
+ *
+ */
+function getyandexParameter(tmpId) {
+  // Yandex
+
+  var data = {};
+  data["userType"] = imeshExist() ? "Identified" : "UnIdentified";
+  //var append = (isSet(ReqObj.Form[tmpId].source) && ReqObj.Form[tmpId].source !== "")
+  if (isSet(ReqObj.Form[tmpId].source) && ReqObj.Form[tmpId].source !== "")
+    data["formType"] =
+      ReqObj.Form[tmpId].formType + "-" + ReqObj.Form[tmpId].source;
+  else data["formType"] = ReqObj.Form[tmpId].formType;
+  data["modId"] = ReqObj.Form[tmpId].modId;
+  data["data_arr"] = [];
+
+  if (IsChatbl(tmpId)) data["data_arr"].push(ReqObj.Form[tmpId].afflId);
+  else {
+    data["data_arr"].push(ReqObj.Form[tmpId].ctaName);
+    data["data_arr"].push(ReqObj.Form[tmpId].section);
+  }
+
+  return data;
+}
+/*
+   *
+   * FIRE YANDEX
+   *
+   */
+  
+function fireYandex(tmpId) {
+  // Yandex
+  var trackdata = getyandexParameter(tmpId);
+  yandex_impression_track(
+    trackdata.userType,
+    trackdata.formType,
+    trackdata.modId,
+    trackdata.data_arr
+  );
+}
+  
+function getCurrentCounter(currentpage) {
+  return currentpage.length;
+}
+
+function chatblHideTransition(tmpId) {
+  $("#t" + tmpId + "_typhere").removeClass("dn");
+  $("#t" + tmpId + "_newblchatReply").addClass("cbl_vh");
+}
+ 
+function foreignUserIsq() {
+  var ShowForeignUserIsq = true;
+  return ShowForeignUserIsq;
+}  
+
+
+function chatBlClass(tmpId, todo) {
+  // POPUPCHATBL
+  if (todo === "left") {
+    return "message-text2";
+  } else if (todo === "right") {
+    // later change to 08 ---POPUPCHATBL
+    return "message-text3";
+  } else if (todo === "yes") {
+    return "blchat-btn2";
+  } else if (todo === "change") {
+    return "blchat-btn1";
+  }
+}
+
+// function chatBlPopupInline(tmpId) {
+//   if ((chatblverlay(tmpid) || IsChatBLInline(tmpId)) && tmpId.substring(0, 2) === "08") { // later change to 08 ---POPUPCHATBL
+//     return "popup";
+//   }else
+//     return "nochat";
+// }
+
+
+
+function chatblFirstMsg(tmpId) {
+  setTimeout(function () {
+    $("#t" + tmpId + "hi").removeClass("dn"); //
+    UpdateChatName(tmpId);
+    if (imeshExist() !== "") {
+      if (
+        usercookie.getParameterValue(imeshExist(), "uv") !== "V" &&
+        isSecondBl()
+      ) {
+      } else {
+        var name = $("#t" + tmpId + "_hiid")
+          .text()
+          .substr(8);
+        $("#t" + tmpId + "_hiid").html(
+          "Welcome <span class='cbl_fwb'>" +
+            name +
+            "</span>, provide below details to get quick quotes from sellers"
+        );
+      }
+    }
+  }, 300);
+}
+
+function chatwidgetTransitions(tmpId) {
+  $("#t" + tmpId + "_chatBL").addClass("cbl_smwrap");
+  $("#t" + tmpId + "_bl_form_wrapper_cta").toggleClass("bedsnone");
+  $("#t" + tmpId + "message_indicator").addClass("dn");
+  $("#t" + tmpId + "_msgDiv").addClass("bedsnone");
+  $($("#t" + tmpId + "_blchatfooter").children()[0])
+    .removeClass("cbl_bg1")
+    .addClass("cbl_bgf1");
+  if (
+    !(
+      isSet($("#t" + tmpId + "_submitNo2")) &&
+      $("#t" + tmpId + "_submitNo2").length > 0
+    )
+  ) {
+    $("#t" + tmpId + "_blchatfooter").append(skipDiv2(tmpId)); //chat bl bug
+    $("#t" + tmpId + "_submitNo2")
+      .parent()
+      .addClass("dn");
+  }
+
+  $($("#scrollTop").children()[0]).removeClass("tpbCbl"); //for dir
+}
+
+function chatblTransition(tmpId) {
+  $("#t" + tmpId + "_chatBL").removeClass("cbl_adjust");
+  $("#t" + tmpId + "_blchatfooter").removeClass("focus");
+  $("#t" + tmpId + "_blchatbody").removeClass("cbl_htgrow");
+  IsChatBLInline(tmpId)
+    ? $("#t" + tmpId + "_newblchatReply")
+        .html("")
+        .addClass("cbl_br10 cbl_bgf1")
+        .removeClass("cbl_bg1")
+    : $("#t" + tmpId + "_newblchatReply").html("");
+  IsChatBLInline(tmpId)
+    ? $("#t" + tmpId + "_chatBL")
+        .removeClass("bedsnone cbl_vh")
+        .addClass("cbl_vv")
+    : $("#t" + tmpId + "_chatBL")
+        .removeClass("bedsnone")
+        .css({
+          display: "flex",
+        });
+  chatblHideTransition(tmpId);
+  $("#t" + tmpId + "chngPrdDiv").removeClass("dn");
+  $("#t" + tmpId + "_blchatfooter").focus();
+  IsChatBLInline(tmpId) ? updateChatWidgetGlobalVar(tmpId) : "";
+}
+
+function updateChatBlProdName(tmpId) {
+  //$(".productname").text(ReqObj.Form[tmpId].mcatName);
+  $("#t" + tmpId + "_productname").html("");
+
+  if (
+    ShowProdName(tmpId) ||
+    (ReqObj.Form[tmpId].mcatName === "" && ReqObj.Form[tmpId].prodName === "")
+  ) {
+    var html = " <span>Tell us what you need to Get Best Price</span>";
+    if (IsChatBLOverlay(tmpId))
+      html +=
+        "<div class='cbl_msg'>Provide below details to get quick quotes from sellers</div>";
+    $("#t" + tmpId + "_productname").append(html);
+    return;
+  }
+  var html = " <span>Get Best Price </span> ";
+  var productname =
+    ReqObj.Form[tmpId].mcatName !== ""
+      ? ReqObj.Form[tmpId].mcatName
+      : ReqObj.Form[tmpId].prodName;
+  if (productname !== "") {
+    html +=
+      "for <span class = 'cbl_fwb productname'>" + productname + "</span>";
+  }
+  if (IsChatBLOverlay(tmpId)) {
+    var imeshcookie = imeshExist();
+    if (imeshcookie !== "") {
+      if (
+        usercookie.getParameterValue(imeshcookie, "uv") !== "V" &&
+        isSecondBl()
+      ) {
+        html +=
+          "<div class='cbl_msg'>Provide below details to get quick quotes from sellers</div>";
+      }
+    } else
+      html +=
+        "<div class='cbl_msg'>Provide below details to get quick quotes from sellers</div>";
+  }
+  $("#t" + tmpId + "_productname").append(html);
+}
+
+function returnIsEnrichShownKeyVal(tmpId) {
+  if (
+    (currentISO() === "IN" &&
+      (ReqObj.Form[tmpId].flags.isEnrichShown.isStaticShown === false ||
+        ReqObj.Form[tmpId].flags.isEnrichShown.isAttachmentShown === false)) ||
+    (currentISO() !== "IN" &&
+      ReqObj.Form[tmpId].flags.isEnrichShown.isAttachmentShown === false)
+  ) {
+    return true;
+  }
+  return false;
+}
+
+function ResetUserDetails(key) {
+  ReqObj.UserDetail[key] = "";
+}
+
+function preventDefault(e) {
+  e = e || window.event;
+  if (e.preventDefault) e.preventDefault();
+  e.returnValue = false;
+}
+
+function keydown(e) {
+  var keys = [32, 33, 34, 35, 36, 37, 38, 39, 40];
+  for (var i = keys.length; i--; ) {
+    if (!isSet(e.target.id)) {
+      if (e.keyCode === keys[i]) {
+        preventDefault(e);
+        return;
+      }
+    }
+  }
+}
+
+function wheel(e) {
+  preventDefault(e);
+}
+
+function disable_scroll() {
+  if (window.addEventListener) {
+    window.addEventListener("onmousewheel", wheel, false);
+  }
+  window.onmousewheel = document.onmousewheel = wheel;
+  document.onkeydown = keydown;
+}
+
+function enable_scroll() {
+  if (window.removeEventListener) {
+    window.removeEventListener("onmousewheel", wheel, false);
+  }
+  window.onmousewheel = document.onmousewheel = document.onkeydown = null;
+}
+  
+function isOTPBoxHidden(tmpId) {
+  return $("#t" + tmpId + "_otpbox").length === 0 ||
+    $("#t" + tmpId + "_otpbox").hasClass("bedsnone")
+    ? true
+    : false;
+}
+
+// Miscellaneous
+
 /*--------------------------GlusrupdateonSuccess----------------------- */
 function GlusrUpdateOnSuccess(revent, todo, res) {
   var userlogin = new UserLogin();
@@ -5540,3 +6437,1113 @@ function ThankYou(tmpId) {
     this.getStep(tmpId, true);
   };
   // FormSeq Post
+
+  // UserVerification
+  function UserVerification() {
+    this.otpCount = 0;
+    this.imeshCookie = "";
+    this.v4iilexCookie =
+      ""; /* first otp request yahi bhejdo to avoid any delays */
+    this.verifyhtml = "";
+    this.className = "UserVerification";
+    this.UserVerificationHtmlObj = {
+      Label: "",
+      UserInput: "",
+      OuterWrapper: "",
+      ClosingWrapper: "",
+    };
+    this.UserVerificationHtmlObjArray = [];
+    this.otp = "";
+    this.message = "";
+  }
+
+  UserVerification.prototype.displayAnswer = function (tmpId) {
+    if (
+      !(ShowEmail() && EmailAfterReqbox(tmpId)) &&
+      (ReqObj.Form[tmpId].isSkipOTPClicked === true ||
+        ReqObj.Form[tmpId].showotpstep === 1)
+    )
+      return;
+    return !IsChatbl(tmpId)
+      ? [
+          ConversationCenterWrapper(
+            tmpId,
+            "Mobile No. Verified" + "<span class='chat-tickbx1'></span>"
+          ),
+        ]
+      : [
+          ConversationCenterWrapper(
+            tmpId,
+            "<div class = 'txt_area cbl_brd1 cbl_clr1'><svg class='cbl_ok cbl_field'><use xlink:href='#t" +
+              tmpId +
+              "cblcheck'></use></svg>" +
+              "Thank You for confirming your requirement" +
+              "</div>"
+          ),
+        ];
+  };
+  UserVerification.prototype.SaveDetails = function (tmpId) {
+    if (IsChatbl(tmpId)) ReqObj.Form[tmpId].UserInputs["OTP"] = this.otp;
+  };
+  
+  UserVerification.prototype.toUpdate = function (tmpId) {
+    if (usercookie.getParameterValue(imeshExist(), "uv") === "V") return true;
+    return false;
+  };
+  
+  UserVerification.prototype.displayHtml = function (tmpId) {
+    /* common for all classes , defaultEvents() common for all. */
+    if (isSet(tmpId)) {
+      $("#t" + tmpId + "_byrinfo").addClass("bedsnone");
+      if (!IsChatbl(tmpId)) $("#t" + tmpId + "_hdg").addClass("bedsnone");
+      ReqObj.Form[tmpId].flags.isOtpShown = true;
+      if (IsChatbl(tmpId)) {
+        return [this.verifyhtmlLabel, this.verifyhtmlInput];
+      }
+      if (isOtherEnq(tmpId)) {
+        ReqObj.Form[tmpId].calledClassName[
+          ReqObj.Form[tmpId].FormSequence.StepCounter
+        ] = this.className;
+      }
+      return [this.verifyhtml];
+    }
+  };
+  
+  UserVerification.prototype.EventIfScreenPresent = function (tmpId) {
+    /* common for all classes , defaultEvents() common for all. */
+    if (isSet(tmpId)) {
+      $("#t" + tmpId + "_byrinfo").addClass("bedsnone");
+      if (!IsChatbl(tmpId)) $("#t" + tmpId + "_hdg").addClass("bedsnone");
+      if (isOtherEnq(tmpId)) {
+        this.handleHeading(tmpId);
+        ButtonNameUI("isq", tmpId);
+        ButtonNameUI("userverification", tmpId);
+      }
+    }
+  };
+  
+  UserVerification.prototype.handleHeading = function (tmpId) {
+    if (!isSSB(tmpId) && !isBl(tmpId))
+      $("#t" + tmpId + "OtpMainHeading")
+        .removeClass("bedsnone")
+        .html(getFormHeading(tmpId, ReqObj.Form[tmpId].currentScreen));
+  };
+  
+  UserVerification.prototype.handleButton = function (tmpId) {
+    var data = { showBackBtn: 0 };
+    ButtonNameUI(ReqObj.Form[tmpId].currentScreen, tmpId, data);
+  };
+  
+  UserVerification.prototype.addHtmlObjToArray = function (htmlObj) {
+    this.UserVerificationHtmlObjArray.push(htmlObj);
+  };
+  
+  UserVerification.prototype.hasHtml = function (UserVerificationObject) {
+    if (isSet(UserVerificationObject)) {
+      var tmpId = UserVerificationObject.tmpId;
+  
+      if (
+        !isSSB(tmpId) &&
+        currentISO() === "IN" &&
+        !isMoglixUi(tmpId) &&
+        !IsChatbl(tmpId) &&
+        isSet(ReqObj.Form[tmpId].mcatId) &&
+        parseInt(ReqObj.Form[tmpId].mcatId, 10) !== -1 &&
+        ReqObj.Form[tmpId].mcatId != "" &&
+        !isSet(sessionStorage.getItem("plaWidget-" + ReqObj.Form[tmpId].mcatId))
+      ) {
+        plawidget(tmpId);
+      }
+  
+      this.message =
+        isEnq(tmpId) || isBl(tmpId)
+          ? UserVerificationObject.message
+          : isSet(UserVerificationObject.message)
+          ? UserVerificationObject.message.message
+          : "";
+      this.cookies();
+      if (!isSSB(tmpId))
+        this.sendOtp({
+          data: {
+            type: 1,
+            x: this,
+            id: "",
+            resend: 0,
+            tmpId: tmpId,
+          },
+        });
+      var change_iso = currentISO();
+  
+      if (change_iso === "IN") this.addHtmlObjToArray(this.getOTPHtml(tmpId));
+      // var UserVerificationSuffixObj = {
+      //   "suffix": "_otpbox",
+      //   "class": ""
+      // };
+      if (!IsChatbl(tmpId)) {
+        var UserVerificationSuffixOuterHtml = isSSB(tmpId)
+          ? otpOuterHtml(tmpId)
+          : "<div  id='t" + tmpId + "_otpbox'>";
+        var UserVerificationSuffixClosingHtml = "</div>";
+        var UserVerificationSuffixHtmlObj = {
+          SuffixOuterHtml: UserVerificationSuffixOuterHtml,
+          SuffixClosingHtml: UserVerificationSuffixClosingHtml,
+          suffix: "_otpbox",
+        };
+        this.verifyhtml =
+          change_iso === "IN"
+            ? MakeWrapper(
+                [this.UserVerificationHtmlObjArray],
+                tmpId,
+                UserVerificationSuffixHtmlObj,
+                ""
+              )
+            : "";
+      } else {
+        this.verifyhtmlLabel =
+          change_iso === "IN"
+            ? MakeWrapper(
+                [this.UserVerificationHtmlObjArray],
+                tmpId,
+                WrapperObj(
+                  "<div  id='t" + tmpId + "_otpbox' class = 'cbl_ques cbl_vh'>",
+                  "</div>",
+                  "_otpbox"
+                ),
+                "ques"
+              )
+            : "";
+        this.verifyhtmlInput =
+          change_iso === "IN"
+            ? MakeWrapper(
+                [this.UserVerificationHtmlObjArray],
+                tmpId,
+                WrapperObj(
+                  "<div  id='t" +
+                    tmpId +
+                    "_otpbox' class ='cbl_dtls cbl_otp cbl_df cbl_aic t" +
+                    tmpId +
+                    "_userInput cbl_br10 dn'>",
+                  "</div>",
+                  "_otpbox"
+                ),
+                "input"
+              )
+            : "";
+        this.verifyhtml =
+          change_iso === "IN" ? this.verifyhtmlLabel + this.verifyhtmlInput : "";
+      }
+      UserVerificationObject.that.NumberofClassCalled -= 1;
+      if (this.verifyhtml !== "") {
+        AttachObject(UserVerificationObject.object, tmpId);
+        if (isSet(UserVerificationObject.AfterService)) {
+          for (var i = 0; i < UserVerificationObject.AfterService.length; i++) {
+            UserVerificationObject.that.MakeSeq(
+              UserVerificationObject.AfterService[i],
+              tmpId
+            );
+          }
+        }
+        if (UserVerificationObject.that.NumberofClassCalled === 0) {
+          makeFinalSeq(UserVerificationObject, tmpId);
+        }
+      } else {
+        if (UserVerificationObject.hasFallback) {
+          CreateSeq(UserVerificationObject.FallbackObj);
+        }
+      }
+      if (this.verifyhtml !== "") return true;
+      else return false;
+    }
+  };
+
+  UserVerification.prototype.defaultEvents = function (tmpId) {
+    $("#yajaca").hide(); // click away message on pns form
+    if (isSet(tmpId)) {
+      if (IsChatbl(tmpId)) ChatblfooterAns(tmpId);
+      this.handleEvents(this, tmpId);
+      this.handleUI(tmpId, "focus", "", "");
+      if (isOtherEnq(tmpId)) {
+        this.handleHeading(tmpId);
+      }
+    }
+  };
+
+  UserVerification.prototype.validate = function (tmpId) {
+    if (isSet(tmpId)) {
+      $("#verifyerrotpdiv").addClass("bedsnone");
+      if ((isSSB(tmpId) || isEnq(tmpId)) && ReqObj.Form[tmpId].isSkipOTPClicked) {
+        return true;
+      }
+      var authkey =
+        $("#t" + tmpId + "bl_enqOtp1").val() +
+        $("#t" + tmpId + "bl_enqOtp2").val() +
+        $("#t" + tmpId + "bl_enqOtp3").val() +
+        $("#t" + tmpId + "bl_enqOtp4").val();
+      this.otp = authkey;
+      if (
+        !isOTPBoxHidden(tmpId) &&
+        ((isSet(authkey) && authkey === "") || authkey.length !== 4)
+      ) {
+        this.handleUI(tmpId, "verificationFailed", "beforeRequest", authkey);
+        return false;
+      }
+      return true;
+    }
+  };
+
+  UserVerification.prototype.onSubmit = function (tmpId, userVerificationObj) {
+    var authkey =
+      $("#t" + tmpId + "bl_enqOtp1").val() +
+      $("#t" + tmpId + "bl_enqOtp2").val() +
+      $("#t" + tmpId + "bl_enqOtp3").val() +
+      $("#t" + tmpId + "bl_enqOtp4").val();
+    if (
+      ReqObj.Form[tmpId].isSkipOTPClicked === true &&
+      !isSSB(tmpId) &&
+      !isEnq(tmpId)
+    ) {
+      ReqObj.Form[tmpId].ServiceSequence.pop();
+      return;
+    }
+  
+    if (
+      !(checkblockedUser() && imeshExist() === "") &&
+      isSSB(tmpId) &&
+      toRemoveOTP(tmpId)
+    )
+      return;
+  
+    this.otp = authkey;
+    if (
+      (IsChatbl(tmpId) && this.message !== "second") ||
+      (isSet(authkey) && authkey.length === 4) ||
+      (ReqObj.Form[tmpId].isSkipOTPClicked === true &&
+        (isSSB(tmpId) || isEnq(tmpId)))
+    ) {
+      if (
+        (isSet(authkey) && authkey.length === 4) ||
+        (ReqObj.Form[tmpId].isSkipOTPClicked === true &&
+          (isSSB(tmpId) || isEnq(tmpId)))
+      ) {
+        var verifyObject = new PreAjax("UserVerification", tmpId);
+        this.validateOtp({
+          data: {
+            type: 2,
+            userVerificationObject: this,
+            obj: verifyObject,
+            authKey: authkey,
+            tmpId: tmpId,
+          },
+        });
+      }
+    }
+  };
+
+  UserVerification.prototype.cookies = function () {
+    this.imeshCookie = imeshExist();
+    this.v4iilexCookie = usercookie.getCookie("v4iilex");
+  };
+
+  UserVerification.prototype.returnOTPInputs = function (formType, tmpId) {
+    var inputclass = IsChatbl(tmpId) || isSSB(tmpId) ? "" : "bloptin";
+    var otphtml = "";
+    otphtml += returnInput(
+      "t" + tmpId,
+      "bl_enqOtp1",
+      "text",
+      "",
+      "",
+      inputclass,
+      "",
+      "",
+      "1"
+    );
+    otphtml += returnInput(
+      "t" + tmpId,
+      "bl_enqOtp2",
+      "text",
+      "",
+      "",
+      inputclass,
+      "",
+      "",
+      "1"
+    );
+    otphtml += returnInput(
+      "t" + tmpId,
+      "bl_enqOtp3",
+      "text",
+      "",
+      "",
+      inputclass,
+      "",
+      "",
+      "1"
+    );
+    otphtml += returnInput(
+      "t" + tmpId,
+      "bl_enqOtp4",
+      "text",
+      "",
+      "",
+      inputclass,
+      "",
+      "",
+      "1"
+    );
+  
+    return otphtml;
+  };
+  
+  UserVerification.prototype.returnErrorDiv = function (tmpId, errorclass) {
+    var otphtml = "";
+    otphtml += returnContainer(
+      "t" + tmpId,
+      "verifyerrotpdiv",
+      errorclass,
+      "",
+      ""
+    );
+    otphtml += returnSpan("t" + tmpId, "verify_err", "", "");
+    otphtml += "</div>";
+    return otphtml;
+  };
+
+  UserVerification.prototype.getOTPInput = function (tmpId, formType) {
+    var that = this;
+    var otphtml = "";
+    if (IsChatbl(tmpId)) {
+      otphtml += returnContainer("", "", "cbl_otpgrp cbl_w1", "", "");
+      otphtml +=
+        "<label>Enter One Time Password</label>" +
+        that.returnOTPInputs(formType, tmpId) +
+        "</div>";
+      var otpclass = "bltperor bedsnone betxtc";
+      otphtml += that.returnErrorDiv(tmpId, otpclass);
+      var classtosend = "cbl_brd1 cbl_clr1 cbl_cp";
+      otphtml += returnContainer("", "", "cbl_resend ", "", "");
+      if (
+        !ReqObj.Form[tmpId].isotpSkipped &&
+        this.message.toLowerCase() !== "second" &&
+        !checkblockedUser()
+      ) {
+        ReqObj.Form[tmpId].isotpSkipped = true;
+        otphtml += returnButton("t" + tmpId, "_skipOTP", "Skip", classtosend);
+      }
+      classtosend += IsChatBLInline(tmpId) ? " rsndOtp cbl_pa" : "";
+      otphtml += returnButton(
+        "t" + tmpId,
+        "resendOtp",
+        "Resend OTP",
+        classtosend
+      );
+      otphtml += "</div>";
+    } else {
+      //ReqObj.UserDetail["blusrdtl"] = {"blkUsr" : 1, "blk_mb" : event.data.obj.username, "blk_iso": "91"};
+      var imeshcookie = imeshExist();
+      var PhoneNumber =
+        checkblockedUser() && im_issExist() === ""
+          ? "+" +
+            ReqObj.UserDetail.blusrdtl.blk_iso +
+            "-" +
+            ReqObj.UserDetail.blusrdtl.blk_mb
+          : "+" +
+            usercookie.getParameterValue(imeshcookie, "phcc") +
+            "-" +
+            usercookie.getParameterValue(imeshcookie, "mb1");
+      if (isSSB(tmpId))
+        otphtml = OTPuserInput(tmpId, formType, that, PhoneNumber);
+      else {
+        otphtml += returnContainer("", "", "m15 blml20 bepr beopt", "", "");
+        if (!isOtherEnq(tmpId))
+          otphtml += '<i class="blnewform_sprit blicotp beflt"></i>';
+        if (isOtherEnq(tmpId))
+          otphtml += returnContainer("", "", "bedblk  bevT", "", "");
+        else
+          otphtml += returnContainer("", "", "bedblk bemt15 beml10 bevT", "", "");
+        otphtml += that.returnOTPInputs(formType, tmpId);
+        var cls = isMoglixUi(tmpId) ? "btpErr bedsnone" : "bltperor bedsnone";
+        otphtml += that.returnErrorDiv(tmpId, cls);
+        // if (isOtherEnq(tmpId)) { otphtml += returnContainer("t" + tmpId, "_helpmsg", "eqOtphlp", "", "Sent to mobile " + returnSpan("t" + tmpId, "_phone", PhoneNumber, "", "") + " via " + returnSpan("t" + tmpId, "_sms", "SMS", "", ""), ""); otphtml += "</div>"; }
+        otphtml += '</div ></div ><div class="beclr"></div>';
+        otphtml = isOtherEnq(tmpId)
+          ? otphtml + '<div class="beotpSW betxtc">Did not receive  OTP?'
+          : otphtml + '<div class="beotpSW betxtc">Did not receive  OTP? ';
+        var clsin = Enq04(tmpId) || isBl(tmpId) ? "beml10" : "";
+        otphtml += returnButton(
+          "t" + tmpId,
+          "resendOtp",
+          "Resend",
+          "blSmst " + clsin
+        );
+        if (toAddSkipOtp(tmpId, this.message)) {
+          otphtml += returnButton(
+            "t" + tmpId,
+            "_skipOTP",
+            "Skip",
+            clsin,
+            "top: -98px;background-color: transparent;border: none;color: #999;cursor:pointer"
+          );
+        }
+        var cls = isMoglixUi(tmpId)
+          ? "blgrcl1 disp-inl f_bold cbl_vh dn"
+          : "blgrcl1 disp-inl f_bold cbl_vh";
+        otphtml += returnSpan("", "", "", cls);
+        //otphtml += returnButton("t" + tmpId, "bl_enqMisscall", "Get OTP on Call", "blSmst");
+        otphtml +=
+          '</div><div class="blLdot blMt25 relt beotpSW" style="display: none"><span class="blgrcl disp - inl f_bold">OR</span></div> <div class="bloptS beotpSW" style="display: none"><span class="blotp">Give us a missed call on : <strong class="blMsN">098-9981-0984</strong></span></div></div >';
+      }
+    }
+    that.UserVerificationHtmlObj["UserInput"] = otphtml;
+  };
+  
+  UserVerification.prototype.getOTPLabel = function (tmpId, formType) {
+    var that = this;
+    var otphtml = "";
+    var imeshcookie = imeshExist();
+    var PhoneNumber = checkblockedUser()
+      ? "+" +
+        ReqObj.UserDetail.blusrdtl.blk_iso +
+        "-" +
+        ReqObj.UserDetail.blusrdtl.blk_mb
+      : "+" +
+        usercookie.getParameterValue(imeshcookie, "phcc") +
+        "-" +
+        usercookie.getParameterValue(imeshcookie, "mb1");
+    if (IsChatbl(tmpId)) {
+      if (this.message === "second") {
+        otphtml +=
+          "To post your requirement, please enter the One Time Password (OTP) sent on your mobile ";
+        otphtml += returnSpan("", "", PhoneNumber, "befwt");
+      } else {
+        otphtml += "Enter the One Time Password (OTP) sent on  your mobile ";
+        otphtml += returnSpan("", "", PhoneNumber, "befwt");
+        otphtml += " to ";
+        otphtml += returnSpan("", "", "confirm", "befwt");
+        otphtml += " your requirement";
+      }
+    } else {
+      var otpMsg = isBl(tmpId)
+        ? "Verify your mobile number to receive quotes"
+        : "Confirm your requirement";
+      var cls = isMoglixUi(tmpId) ? "e_hdg" : "otphdg";
+      var otphed = returnContainer(
+        "t" + tmpId,
+        "OtpMainHeading",
+        cls,
+        "",
+        otpMsg
+      );
+      otphed += "</div>";
+      if (isMoglixUi(tmpId) && $("#t" + tmpId + "OtpMainHeading").length == 0) {
+        $("#t" + tmpId + "_leftS").before(otphed);
+      } else if (!isMoglixUi(tmpId)) {
+        otphtml += otphed;
+      }
+      otphtml += returnContainer(
+        "",
+        "",
+        "befs16 blotp bemb20",
+        "",
+        "Enter the 4 digit One Time Password (OTP) sent to your Mobile Number "
+      );
+      otphtml +=
+        returnSpan("", "", PhoneNumber, "disp-inl befwt", "") + "</span>";
+      otphtml += " via SMS</div>";
+    }
+    that.UserVerificationHtmlObj["Label"] = otphtml;
+  };
+  
+  UserVerification.prototype.getOTPHtml = function (tmpId) {
+    var that = this;
+    var formType = ReqObj.Form[tmpId].formType.toLowerCase();
+  
+    if (!isSSB(tmpId)) that.getOTPLabel(tmpId, formType);
+    that.getOTPInput(tmpId, formType);
+    that.UserVerificationHtmlObj["OuterWrapper"] = "";
+    that.UserVerificationHtmlObj["ClosingWrapper"] = "";
+  
+    return that.UserVerificationHtmlObj;
+  };
+
+  UserVerification.prototype.sendOtp = function (event) {
+    var type = event.data.type;
+    var that = event.data.x;
+    var id = event.data.id;
+    var resend = event.data.resend;
+    var tmpId = event.data.tmpId;
+    var form_type =
+      ReqObj.Form[tmpId].formType === "Enq" ? "Send Enquiry" : "Post Buy Leads";
+    if (
+      isSSB(tmpId) &&
+      ReqObj.Form[tmpId].isEnterclicked &&
+      id.toLowerCase() === "resendotp"
+    ) {
+      ReqObj.Form[tmpId].isEnterclicked = false;
+      return "";
+    }
+    if (ReqObj.Form[tmpId].OnCloseStep && isSet(ReqObj.Form[tmpId].FormSequence))
+      var StepNumber =
+        ReqObj.Form[tmpId].FormSequence.StepCounter +
+        1 +
+        ReqObj.Form[tmpId].FormSequence.OnCloseCounter +
+        1;
+    else var StepNumber = ReqObj.Form[tmpId].FormSequence.StepCounter + 1;
+  
+    if (resend === 1 && id === "resendOtp")
+      blenqGATracking(form_type,"resendOTP|" + StepNumber + "|UserVerification",getEventLabel(),0,tmpId);
+    else if (resend === 0 && id === "bl_enqMisscall")
+      blenqGATracking(form_type,"OncallOTP|" + StepNumber + "|UserVerification",getEventLabel(),0,tmpId);
+    // if(resend === 0){
+    //   if(isSet(that.afterGen) && that.afterGen === true)
+    //     blenqGATracking(form_type, 'OTP2Shown', getEventLabel(), 1, tmpId);
+    //   else if(Enq09(tmpId))
+    //     blenqGATracking(form_type, 'OTP1Shown', getEventLabel(), 1, tmpId);
+    // }
+  
+    that.handleUI(tmpId, "refresh", "", "");
+  
+    if (that.otpCount === 3) {
+      /* only 2 times */
+      that.handleUI(tmpId, "otpCount3", "", "");
+      return;
+    } else if (
+      that.otpCount > 0 &&
+      that.otpCount <= 3 &&
+      ReqObj["OTPratelimitstatus"] !== "Access Denied"
+    ) {
+      that.handleUI(tmpId, "otpCount123", "", "");
+    }
+  
+    var data =
+      type === 3
+        ? that.getData(3, resend, tmpId, "")
+        : type === 1
+        ? that.getData(1, resend, tmpId, "")
+        : "";
+    if (data !== "") that.sendRequest(ObjectTrim(data), type, "", that, tmpId);
+  };
+  UserVerification.prototype.validateOtp = function (event) {
+    //
+    var type = event.data.type;
+    var that = event.data.userVerificationObject;
+    var tmpId = event.data.tmpId;
+    var verifyObject = event.data.obj;
+    var authkey = event.data.authKey;
+    that.sendRequest(
+      ObjectTrim(that.getData(2, "", tmpId, authkey)),
+      type,
+      verifyObject,
+      that,
+      tmpId
+    );
+  };
+  UserVerification.prototype.getData = function (flag, resend, tmpId, authkey) {
+    var data = {
+      s_mobile: usercookie.getParameterValue(this.imeshCookie, "mb1"),
+      modid: ReqObj.Form[tmpId].modId,
+      s_country_code: usercookie.getParameterValue(this.imeshCookie, "phcc"),
+      s_country_iso: usercookie.getParameterValue(this.imeshCookie, "iso"),
+      s_glusrid: usercookie.getParameterValue(this.imeshCookie, "glid"),
+      flag: ReqObj.Form[tmpId].formType.toLowerCase(),
+      OTPResend: resend,
+      verify_screen: isSSB(tmpId) ? "ssb" : "default",
+    };
+    if (flag === 1) {
+      /* for OTP sending*/ data["todoflag"] = "OTPGen";
+      return data;
+    } else if (flag === 2) {
+      /* for OTP Validation */ data["todoflag"] = "OTPVer";
+      data["s_authkey"] = authkey;
+      return data;
+    } else if (flag === 3) {
+      /*for OTP through call */
+      data["todoflag"] = "OTPGen";
+      data["misscall"] = 1;
+      return data;
+    }
+  };
+  
+  UserVerification.prototype.getAjaxData = function (data) {
+    var _case = checkblockedUser() && im_issExist() === "" ? 2 : 1;
+    var ajaxData = {
+      token: "imobile@15061981",
+      mobile_num:
+        _case === 2
+          ? ReturnCorrectVal(ReqObj.UserDetail["blusrdtl"]["blk_mb"], "")
+          : ReturnCorrectVal(data["s_mobile"], ""),
+      modid: ReturnCorrectVal(data["modid"], "DIR"),
+      user_mobile_country_code:
+        _case === 2
+          ? ReturnCorrectVal(ReqObj.UserDetail["blusrdtl"]["blk_iso"], "91")
+          : ReturnCorrectVal(data["s_country_code"], "91"),
+      flag: ReturnCorrectVal(data["todoflag"], "OTPGen"),
+      user_ip: ReturnCorrectVal(
+        usercookie.getParameterValue(usercookie.getCookie("iploc"), "gip"),
+        ReqObj.IPDetails["ipaddress"]
+      ),
+      user_country:
+        _case === 2
+          ? currentISO()
+          : ReturnCorrectVal(
+              data["s_country_iso"],
+              ReqObj.IPDetails["countryiso"]
+            ),
+      glusrid:
+        _case === 2 && isSet(ReqObj.UserDetail.blusrdtl.glid)
+          ? ReturnCorrectVal(ReqObj.UserDetail.blusrdtl.glid, "")
+          : ReturnCorrectVal(data["s_glusrid"], ""),
+    };
+  
+    if (isSet(data["s_authkey"]) && data["s_authkey"] != "") {
+      ajaxData["verify_process"] = "ONLINE";
+      ajaxData["auth_key"] = ReturnCorrectVal(data["s_authkey"], "");
+    } else {
+      ajaxData["OTPResend"] = ReturnCorrectVal(data["OTPResend"], 1);
+    }
+  
+    if (
+      data["flag"] == "bl" ||
+      data["flag"] == "BL" ||
+      data["flag"] == "chatbl" ||
+      data["flag"] == "CHATBL" ||
+      data["flag"] === "chatbl-inline"
+    ) {
+      ajaxData["process"] = "OTP_PBRForm_Desktop";
+      ajaxData["user_updatedusing"] = "PBRForm";
+      if (isSet(data["s_authkey"])) {
+        ajaxData["verify_screen"] =
+          ReturnCorrectVal(data["verify_screen"], "default") === "ssb"
+            ? "OTP_AdvancePBRForm_Desktop"
+            : "DESKTOP PBR FORM";
+      }
+    } else {
+      ajaxData["process"] = "OTP_CentralisedEnqForm_Desktop";
+      ajaxData["user_updatedusing"] = "DESKTOP ENQUIRY FORM";
+      if (isSet(data["s_authkey"])) {
+        ajaxData["verify_screen"] = "DESKTOP ENQUIRY FORM";
+      }
+    }
+  
+    return ajaxData;
+  };
+  
+  UserVerification.prototype.getOTPAjaxURL = function () {
+    var url = "//login.indiamart.com/users/OTPverification/";
+    if (
+      appsServerName == "//dev-apps.imimg.com/" ||
+      appsServerName == "//stg-apps.imimg.com/"
+    ) {
+      url = "//dev1-login.indiamart.com/users/OTPVerification/";
+      // url = '//stg1-login.indiamart.com/users/OTPverification/';
+    }
+    return url;
+  };
+  UserVerification.prototype.sendRequest = function ( data, type, verifyObject, userVerificationObject, tmpId) {
+    var form_type = ReqObj.Form[tmpId].formType === "Enq" ? "Send Enquiry" : "Post Buy Leads";
+    var that = userVerificationObject;
+    var ajaxData = that.getAjaxData(data);
+    var ajaxURL = that.getOTPAjaxURL();
+    if ((isSSB(tmpId) || isEnq(tmpId)) && ReqObj.Form[tmpId].isSkipOTPClicked) {
+      PostAjax(verifyObject, tmpId);
+      return;
+    }
+    $.ajax({
+      cache: false,
+      url: ajaxURL,
+      type: "POST",
+      crossOrigin: true,
+      crossDomain: true,
+      data: ajaxData,
+      dataType: "json",
+      success: function (res) {
+        if (isSet(res)) {
+          var imeshcookie = that.imeshCookie;
+          ReqObj["OTPratelimitstatus"] = res.Response.Status;
+          ReqObj["OTPratelimitmessage"] = res.Response.Message;
+  
+          if (that.otpCount !== 0 &&ReqObj["OTPratelimitstatus"] !== "Access Denied") {
+            that.handleUI(tmpId, "showmessage", "", "");
+          }
+          if (ReqObj["OTPratelimitstatus"] === "Access Denied") {
+            that.handleUI(tmpId, "ratelimitmessage", "", "");
+          }
+  
+          if (isSet(res.Response) && res.Response.Status === "Success") {
+            var block_case = 1;
+            if (checkblockedUser() && im_issExist() === "") {
+              block_case = 2;
+              ReqObj.UserDetail["blusrdtl"]["glid"] = res.Response.Glusrid;
+            }
+            if (type === 1 || type === 3) {
+              that.otpCount++;
+            } else if (type === 2) {
+              var imcookie;
+              if (imeshcookie.indexOf("uv") === -1)
+                imeshcookie += imeshcookie.charAt(imeshcookie.length - 1) === "|" ? "uv=V" : "|uv=V";
+              imcookie = stringToObject(imeshcookie, "|");
+              imcookie["uv"] = "V";
+              imesh_obj.set(imcookie); /* once user is verified, imesh cookie is set. */
+              if ( block_case === 2 && isSet(res.Response.LOGIN_DATA) && isSet(res.Response.LOGIN_DATA.DataCookie)) {
+                imesh_obj.set(res.Response.LOGIN_DATA.DataCookie);
+                ReqObj.UserDetail.blusrdtl.blkUsr = res.Response.LOGIN_DATA.DataCookie["uv"] === "V" ? 0 : ReqObj.UserDetail.blusrdtl.blkUsr;
+                UpdateUserDetailKey();
+              }
+              usercookie.deleteCookie("imEqGl"); /* since user is verified, we need to clear the imEqGl cookie */
+              that.updateFulllogin(res);
+              if (ReqObj.Form[tmpId].formType.toLowerCase() === "bl" ||ReqObj.Form[tmpId].formType.toLowerCase() === "enq")
+                ReqObj.Form[tmpId].toFireIsq = true; // check if any other issue
+              if (typeof getLoginStringv1 === "function") getLoginStringv1(); // imlogin
+              blenqGATracking(form_type, "confirmOTP", getEventLabel(), 1, tmpId);
+              $("#t" + tmpId + "_byrinfo").removeClass("bedsnone");
+  
+              $("#t" + tmpId + "_hdg").removeClass("bedsnone"); /* */
+              /* eto-glusr login is hit with loginflag */
+              var userlogin = new UserLogin();
+              userlogin.sendRequest({
+                data: {
+                  logObject: "",
+                  tmpId: tmpId,
+                  userlogin: userlogin,
+                  blureve: false,
+                  todo: "verifyusr",
+                },
+              });
+              if ( isSet(ReqObj.Form[tmpId].RemainingService) && ReqObj.Form[tmpId].RemainingService.length > 0 && !ShowOtp() && ReqObj.Form[tmpId].flags.ImEqgl) {
+                formatServices(ReqObj.Form[tmpId].RemainingService, tmpId);
+  
+                if (isSet(ReqObj.Form[tmpId].ServiceSequence)) {
+                  while (ReqObj.Form[tmpId].ServiceSequence.length > 0) {
+                    if (isSet(ReqObj.Form[tmpId].ServiceSequence[0]) && isSet(ReqObj.Form[tmpId].ServiceSequence[0].fn) && typeof ReqObj.Form[tmpId].ServiceSequence[0].fn.onSubmit ==="function")
+                      ReqObj.Form[tmpId].ServiceSequence[0].fn.onSubmit(tmpId);
+                    else {
+                      if (IsProduction()) {
+                        //this is done just not to impact user
+                        ReqObj.Form[tmpId].ServiceSequence.pop();
+                      }
+                    }
+                  }
+                }
+              }
+              PostAjax(verifyObject, tmpId);
+            }
+          } else {
+            if ( parseInt(res.Response.Code) === 204 && res.Response.Message === "OTP not Verified") {
+              that.handleUI(tmpId, "verificationFailed", "afterRequest", "");
+              RemoveObjFromHit(verifyObject, tmpId);
+              return;
+            }
+          }
+        } else {
+          blenqGATracking(form_type,"service:OtpAuthentication:failure","response undefined",1,tmpId);
+          RemoveObjFromHit(verifyObject, tmpId);
+        }
+      },
+      error: function (res) {
+        res = isSet(res) ? JSON.stringify(res) : "response undefined";
+        blenqGATracking(form_type,"service:OtpAuthentication:failure",res,1,tmpId);
+        RemoveObjFromHit(verifyObject, tmpId);
+      },
+      complete: function (res) {
+        if (isSSB(tmpId) && isOTPBoxHidden(tmpId)) {
+          onCompleteStep(tmpId);
+        }
+        IsChatbl(tmpId) ? $("#t" + tmpId + "cbl_msg").parent().addClass("dn") : removeBLLoader(tmpId, "center");
+      },
+    });
+  };
+  UserVerification.prototype.updateFulllogin = function (res) {
+    var logincookie = "";
+    for (var key in res.Response.LOGIN_DATA.LoginCookie) {
+      logincookie += key + "=" + res.Response.LOGIN_DATA.LoginCookie[key] + "|";
+    }
+    usercookie.setCookie("v4iilex", logincookie, 180);
+  
+    var imis = "";
+    for (var key in res.Response.LOGIN_DATA.im_iss) {
+      imis += key + "=" + res.Response.LOGIN_DATA.im_iss[key] + "|";
+    }
+    usercookie.setCookie("im_iss", imis, 180);
+  };
+  
+  UserVerification.prototype.handleUIEmptyOtpBoxes = function (tmpId) {
+    $("#t" + tmpId + "bl_enqOtp1").val("");
+    $("#t" + tmpId + "bl_enqOtp2").val("");
+    $("#t" + tmpId + "bl_enqOtp3").val("");
+    $("#t" + tmpId + "bl_enqOtp4").val("");
+  };
+  
+  UserVerification.prototype.handleUI = function (tmpId, todo, when, authkey) {
+    var that = this;
+    if (todo === "focus") {
+      IsChatbl(tmpId)
+        ? setTimeout(function () {
+            $("#t" + tmpId + "bl_enqOtp1").focus();
+          }, 1800)
+        : isSSB(tmpId)
+        ? ""
+        : $("#t" + tmpId + "bl_enqOtp1").focus(); //
+    }
+    if (todo === "ratelimitmessage") {
+      if (!IsChatbl(tmpId)) {
+        var otpmessage = ReqObj["OTPratelimitmessage"];
+        $("#t" + tmpId + "verifyerrotpdiv").removeClass("bedsnone");
+  
+        $("#t" + tmpId + "verify_err").html(otpmessage);
+  
+        if (otpcounter === 1) {
+          clearTimeout(myTimeout);
+        }
+  
+        $("#t" + tmpId + "resendOtp")
+          .attr("disabled", "disabled")
+          .css({
+            opacity: "0.4",
+            cursor: "default",
+          });
+        $("#t" + tmpId + "bl_enqMisscall")
+          .attr("disabled", "disabled")
+          .css({
+            opacity: "0.4",
+            cursor: "default",
+          });
+      } else {
+        var otpmessage = ReqObj["OTPratelimitmessage"];
+        var trimmedString = otpmessage.substring(57, otpmessage.length);
+        otpmessage = "Excessive OTP requests, please try post " + trimmedString;
+        $("#t" + tmpId + "verify_error")
+          .parent()
+          .removeClass("dn");
+        addChatblError(tmpId, otpmessage);
+        if (otpcounter === 1) {
+          clearTimeout(myTimeout);
+        }
+        $("#t" + tmpId + "resendOtp")
+          .attr("disabled", "disabled")
+          .css({
+            opacity: "0.4",
+            cursor: "default",
+          });
+        $("#t" + tmpId + "bl_enqMisscall")
+          .attr("disabled", "disabled")
+          .css({
+            opacity: "0.4",
+            cursor: "default",
+          });
+      }
+    }
+    if (todo === "showmessage") {
+      if (!IsChatbl(tmpId)) {
+        $("#t" + tmpId + "verifyerrotpdiv").removeClass("bedsnone");
+        $("#t" + tmpId + "verify_err").html("OTP sent on Your Mobile");
+      } else {
+        $("#t" + tmpId + "verify_error")
+          .parent()
+          .removeClass("dn");
+        addChatblError(tmpId, "OTP sent on Your Mobile");
+      }
+    }
+    if (todo === "refresh") {
+      if (!IsChatbl(tmpId))
+        $("#t" + tmpId + "verifyerrotpdiv").addClass("bedsnone");
+      that.handleUIEmptyOtpBoxes(tmpId);
+      if (!isSSB(tmpId)) $("#t" + tmpId + "bl_enqOtp1").focus();
+    }
+    if (todo === "otpCount1") {
+      $("#t" + tmpId + "resendOtp").show(); /* check html ajax */
+      $("#t" + tmpId + "verify_err").html("");
+    }
+  
+    if (todo === "otpCount123") {
+      $("#t" + tmpId + "bl_enqOtp1").focus();
+      $("#t" + tmpId + "resendOtp")
+        .attr("disabled", "disabled")
+        .css({
+          opacity: "0.4",
+          cursor: "default",
+        });
+      $("#t" + tmpId + "bl_enqMisscall")
+        .attr("disabled", "disabled")
+        .css({
+          opacity: "0.4",
+          cursor: "default",
+        });
+      if (that.otpCount !== 3) {
+        otpcounter += 1;
+        myTimeout = setTimeout(function () {
+          $("#t" + tmpId + "resendOtp")
+            .removeAttr("disabled")
+            .css({
+              opacity: "1",
+              cursor: "pointer",
+            });
+          $("#t" + tmpId + "bl_enqMisscall")
+            .removeAttr("disabled")
+            .css({
+              opacity: "1",
+              cursor: "pointer",
+            });
+        }, 20000);
+      }
+    }
+  
+    if (todo === "otpCount3") {
+      if (IsChatbl(tmpId)) {
+        addChatblError(tmpId, "You have exceeded allowed OTP request attempts");
+      } else
+        $("#t" + tmpId + "verify_err").html(
+          "You have exceeded allowed OTP request attempts"
+        );
+      $("#t" + tmpId + "verifyerrotpdiv").removeClass("bedsnone");
+      $("#t" + tmpId + "resendOtp")
+        .attr("disabled", "disabled")
+        .css({
+          opacity: "0.4",
+          cursor: "default",
+        });
+      $("#t" + tmpId + "bl_enqMisscall")
+        .attr("disabled", "disabled")
+        .css({
+          opacity: "0.4",
+          cursor: "default",
+        });
+    }
+    if (todo === "verificationFailed" && when === "beforeRequest") {
+      if (isSet(authkey) && authkey.length === 0) {
+        if (IsChatbl(tmpId)) addChatblError(tmpId, "Please enter OTP");
+        else $("#t" + tmpId + "verify_err").html("Please enter OTP");
+      } else {
+        if (IsChatbl(tmpId)) {
+          addChatblError(tmpId, "Please enter correct OTP");
+        } else $("#t" + tmpId + "verify_err").html("Please enter correct OTP");
+      }
+  
+      if (isSSB(tmpId)) {
+        otpErrorHandling(tmpId, "1");
+      }
+      $("#t" + tmpId + "verifyerrotpdiv").removeClass("bedsnone");
+    }
+    if (todo === "verificationFailed" && when === "afterRequest") {
+      if (IsChatbl(tmpId)) {
+        addChatblError(tmpId, "Please enter correct OTP");
+        if (IsChatBLInline(tmpId))
+          $("#t" + tmpId + "_submit").removeAttr("disabled");
+      } else {
+        $("#t" + tmpId + "verify_err").html("Please enter correct OTP");
+      }
+      if (isSSB(tmpId)) {
+        otpErrorHandling(tmpId, "1");
+      }
+      $("#t" + tmpId + "verifyerrotpdiv").removeClass("bedsnone");
+      that.handleUIEmptyOtpBoxes(tmpId);
+      $("#t" + tmpId + "bl_enqOtp1").focus();
+    }
+    if (todo === "tryagain" && when === "afterRequest") {
+      $("#t" + tmpId + "verify_err").html(
+        "Something went Wrong. Please try Again"
+      );
+      $("#t" + tmpId + "verifyerrotpdiv").removeClass("bedsnone");
+    }
+  };
+  UserVerification.prototype.handleEvents = function (
+    userVerificationObject,
+    tmpId
+  ) {
+    if (!isSet(validation)) createGlobalObject();
+    var that = userVerificationObject;
+    if (
+      document.readyState === "complete" ||
+      document.readyState === "interactive"
+    ) {
+      $("#t" + tmpId + "bl_enqMisscall").on(
+        "click",
+        {
+          type: 3,
+          x: that,
+          id: "bl_enqMisscall",
+          resend: 0,
+          tmpId: tmpId,
+        },
+        that.sendOtp
+      );
+      $("#t" + tmpId + "resendOtp").on(
+        "click",
+        {
+          type: 1,
+          x: that,
+          id: "resendOtp",
+          resend: 1,
+          tmpId: tmpId,
+        },
+        that.sendOtp
+      );
+  
+      $("#t" + tmpId + "bl_enqOtp1")
+        .on("keypress", validation.isNumberKey)
+        .on(
+          "keyup",
+          {
+            param1: "bl_enqOtp1",
+            param2: "bl_enqOtp2",
+            tmpId: tmpId,
+          },
+          movetoNext
+        );
+  
+      $("#t" + tmpId + "bl_enqOtp2")
+        .on("keypress", validation.isNumberKey)
+        .on(
+          "keyup",
+          {
+            param1: "bl_enqOtp2",
+            param2: "bl_enqOtp3",
+            tmpId: tmpId,
+          },
+          movetoNext
+        )
+        .on(
+          "keydown",
+          {
+            param1: "bl_enqOtp2",
+            param2: "bl_enqOtp1",
+            tmpId: tmpId,
+          },
+          movetoPrevious
+        );
+  
+      $("#t" + tmpId + "bl_enqOtp3")
+        .on("keypress", validation.isNumberKey)
+        .on(
+          "keyup",
+          {
+            param1: "bl_enqOtp3",
+            param2: "bl_enqOtp4",
+            tmpId: tmpId,
+          },
+          movetoNext
+        )
+        .on(
+          "keydown",
+          {
+            param1: "bl_enqOtp3",
+            param2: "bl_enqOtp2",
+            tmpId: tmpId,
+          },
+          movetoPrevious
+        );
+  
+      $("#t" + tmpId + "bl_enqOtp4")
+        .on("keypress", validation.isNumberKey)
+        .on(
+          "keydown",
+          {
+            param1: "bl_enqOtp4",
+            param2: "bl_enqOtp3",
+            tmpId: tmpId,
+          },
+          movetoPrevious
+        );
+    }
+  };
+  
+  // UserVerification
