@@ -693,7 +693,82 @@ function isSticky(tmpId) {
     var imeshcookie = usercookie.getCookie("ImeshVisitor");
     return imeshcookie !== "" ? imeshcookie : "";
   }
+      
+  function im_issExist() {
+    var cookie = usercookie.getCookie("im_iss");
+    return cookie !== "" ? cookie : "";
+  }
   
+  function v4iilexExist() {
+    var cookie = usercookie.getCookie("v4iilex");
+    return cookie !== "" ? cookie : "";
+  }
+  
+  function iplocExist() {
+    var iploccookie = usercookie.getCookie("iploc");
+    return iploccookie !== "" ? iploccookie : "";
+  }
+  
+  function ElExists(el) {
+    if (notEmpty(el) && $("#" + el).length > 0) {
+      return true;
+    } else return false;
+  }
+  
+  function CounterScreenId(tmpId, adder) {
+    if (isSet(tmpId) && IsPrevBtnImplemented(tmpId)) {
+      if (!isSet(adder)) adder = 0;
+      var that = ReqObj.Form[tmpId].FormSequence;
+      var elId = "t" + tmpId;
+      var counter = parseInt(adder, 10);
+      var TypeofScreen = {
+        type: "",
+        counter: 0,
+      };
+      var type = "";
+      var onClose = "onCloseScreen";
+      var screen = "screen";
+      if (!ValidNumber(counter)) counter = 0;
+      if (that.OnCloseCounter > -1) {
+        counter += that.OnCloseCounter + 1;
+        elId += onClose + counter;
+        type = onClose;
+      } else {
+        if (adder === 1) {
+          if (that.StepCounter < ReqObj.Form[tmpId].UiArray.length - 1) {
+            counter += that.StepCounter + 1;
+            elId += screen + counter;
+            type = screen;
+          } else {
+            counter += that.OnCloseCounter + 1;
+            elId += onClose + counter;
+            type = onClose;
+          }
+        } else {
+          counter += that.StepCounter + 1;
+          elId += screen + counter;
+          type = screen;
+        }
+      }
+  
+      return {
+        elid: elId,
+        type: type,
+      };
+    } else {
+      return "";
+    }
+  }
+  function checkblockedUser() {
+    return usercookie.getParameterValue(imeshExist(), "usts") === "2"
+      ? true
+      : isSet(ReqObj.UserDetail["blusrdtl"]) &&
+        isSet(ReqObj.UserDetail["blusrdtl"]["blkUsr"]) &&
+        ReqObj.UserDetail["blusrdtl"]["blkUsr"] === 1 &&
+        ReqObj.UserDetail["uv"] !== "V"
+      ? true
+      : false;
+  }
 function initializeForm(formArray) {
     createGlobalObject();
     var ImageCalled = false;
@@ -4326,4 +4401,1321 @@ IpLoc.prototype.failSafe = function () {
 };
 new IpLoc();
 ReqObj.ipLoc.pinged = true;
+
 //iploc
+
+// FormSeq Pre
+function FormSeq() {
+  this.arraySeq = [];
+  this.ServiceSequence = [];
+  this.ServiceSequenceBlocked = [];
+  this.FullServiceArray = [];
+  this.OnCloseServiceArray = [];
+  this.OnCloseStep = false;
+  this.OnCloseCounter = -1;
+  this.NextStepsShown = [];
+  /* new addition */
+  this._screenCounter = 0;
+  this._stepCounter = -1;
+  this.journey = {};
+}
+FormSeq.prototype.GetExistingObject = function (objectName, tmpId) {
+  if (isSet(objectName) && isSet(tmpId) && isSet(ReqObj.Form[tmpId].UiArray)) {
+    for (var i = 0; i < ReqObj.Form[tmpId].UiArray.length; i++) {
+      for (var j = 0; j < ReqObj.Form[tmpId].UiArray[i].length; j++) {
+        if (
+          ConstructorName(
+            ReqObj.Form[tmpId].UiArray[i][j].Obj
+          ).toLowerCase() === objectName
+        )
+          return [i, j];
+      }
+    }
+  }
+
+  return false;
+};
+
+FormSeq.prototype.FirstStepSequence = function (tmpId, where) {
+  if (isSet(tmpId)) {
+    var formType = isSet(ReqObj.Form[tmpId].formType)
+      ? ReqObj.Form[tmpId].formType
+      : "";
+    if (tmpId.substring(0, 2) === "09" || IsChatbl(tmpId)) {
+      //POPUPCHATBL
+      var type = "popup";
+    } else var type = "inline";
+    SetUserDetails(where);
+    var formType = isSet(ReqObj.Form[tmpId].formType)
+      ? ReqObj.Form[tmpId].formType
+      : ""; // remove this!
+    /*---------------------------------------------- */
+    this.StepCounter = -1;
+    ReqObj.Form[tmpId].OnCloseStep = false;
+    ReqObj.Form[tmpId].IsthroughClosebtn = false;
+    ReqObj.Form[tmpId].isTNCShownOnFirstStep = false;
+    ReqObj.Form[tmpId].flags["IsFirstStep"] = true;
+    ReqObj.Form[tmpId].PrevAnsPrint = true;
+    if (parseInt(ReqObj.Form[tmpId].disableRd) === 1) {
+      ReqObj.Form[tmpId].flags.isDescDivShown = true;
+    }
+    //addBlLoader(tmpId, "center");
+    if (IsChatbl(tmpId)) {
+      setTimeout(function () {
+        addBlLoader(tmpId, "left");
+      }, 400);
+    } else addBlLoader(tmpId, "center");
+    switch (type.trim().toLowerCase()) {
+      case "popup":
+        if (formType.toLowerCase() === "bl") {
+          this._blFlow(tmpId, where);
+        } else if (IsChatbl(tmpId)) {
+          this.BLChat(tmpId, where);
+        } else {
+          //this.Enqpopup(tmpId,where);
+          this._enq(tmpId, where);
+        } /* chat bl pop up to be added here formtype is BL only how to distinguish ?*/
+        break;
+      case "inline":
+        if (isSSB(tmpId)) {
+          this.BLSingleStep(tmpId, where);
+        } else if (Bl04(tmpId)) {
+          this._blFlow(tmpId, where);
+        } else if (formType.toLowerCase() === "bl") {
+          this._blFlow(tmpId, where);
+        } else {
+          this._enq(tmpId, where);
+        }
+        break;
+    }
+  }
+};
+
+/* add a function to create sequence for chat like BL */
+FormSeq.prototype.prepareToRender = function (
+  tmpId,
+  FormId,
+  HtmlArray,
+  HtmlContactArray,
+  HtmlProdArray,
+  component,
+  arrlen
+) {
+  var IdToHide = "";
+  if (isSet(component.Obj.idToAppend) && component.Obj.idToAppend !== "") {
+    FormId = component.Obj.idToAppend;
+  }
+  if (isSet(component.Obj.idToHide) && component.Obj.idToHide !== "") {
+    IdToHide = component.Obj.idToHide;
+  }
+  // console.log(array[i].Obj.idToAppend);
+  if (typeof component.Obj.displayHtml === "function") {
+    var FormIdSel =
+      isSSB(tmpId) && !isnewSSB(tmpId) ? $("#t" + tmpId + FormId) : $(FormId);
+
+    var ReceivedArray = component.Obj.displayHtml(tmpId);
+    if (
+      arrlen === 1 &&
+      ReceivedArray.length === 1 &&
+      ReceivedArray[0].length === 0
+    ) {
+      //if(tmpId.substring(0,2) === "04" && ReqObj.Form[tmpId].formType.toLowerCase() === "enq") ReqObj.Form[tmpId].FormSequence.NextStep(tmpId);
+      if (IsChatbl(tmpId)) ReqObj.Form[tmpId].FormSequence.BLChatRd(tmpId);
+    } else {
+      if (!isSet(ReceivedArray)) ReceivedArray = [""];
+      if (isSSB(tmpId)) {
+        FormId === "_contact_detail"
+          ? HtmlContactArray.push(ReceivedArray)
+          : HtmlProdArray.push(ReceivedArray);
+      } else if (isBlInlineFr(tmpId)) {
+        FormId === "t" + tmpId + "_partition1"
+          ? HtmlContactArray.push(ReceivedArray)
+          : HtmlProdArray.push(ReceivedArray);
+      } else HtmlArray.push(ReceivedArray);
+
+      if (FormIdSel.hasClass("bedsnone")) {
+        FormIdSel.removeClass("bedsnone");
+      }
+      if (isSet(IdToHide) && IdToHide !== "")
+        $(IdToHide).css({
+          display: "none",
+        });
+
+      return FormIdSel;
+    }
+  }
+};
+
+FormSeq.prototype.RenderUi = function (tmpId, ClassesforTracking, stepNumber) {
+  if (isSet(tmpId)) {
+    var array = [];
+    var that = this;
+    var counter = "";
+    var type = CounterScreenId(tmpId, 0);
+    var elId = type.elid;
+    var form_type =ReqObj.Form[tmpId].formType === "Enq" ? "Send Enquiry" : (pdpInactiveBL(tmpId)) ? "Post Buy Leads New" : "Post Buy Leads";
+
+    array =
+      that.OnCloseCounter > -1
+        ? ReqObj.Form[tmpId].OnCloseArray[that.OnCloseCounter]
+        : ReqObj.Form[tmpId].UiArray[that.StepCounter];
+    if (
+      array.length == 2 &&
+      array[0].Obj.className === "RequirementDtl" &&
+      array[1].Obj.className === "Isq"
+    ) {
+      var a = array[0];
+      array[0] = array[1];
+      array[1] = a;
+    }
+    ReqObj.Form[tmpId].currentScreen = "";
+    if (IsChatbl(tmpId) && ReqObj.Form[tmpId].ischangeProduct) {
+      $(".t" + tmpId + "_userInput").each(function () {
+        $(this).remove();
+      });
+
+      chatblHideTransition(tmpId);
+      ReqObj.Form[tmpId].PrevAnsPrint = false;
+      ReqObj.Form[tmpId].ischangeProduct = false;
+    }
+
+    if (ReqObj.Form[tmpId].PrevAnsPrint)
+      questionTransition(ReqObj.Form[tmpId].formType, tmpId);
+    if (
+      isImageVidEnq(tmpId) &&
+      !pdpenqImage(tmpId) &&
+      ReqObj.Form[tmpId].FormSequence._stepCounter > 0
+    ) {
+      $("#t" + tmpId + "_mcont").addClass("eqImSec");
+      $("#t" + tmpId + "_thankDiv").addClass("eqImSec");
+    }
+
+    if (!ElExists(elId)) {
+      var postDisplayStepTracking = "";
+      var HtmlArray = [];
+      var HtmlContactArray = [];
+      var HtmlProdArray = [];
+      var len = array.length;
+      for (var i = 0; i < array.length; i++) {
+        if (isSet(array[i].Obj)) {
+          ReqObj.Form[tmpId].currentScreen += array[i].Obj.className;
+          var FormId = isSSB(tmpId)
+            ? getFormId(ConstructorName(array[i].Obj).toLowerCase())
+            : isBlInlineFr(tmpId)
+            ? getFormIdMisc(ConstructorName(array[i].Obj).toLowerCase(), tmpId)
+            : "#t" + tmpId + "_bl_form";
+          var FormIdSel = this.prepareToRender(
+            tmpId,
+            FormId,
+            HtmlArray,
+            HtmlContactArray,
+            HtmlProdArray,
+            array[i],
+            len
+          );
+          if (isSet(array)) {
+            if (i < array.length && i > 0) postDisplayStepTracking += "-";
+            postDisplayStepTracking += ConstructorName(array[i].Obj);
+          }
+        }
+      }
+      if (!IsChatbl(tmpId)) {
+        if (isSSB(tmpId)) {
+          createHTMLSSB(array, tmpId, HtmlContactArray, HtmlProdArray, counter);
+        } else if (isBlInlineFr(tmpId)) {
+          RenderHtmlMisc(
+            array,
+            tmpId,
+            [HtmlContactArray, HtmlProdArray],
+            counter
+          );
+        } else RenderHtml(FormIdSel, HtmlArray, tmpId, counter);
+      } else {
+        if (isSet(HtmlArray) && HtmlArray.length !== 0) {
+          var FormId = "#t" + tmpId + "_new_chatbl";
+          var FormIdSelQ = $(FormId);
+          var htmlQ =
+            isSet(ReqObj.Form[tmpId].toAppendQues) &&
+            ReqObj.Form[tmpId].toAppendQues
+              ? HtmlArray[0][0] + HtmlArray[0][1]
+              : HtmlArray[0][0];
+          RenderHtml(FormIdSelQ, htmlQ, tmpId, counter);
+
+          ischatblnextquestionasked =
+            IsChatBLInline(tmpId) && isChatBlSequenceUpdated ? true : false;
+          if (
+            IsChatBLInline(tmpId) &&
+            !(isSet(ReqObj.audioAdded) && ReqObj.audioAdded)
+          ) {
+            url = "//apps.imimg.com/js/chatbl_audio.mp3";
+            if (appsServerName == "//dev-apps.imimg.com/")
+              url = "//dev-apps.imimg.com/js/chatbl_audio.mp3";
+            else if (appsServerName == "//stg-apps.imimg.com/")
+              url = "//stg-apps.imimg.com/js/chatbl_audio.mp3";
+            ReqObj.audio = new Audio(url);
+            ReqObj.audioAdded = true;
+          }
+          setTimeout(function () {
+            if (
+              IsChatBLInline(tmpId) &&
+              !ReqObj.Form[tmpId].fromUpdate &&
+              !ReqObj.Form[tmpId].toCloseChatBL &&
+              (ReqObj.Form[tmpId].isAutoOpen !== "true" ||
+                ReqObj.Form[tmpId].aftrFrmOpnd == "true")
+            ) {
+              ReqObj.audio.play();
+            } else if (ReqObj.Form[tmpId].isAutoOpen === "true") {
+              ReqObj.Form[tmpId].aftrFrmOpnd = "true";
+            }
+            $(".cbl_ques").removeClass("cbl_vh");
+            if (ReqObj.Form[tmpId].toAppendQues) {
+              $(".t" + tmpId + "_userInput").removeClass("dn");
+              $("#t" + tmpId + "_submitNo2")
+                .parent()
+                .removeClass("dn"); //chat bl bug
+              ReqObj.Form[tmpId].toAppendQues = false;
+            }
+          }, 750);
+
+          FormId = "#t" + tmpId + "_newblchatReply";
+          var FormIdSelIn = $(FormId);
+          var htmlA =
+            isSet(ReqObj.Form[tmpId].toAppendQues) &&
+            ReqObj.Form[tmpId].toAppendQues
+              ? ""
+              : HtmlArray[0][1];
+          RenderHtml(FormIdSelIn, htmlA, tmpId, counter);
+
+          setTimeout(function () {
+            $(".t" + tmpId + "_userInput").removeClass("dn");
+            IsChatBLInline(tmpId) && ischatblnextquestionasked
+              ? $("#t" + tmpId + "_submit").removeAttr("disabled")
+              : "";
+          }, 1700);
+          if (IsChatBLInline(tmpId)) {
+            if (ReqObj.Form[tmpId].toAppendQues) {
+              $("#t" + tmpId + "_isqBoxInput").addClass("cbl_rds");
+              if ($("#t" + tmpId + "_typehere").children()[0])
+                $("#t" + tmpId + "_typehere").children()[0].placeholder =
+                  "Choose an option above";
+              $("#t" + tmpId + "_typehere")
+                .removeClass("dn")
+                .addClass("cbl_br10");
+              $("#t" + tmpId + "_newblchatReply").addClass("dn");
+            } else {
+              $("#t" + tmpId + "_newblchatReply").removeClass("dn");
+              $("#t" + tmpId + "_submitNo2")
+                .parent()
+                .addClass("dn"); //chat bl bug
+              $("#t" + tmpId + "_typehere")
+                .addClass("dn")
+                .removeClass("cbl_br10");
+            }
+          }
+        }
+      }
+      if (
+        ((isSet(ReqObj.UserDetail["em"]) && ReqObj.UserDetail["em"] !== "") ||
+          (isSSB(tmpId) &&
+            isSet(ReqObj.Form[tmpId].UserInputs["Email"]) &&
+            ReqObj.Form[tmpId].UserInputs["Email"] !== "")) &&
+        $("#t" + tmpId + "_thnkemdiv").hasClass("cbl_vh")
+      ) {
+        isSSB(tmpId)
+          ? $("#t" + tmpId + "_thnkemdiv")
+              .addClass("mb-fs14 mb-mt15 mb-lh16")
+              .removeClass("cbl_vh")
+          : $("#t" + tmpId + "_thnkemdiv")
+              .addClass("be-grbg")
+              .removeClass("cbl_vh");
+        var email = isSSB(tmpId)
+          ? ReqObj.Form[tmpId].UserInputs["Email"]
+          : ReqObj.UserDetail["em"];
+        var html =
+          "Verify your email <b>" +
+          email +
+          "</b> as suppliers are more likely to contact verified buyers.";
+        $("#t" + tmpId + "_thnkemdiv").html(html);
+      }
+
+      //if(IsChatBLOverlay(tmpId))
+      //$("#t" + tmpId + "_scroll").removeClass("cbl_srlIs");
+
+      for (var i = 0; i < array.length; i++) {
+        if (
+          isSet(array[i].Obj) &&
+          typeof array[i].Obj.defaultEvents === "function"
+        )
+          array[i].Obj.defaultEvents(tmpId, type);
+        if (
+          isSet(array[i].Obj) &&
+          typeof array[i].Obj.handleButton === "function"
+        )
+          array[i].Obj.handleButton(tmpId);
+        if (
+          isSet(array[i].Obj) &&
+          typeof array[i].Obj.handleHeading === "function"
+        )
+          array[i].Obj.handleHeading(tmpId);
+      }
+
+      imeshExist() !== "" || currentISO() === "IN"
+        ? $("#t" + tmpId + "_gwrap").addClass("bedsnone")
+        : $("#t" + tmpId + "_gwrap").removeClass("bedsnone");
+      if (Enq04(tmpId) && imeshExist() !== "")
+        $("#t" + tmpId + "_pdpPimg").removeClass("frUsr");
+
+      HideSuggester();
+      if (tmpId.substring(0, 2) === "09") {
+        if (
+          array.length === 0 &&
+          currentISO() !== "IN" &&
+          this.StepCounter === 0 &&
+          isImageVidEnq(tmpId)
+        )
+          enqImghandleBuutton(tmpId);
+        ReqObj.Form[tmpId].flags.isFlagSuggSet = false;
+      }
+      var iso = usercookie.getParameterValue(
+        usercookie.getCookie("iploc"),
+        "gcniso"
+      );
+      if (
+        ReqObj.ipLoc.zoneISO === "IN" ||
+        (iso !== "" && iso !== "IN") ||
+        (ReqObj.ipLoc.zoneISO === "OTHER" && iso === "IN") ||
+        ReqObj.ipLoc.callIpFlagSugg === true
+      )
+        callFlagSuggestor(tmpId, "load");
+      ShowHideTNC(tmpId);
+      IsChatBLInline(tmpId) && ischatblnextquestionasked
+        ? $("#t" + tmpId + "_submit").attr("disabled", true)
+        : "";
+
+      IsChatbl(tmpId)
+        ? setTimeout(function () {
+            newchatblScroll("t" + tmpId + "_chatScroll", tmpId);
+          }, 800)
+        : scrollSmoothToBottom("t" + tmpId + "_chatScroll");
+
+      IsChatbl(tmpId)
+        ? setTimeout(function () {
+            removeBLLoader(tmpId, "left");
+          }, 750)
+        : removeBLLoader(tmpId, "left");
+
+      var TrackingClasses = ClassesforTracking + "|" + postDisplayStepTracking;
+      if (IsChatbl(tmpId)) {
+        ReqObj.Form[tmpId].classfortracking = TrackingClasses;
+        if (IsChatBLInline(tmpId)) {
+          ReqObj.Form[tmpId].source =
+            isSet(ReqObj.Form[tmpId].isAutoOpen) &&
+            ReqObj.Form[tmpId].isAutoOpen === "true"
+              ? "From scroll"
+              : "From click";
+          ReqObj.Form[tmpId].classfortracking =
+            TrackingClasses + "|" + ReqObj.Form[tmpId].source;
+        }
+      }
+      if (this.StepCounter === 0 && IsChatbl(tmpId)) {
+        var toappend = "";
+        blenqGATracking(form_type,ReqObj.Form[tmpId].classfortracking,getEventLabel(),0,tmpId); // 1 - why ?
+        fireYandex(tmpId); // Yandex
+        //console.log("on click chatbl");
+      }
+      if (tmpId.substr(0, 2) === "01") {
+        blInlineTransition(tmpId);
+        ReqObj.Form[tmpId].screenNumber += 1;
+        if (isBlInline(tmpId)) {
+          $("#t" + tmpId + "_belodr").removeAttr("style");
+        }
+      }
+
+      if (tmpId.substr(0, 2) === "04") {
+        ReqObj.Form[tmpId].screenNumber += 1;
+      }
+
+      if (!(this.StepCounter === 0 && tmpId.substring(0, 2) !== "09")) {
+        if (
+          stepNumber > 1 ||
+          binaryArraySearch(
+            ReqObj.Form[tmpId].TrackedDisplaySteps,
+            stepNumber
+          ) === -1
+        ) {
+          if (
+            ReqObj.Form[tmpId].formType.toLowerCase() === "enq" &&
+            this.StepCounter === 0
+          ) {
+            if (ReqObj.Form[tmpId].pvTrackingFired === false)
+              imInvokeRequestForGaCode(tmpId, "FormOpen:" + TrackingClasses);
+            fireYandex(tmpId); // Yandex
+          } else if (
+            ReqObj.Form[tmpId].formType.toLowerCase() === "bl" &&
+            this.StepCounter === 0
+          ) {
+            fireYandex(tmpId); // Yandex
+            blenqGATracking(form_type,TrackingClasses,getEventLabel(),0,tmpId);
+          } else
+            blenqGATracking(form_type,TrackingClasses,getEventLabel(),0,tmpId);
+
+          ReqObj.Form[tmpId].TrackedDisplaySteps.push(stepNumber);
+        }
+      }
+    } else {
+      HideSuggester();
+      removeBLLoader(tmpId, "left");
+      modificationOnBack(tmpId);
+      $("#" + elId).css("display", "block"); //
+      if (isSet(array)) {
+        for (var i = 0; i < array.length; i++) {
+          ReqObj.Form[tmpId].currentScreen += array[i].Obj.className;
+          if (
+            isSet(array[i]) &&
+            isSet(array[i].Obj) &&
+            typeof array[i].Obj.EventIfScreenPresent === "function"
+          )
+            array[i].Obj.EventIfScreenPresent(tmpId);
+        }
+      }
+      if (ReqObj.Form[tmpId].IsbackClicked) {
+        var TrackingClasses = "Back_to_" + ClassesforTracking;
+        if (IsChatbl(tmpId)) {
+          ReqObj.Form[tmpId].classfortracking = TrackingClasses;
+        }
+
+        if (!(this.StepCounter === 0 && tmpId.substring(0, 2) !== "09")) {
+          if (
+            binaryArraySearch(
+              ReqObj.Form[tmpId].BackwardDisplaySteps,
+              stepNumber
+            ) === -1
+          ) {
+            blenqGATracking(form_type,TrackingClasses,getEventLabel(),0,tmpId); // 1 - why ?
+            ReqObj.Form[tmpId].BackwardDisplaySteps.push(stepNumber);
+          }
+        }
+      }
+
+      return "";
+    }
+    setCountryName(tmpId);
+  }
+  return "";
+};
+
+FormSeq.prototype.ChatblTncSubmit = function (tmpId) {
+  var that = this;
+  $("#t" + tmpId + "_chatBL")
+    .off("keypress.Submit")
+    .on("keypress.Submit", function (event) {
+      var keycode = event.keyCode ? event.keyCode : event.which;
+      if (keycode === 13) {
+        if (isSet(event) && isSet(event.target)) {
+          if (event.target.id === "t" + tmpId + "_tCondCheckBox") {
+            beforeformsubmitaction(tmpId);
+            ReqObj.Form[tmpId].isSkipOTPClicked =
+              IsChatbl(tmpId) || isSSB(tmpId) ? false : "";
+            that.FormSubmit(tmpId, event);
+          }
+        }
+      }
+    });
+};
+
+function beforeformsubmitaction(tmpId) {
+  $("#t" + tmpId + "chngPrdDiv").addClass("dn");
+  IsChatBLInline(tmpId)
+    ? $("#t" + tmpId + "_submit").attr("disabled", true)
+    : "";
+}
+
+function removechatblerror(tmpId) {
+  $("#t" + tmpId + "verify_error").html("");
+  $("#t" + tmpId + "cbl_bluline").removeClass("cbl_erred");
+  $("#t" + tmpId + "verify_error").removeClass("cbl_errbg");
+}
+
+function addChatblError(tmpId, msg) {
+  $("#t" + tmpId + "verify_error").html(msg);
+  $("#t" + tmpId + "cbl_bluline").addClass("cbl_erred");
+  $("#t" + tmpId + "verify_error").addClass("cbl_errbg");
+}
+
+FormSeq.prototype.ShowStep = function (tmpId) {
+  if (isSet(tmpId)) {
+    var that = this;
+    var iso = currentISO();
+    var stepNumber =
+      parseInt(that.OnCloseCounter, 10) > -1
+        ? parseInt(this.StepCounter, 10) +
+          1 +
+          (parseInt(that.OnCloseCounter, 10) + 1)
+        : parseInt(this.StepCounter, 10) + 1;
+    var ClassesforTracking = "DisplayStep|" + stepNumber;
+    !isSet(ReqObj.CNSerCalled) || !ReqObj.CNSerCalled
+      ? toCallMiniDetails(tmpId)
+      : "";
+    ReqObj.Form[tmpId].cName.isq =
+      isSet(ReqObj.Form[tmpId].IsqArray) &&
+      ReqObj.Form[tmpId].IsqArray.length > 0
+        ? true
+        : false;
+    this.RenderUi(tmpId, ClassesforTracking, stepNumber);
+    this.ChatblTncSubmit(tmpId);
+
+    $("#t" + tmpId + "_changeProduct")
+      .off("click")
+      .on("click", function (event) {
+        beforeformsubmitaction(tmpId);
+        ReqObj.Form[tmpId].ischangeProduct = true;
+        that.FireTracking(tmpId, event);
+
+        that.BLChatProdName(tmpId);
+      });
+
+    $("#t0802_msgCls").on("click", function (event) {
+      if (!isSet(ReqObj.popupClosed) || !ReqObj.popupClosed) {
+        $("#t0802_msgDiv").addClass("bedsnone");
+        $($("#scrollTop").children()[0]).removeClass("tpbCbl");
+        pageType =
+          "|PT=" +
+          (isSet(ReqObj.Form[tmpId].pageType)
+            ? ReqObj.Form[tmpId].pageType
+            : "");
+        blenqGATrackingMisc("Post Buy Leads","popupClosed",getEventLabel(),1,tmpId,"ctaName=msgPopup" + pageType);
+        ReqObj.popupClosed = true;
+      }
+    });
+
+    $(".cbl_txt")
+      .off("keyup")
+      .on("keyup", function () {
+        if (isSet($(".cbl_txt").val()) && $(".cbl_txt").val().length === 0)
+          $(".cbl_skip").removeClass("dn");
+        else $(".cbl_skip").addClass("dn");
+      });
+
+    $(".cbl_radio")
+      .off("click")
+      .on("click", function (event) {
+        var array = [];
+
+        $(".t" + tmpId + "other_radiotemp")
+          .off("click")
+          .on("click", function (event) {
+            if ($(this).hasClass("t" + tmpId + "be-radioboxtemp")) {
+              $(this)
+                .siblings()
+                .each(function () {
+                  if ($(this).parent().css("display") !== "none") {
+                    isRadioOtherClicked(this);
+                  }
+                });
+            }
+          });
+
+        $("input:checked").each(function () {
+          $(this).hasClass("cbl_chekbx_btn") || $(this).hasClass("waschecked")
+            ? array.push(this.id)
+            : "";
+        });
+        $(".cbl_othinpt")
+          .off("keyup")
+          .on("keyup", function () {
+            if (array.length === 0 && $(".cbl_othinpt").val() === "") {
+              $(".cbl_skip").removeClass("dn");
+            } else {
+              $(".cbl_skip").addClass("dn");
+            }
+          });
+        if (
+          isSet($(".cbl_othinpt").val()) &&
+          !$("#" + event.target.id).hasClass("cbl_othinpt")
+        ) {
+          if (array.length === 0 && $(".cbl_othinpt").val() === "") {
+            $(".cbl_skip").removeClass("dn");
+            $(".cbl_skip").removeClass("bedsnone");
+          } else {
+            $(".cbl_skip").addClass("dn");
+          }
+        } else if (!isSet($(".cbl_othinpt").val())) {
+          if (array.length === 0) {
+            $(".cbl_skip").removeClass("dn");
+            $(".cbl_skip").removeClass("bedsnone");
+          } else {
+            $(".cbl_skip").addClass("dn");
+          }
+        }
+      });
+
+    $(".cbl_qtut")
+      .off("keyup")
+      .on("keyup", function () {
+        if (
+          isSet($(".cbl_qtut").val()) &&
+          $(".cbl_qtut").val().length === 0 &&
+          $(".cbl_qtut").val() === ""
+        )
+          $(".cbl_skip").removeClass("dn");
+        else $(".cbl_skip").addClass("dn");
+      });
+
+    $("#t" + tmpId + "_blchatbody")
+      .off("click")
+      .on("click", function () {
+        $(".cbl_selct_unit").addClass("dn");
+        $(".cbl_sclBr").addClass("dn");
+      });
+
+    $(".cbl_unit")
+      .off("focus", function (event) {
+        $(".cbl_selct_unit").addClass("dn");
+      })
+      .on("focus", function (event) {
+        var x = event.target.id;
+        var count = x.charAt(x.length - 1);
+        if ($("#t" + tmpId + "_selectDD" + count).prop("readonly")) {
+          funcClick(event.currentTarget, tmpId, count);
+        }
+      });
+
+    $(".t" + tmpId + "_radSubmit")
+      .off("click")
+      .on("click", function (event) {
+        var imeshcookie = imeshExist();
+        if (IsChatbl(tmpId))
+          $("#t" + tmpId + "_submitNo2")
+            .parent()
+            .addClass("dn"); //chat bl bug
+        var curEl = this;
+        curEl = curEl.children[0];
+        var name = $(curEl).attr("name");
+        var isSelected = $(curEl).hasClass("waschecked");
+
+        $("input[name='" + name + "']").each(function () {
+          $(this).prop("checked", false).removeClass("waschecked");
+          $(this).parent().removeClass("sl-box chksl");
+          $(this).siblings("label").children(".bechk-in").children().hide();
+        });
+        $(curEl).prop("checked", true).addClass("waschecked");
+        that.FormSubmit(tmpId, event);
+      });
+    $("#t" + tmpId + "_tCondCheckBox").removeAttr("onclick");
+    //adwords_ch
+    $("#t" + tmpId + "_tCondCheckBox")
+      .off("mousedown.Submit")
+      .on("mousedown.Submit", function (event) {
+        $(this).on("click", function (event) {
+          event.preventDefault();
+        });
+        if ($("#t" + tmpId + "_tCondCheckBox").is(":checked"))
+          $("#t" + tmpId + "_tCondCheckBox").prop("checked", false);
+        else $("#t" + tmpId + "_tCondCheckBox").prop("checked", true);
+
+        checkedTNC(tmpId);
+      });
+
+    $(".t" + tmpId + "_test1")
+      .off("mousedown.Submit")
+      .on("mousedown.Submit", function (event) {
+        $(this).on("click", function (event) {
+          event.preventDefault();
+        });
+        if ($("#t" + tmpId + "_tCondCheckBox").is(":checked"))
+          $("#t" + tmpId + "_tCondCheckBox").prop("checked", false);
+        else $("#t" + tmpId + "_tCondCheckBox").prop("checked", true);
+
+        checkedTNC(tmpId);
+      });
+
+    $("#t" + tmpId + "_submit")
+      .off("mousedown.Submit")
+      .on("mousedown.Submit", function (event) {
+        if (!$("#t" + tmpId + "_tCondCheckBox").is(":checked")) {
+          //tcond highlight
+          $(this).on("click", function (event) {
+            event.preventDefault();
+          });
+          $("#t" + tmpId + "_tCond").addClass("tcond_bounce");
+          setTimeout(function () {
+            $("#t" + tmpId + "_tCond").removeClass("tcond_bounce");
+          }, 1000);
+        }
+
+        var imeshCookie = imeshExist();
+        if (imeshCookie === "" && !checkblockedUser()) {
+          ReqObj.Form[tmpId].defSubmit.blurfired =
+            ReqObj.Form[tmpId].defSubmit.loginfval !== "" &&
+            ReqObj.Form[tmpId].defSubmit.loginfval.toLowerCase() !==
+              $("#t" + tmpId + "_login_field")
+                .val()
+                .toLowerCase()
+              ? false
+              : ReqObj.Form[tmpId].defSubmit.blurfired;
+          if (currentISO() === "IN" && tmpId.substring(0, 2) === "09") {
+            ReqObj.Form[tmpId].defSubmit.blurfired = true;
+            ReqObj.Form[tmpId].defSubmit.todo = true;
+          }
+          if (
+            ReqObj.Form[tmpId].defSubmit.blurfired === false &&
+            $("#t" + tmpId + "_login_field").length > 0 &&
+            $("#t" + tmpId + "_login_field").val() !== "" &&
+            $("#t" + tmpId + "_q_first_nm" + ReqObj.Form[tmpId].nec.classCount)
+              .length > 0 &&
+            $(
+              "#t" + tmpId + "_q_first_nm" + ReqObj.Form[tmpId].nec.classCount
+            ).val() === ""
+          ) {
+            ReqObj.Form[tmpId].defSubmit.todo = false;
+            ReqObj.Form[tmpId].defSubmit.subfired = false;
+            ReqObj.Form[tmpId].defSubmit.loginfval = $(
+              "#t" + tmpId + "_login_field"
+            ).val();
+          } else ReqObj.Form[tmpId].defSubmit.todo = true;
+        } else ReqObj.Form[tmpId].defSubmit.todo = true;
+        ReqObj.Form[tmpId].defSubmit.eve = event;
+        ReqObj.Form[tmpId].isSkipOTPClicked =
+          IsChatbl(tmpId) || isSSB(tmpId) ? false : "";
+        if (IsChatbl(tmpId)) beforeformsubmitaction(tmpId);
+        if (ReqObj.Form[tmpId].defSubmit.todo === true)
+          that.FormSubmit(tmpId, event);
+      });
+    //chat bl bug
+    $("#t" + tmpId + "_submitNo1")
+      .off("click.Submit")
+      .on("click.Submit", function (event) {
+        ReqObj.Form[tmpId].isSkipOTPClicked = IsChatbl(tmpId) ? false : "";
+        if (IsChatbl(tmpId)) beforeformsubmitaction(tmpId);
+        that.FormSubmit(tmpId, event);
+      });
+
+    //chat bl bug
+    $("#t" + tmpId + "_submitNo2")
+      .off("click.Submit")
+      .on("click.Submit", function (event) {
+        ReqObj.Form[tmpId].isSkipOTPClicked = IsChatbl(tmpId) ? false : "";
+        if (IsChatbl(tmpId)) beforeformsubmitaction(tmpId);
+        that.FormSubmit(tmpId, event);
+      });
+
+    $("#t" + tmpId + "_skipOTP")
+      .off("click")
+      .on("click", function (event) {
+        var form_type =
+          ReqObj.Form[tmpId].formType === "Enq"
+            ? "Send Enquiry"
+            : "Post Buy Leads";
+        ReqObj.Form[tmpId].isSkipOTPClicked = true;
+        ReqObj.Form[tmpId].flags.isSkipOTPClicked = true;
+        ReqObj.Form[tmpId].showotpstep = 1;
+        if (IsChatbl(tmpId)) beforeformsubmitaction(tmpId);
+        blenqGATracking(form_type, "OTP1NotFilled", getEventLabel(), 1, tmpId);
+        that.FormSubmit(tmpId, event);
+      });
+
+    $("#t" + tmpId + "_be-backbtn")
+      .off("click")
+      .on("click", function (event) {
+        if (IsChatbl(tmpId)) beforeformsubmitaction(tmpId);
+        that.Back(tmpId, event);
+      });
+
+    $("#t" + tmpId + "_backarr")
+      .off("click")
+      .on("click", function (event) {
+        if (IsChatbl(tmpId)) beforeformsubmitaction(tmpId);
+        that.Back(tmpId, event);
+      });
+
+    $("#t" + tmpId + "_skipOtpssb")
+      .off("click")
+      .on("click", function (event) {
+        skipOTPSSB(tmpId, that, event);
+      });
+
+    $("#t" + tmpId + "_cntdiv").click(function (event) {
+      controlDropDown(tmpId);
+    });
+
+    $("#t" + tmpId + "flag").click(function () {
+      $("#t" + tmpId + "country_dropd .country_list").css("display", "none");
+    });
+    $("#t" + tmpId + "country_dropd").click(function () {
+      $("#t" + tmpId + "flag .country_list").css("display", "none");
+    });
+
+    $("#t" + tmpId + "_bl_form")
+      .off("keypress.Submit")
+      .on("keypress.Submit", function (event) {
+        /* enter func */ var keycode = event.keyCode
+          ? event.keyCode
+          : event.which;
+
+        if (keycode === 13) {
+          if (
+            !(
+              isSet(event) &&
+              isSet(event.target) &&
+              isSet(event.target.id) &&
+              event.target.id === "t" + tmpId + "_reqBoxTemplates"
+            )
+          ) {
+            if (!$("#t" + tmpId + "_submit").is(":disabled")) {
+              $("#t" + tmpId + "_chatBL").off("keypress.Submit");
+              if (isSSB(tmpId)) ReqObj.Form[tmpId].isEnterclicked = true;
+              var imeshCookie = imeshExist();
+              if (imeshCookie === "") {
+                ReqObj.Form[tmpId].defSubmit.blurfired =
+                  ReqObj.Form[tmpId].defSubmit.loginfval !== "" &&
+                  ReqObj.Form[tmpId].defSubmit.loginfval.toLowerCase() !==
+                    $("#t" + tmpId + "_login_field")
+                      .val()
+                      .toLowerCase()
+                    ? false
+                    : ReqObj.Form[tmpId].defSubmit.blurfired;
+                if (
+                  ReqObj.Form[tmpId].defSubmit.blurfired === false &&
+                  $("#t" + tmpId + "_login_field").length > 0 &&
+                  $("#t" + tmpId + "_login_field").val() !== "" &&
+                  $(
+                    "#t" +
+                      tmpId +
+                      "_q_first_nm" +
+                      ReqObj.Form[tmpId].nec.classCount
+                  ).length > 0 &&
+                  $(
+                    "#t" +
+                      tmpId +
+                      "_q_first_nm" +
+                      ReqObj.Form[tmpId].nec.classCount
+                  ).val() === ""
+                ) {
+                  ReqObj.Form[tmpId].defSubmit.todo = false;
+                  ReqObj.Form[tmpId].defSubmit.subfired = false;
+                  ReqObj.Form[tmpId].defSubmit.loginfval = $(
+                    "#t" + tmpId + "_login_field"
+                  ).val();
+                }
+              } else ReqObj.Form[tmpId].defSubmit.todo = true;
+              ReqObj.Form[tmpId].defSubmit.eve = event;
+              ReqObj.Form[tmpId].isEnterclicked = true;
+              if (ReqObj.Form[tmpId].defSubmit.todo === true) {
+                that.FormSubmit(tmpId, event);
+              } else if (!that.FormSubmit(tmpId, event)) {
+                that.ChatblTncSubmit(tmpId);
+              }
+            }
+          }
+        }
+      });
+    $("#t" + tmpId + "_newblchatReply")
+      .off("keypress.Submit")
+      .on("keypress.Submit", function (event) {
+        /* enter func */ var keycode = event.keyCode
+          ? event.keyCode
+          : event.which;
+
+        if (keycode === 13) {
+          //x = "t" + tmpId + "_selectDD";
+          // if(event.target.id === x){
+
+          // }else{
+          $("#t" + tmpId + "_blchatfooter").focus();
+
+          if (!$("#t" + tmpId + "_submit").is(":disabled")) {
+            $("#t" + tmpId + "_chatBL").off("keypress.Submit");
+            if (IsChatbl(tmpId)) beforeformsubmitaction(tmpId);
+            if (!that.FormSubmit(tmpId, event)) {
+              //attach event
+              that.ChatblTncSubmit(tmpId);
+            }
+          }
+        }
+
+        if (keycode === 9) {
+        }
+      });
+    var NotSureEl = $("#t" + tmpId + "_notSure");
+    if (NotSureEl.length > 0) {
+      NotSureEl.off("click").on("click", function (event) {
+        ReqObj.Form[tmpId].NotSure = true;
+        ReqObj.Form[tmpId].PrevAnsPrint = true;
+        that.FireTracking(tmpId, event);
+        var ServiceArray = [];
+        var counter = "";
+        if (that.OnCloseCounter > -1) {
+          counter = that.OnCloseCounter;
+
+          ServiceArray = that.OnCloseServiceArray[counter];
+        } else {
+          counter = that.StepCounter;
+          ServiceArray = that.FullServiceArray[counter];
+        }
+        that.MoveToNext(tmpId);
+
+        formatServices(ServiceArray, tmpId);
+        ServiceSeqGeneration(tmpId);
+      });
+    }
+  }
+};
+FormSeq.prototype.getStep = function (tmpId, isOnclose) {
+  /*
+      we assume that since getstep for onclose will only be called from onclosegetstep so
+      if it is true specifically then only it is from on close sequence.
+      */
+  var that = this;
+  if (isOnclose) {
+    ReqObj.Form[tmpId].OnCloseStep = true;
+    this.OnCloseCounter += 1;
+    var CurrentUiArray = ReqObj.Form[tmpId].OnCloseArray;
+    var counter = this.OnCloseCounter;
+  } else {
+    this.StepCounter += 1;
+    var CurrentUiArray = ReqObj.Form[tmpId].UiArray;
+    var counter = this.StepCounter;
+  }
+  if (isSet(CurrentUiArray)) {
+    if (counter < CurrentUiArray.length) {
+      if (IsChatbl(tmpId))
+        that.ShowStep(
+          tmpId
+        ); //setTimeout(function () { that.ShowStep(tmpId); }, 350);
+      else that.ShowStep(tmpId);
+    }
+  }
+};
+
+FormSeq.prototype.MakeSeq = function (Objconfig) {
+  if (isSet(Objconfig)) {
+    ReplaceObject(Objconfig.object, Objconfig.tmpId, this);
+    if (Objconfig.object.isService) {
+      AttachObject(Objconfig.object, Objconfig.tmpId);
+    } else {
+      if (typeof Objconfig.object.obj.hasHtml === "function")
+        Objconfig.object.obj.hasHtml(Objconfig);
+    }
+  }
+};
+function ClearInlineBlTag(tmpId) {
+  var InlineEl = $("#t" + tmpId + "_bl_form").parent();
+  addDetachedFlag(tmpId);
+  ReqObj.Form[tmpId].InlineformParentEl = InlineEl;
+  ReqObj.Form[tmpId].InlineformHtml = InlineEl.html();
+  InlineEl.html("");
+}
+
+FormSeq.prototype.InlineOpenForm = function (tmpId) {
+  if (isSet(tmpId)) {
+    var that = this;
+    ClearInlineBlTag(tmpId);
+
+    $("#t" + tmpId + "_enrichform_maindiv")
+      .html(GetPopUpHtml(tmpId))
+      .css({
+        display: "table",
+      });
+
+    // InlineDefault(tmpId);
+
+    ReqObj.Form[tmpId].btn = $("#t" + tmpId + "_q_send_req_button").html();
+    $("#t" + tmpId + "_q_send_req_button").html("");
+    if (
+      ReqObj.Form[tmpId].formType.toLowerCase() === "bl" &&
+      isSet(ReqObj.Form[tmpId].displayImage) &&
+      ReqObj.Form[tmpId].displayImage === "" &&
+      isSet(ReqObj.Form[tmpId].zoomImage) &&
+      ReqObj.Form[tmpId].zoomImage === ""
+    ) {
+      ReqObj.Form[tmpId].displayImage =
+        isSet(ReqObj.mcatImage) && ReqObj.mcatImage !== ""
+          ? ReqObj.mcatImage
+          : "";
+    }
+
+    // leftSideTransition(1, tmpId);
+
+    // $("#t" + tmpId + "_hdg").text(ReturnCorrectVal(ReqObj.Form[tmpId].heading, StaticMessage()));
+    OpenBLEnqPopup(tmpId);
+
+    FormCloseButtons(tmpId);
+  }
+};
+FormSeq.prototype.BlSsbNext = function (tmpId) {
+  NextStepSSB(tmpId, this);
+};
+
+FormSeq.prototype.BLSingleStep = function (tmpId) {
+  var that = this;
+  if (typeof isSSBLoaded === "undefined") {
+    setTimeout(function () {
+      that.BLSingleStep(tmpId);
+    }, 50);
+  } else {
+    InitialStepSSB(tmpId, that);
+  }
+};
+  /*-------------------------------new Seq----------------------------------------- */
+  FormSeq.prototype._enq = function (tmpId, where) {
+    var _that = this;
+    ReqObj.Form[tmpId].waitFinServ = 1;
+    var typeOfForm = returnTypeForSeq(tmpId).toLowerCase(); // inline enquiry changes
+    updateEnrichShownKey(tmpId, true, false);
+    if (
+      imeshExist() !== "" &&
+      isSecondEnq() &&
+      usercookie.getParameterValue(imeshExist(), "uv") !== "V" &&
+      currentISO() === "IN"
+    ) {
+      ReqObj.Form[tmpId].isOtpShownOnFirstStep = true;
+    }
+    if (
+      Enq04(tmpId) &&
+      ReqObj.Form[tmpId].modrefType.toLowerCase() === "product" &&
+      ReqObj.Form[tmpId].afflId === "-126"
+    ) {
+      $("#t" + tmpId + "_q_comp_sec").removeClass("bedsnone");
+      $("#t" + tmpId + "_q_comp_name").val(ReqObj.Form[tmpId].rcvName);
+    }
+    if (
+      isMoglixUi(tmpId) &&
+      ReqObj["Form"][tmpId].currentScreen != "userverification" &&
+      $("#t" + tmpId + "OtpMainHeading").is(":visible")
+    )
+      $("#t" + tmpId + "OtpMainHeading").remove();
+    _that.screenSequence(tmpId, typeOfForm);
+  };
+  
+  FormSeq.prototype._blFlow = function (tmpId, where) {
+    var _that = this;
+    var typeOfForm = returnTypeForSeq(tmpId).toLowerCase();
+    ReqObj.Form[tmpId]._NCOnFrstScrn = false;
+    ReqObj.Form[tmpId].isAttachmentShown = false;
+    if (Bl01(tmpId)) {
+      ReqObj.Form[tmpId].isBlQtutShown = false;
+      ReqObj.Form[tmpId].screenNumber = -1;
+    }
+    if (Bl04(tmpId)) {
+      ReqObj.Form[tmpId].isBlQtutShown = false;
+      ReqObj.Form[tmpId].screenNumber = -1;
+    }
+    updateEnrichShownKey(tmpId, false, false);
+    if (
+      imeshExist() !== "" &&
+      isSecondBl() &&
+      usercookie.getParameterValue(imeshExist(), "uv") !== "V" &&
+      currentISO() === "IN"
+    ) {
+      ReqObj.Form[tmpId].isOtpShownOnFirstStep = true;
+    }
+    _that.screenSequence(tmpId, typeOfForm);
+  };
+  
+  FormSeq.prototype._classStringCode = function (classArray) {
+    var str = "";
+    for (let ele in classArray) {
+      str += ReqObj.classCode[classArray[ele]];
+    }
+    return str;
+  };
+  
+  FormSeq.prototype._returnClassCode = function (tmpId, typeOfForm, data) {
+    var _that = this;
+    var _case = null;
+    if (typeOfForm === "inenquiry") {
+      var typeCode = 0;
+      var _default = { classArray: ["RequirementDtl"] };
+      _default["numberOfClassCalled"] = 1;
+      _default["code"] = _that._classStringCode(_default.classArray);
+      if (isSet(data.iso) && data.iso === "IN") {
+        _case = !data.imeshcookie ? 
+          {
+            classArray: ["UserLogin", "RequirementDtl"],
+            numberOfClassCalled: 3,
+            type: "name",
+            nonMandatory: { name: true },
+          }
+        : _default;
+      } else {
+        if (!data.imeshcookie)
+          _case = {
+            classArray: ["UserLogin", "ContactDetail", "RequirementDtl"],
+            numberOfClassCalled: 3,
+            type: "name",
+            nonMandatory: { name: false },
+          };
+        else if (data.imeshcookie && isSet(ReqObj.UserDetail.fn) && ReqObj.UserDetail.fn === "")
+          _case = {
+            classArray: ["ContactDetail", "RequirementDtl"],
+            numberOfClassCalled: 2,
+            type: "name",
+            nonMandatory: { name: false },
+          };
+        else _case = _default;
+      }
+      _case["code"] = _that._classStringCode(_case.classArray);
+    }
+  
+    // for first fold
+    else if (typeOfForm === "blfirstfold") {
+      var typeCode = 1;
+      var _default = { classArray: ["ProductName", "Isq"] };
+      _default["numberOfClassCalled"] = 2;
+      _default["code"] = _that._classStringCode(_default.classArray);
+  
+      if (isSet(data.iso) && data.iso === "IN") {
+        // _case = (!data.imeshcookie) ? { classArray: ["ProductName", "UserLogin", "ContactDetail", "Isq"], numberOfClassCalled: 4, type: "name", nonMandatory: { name: true } } : _default;
+        _case = !data.imeshcookie ? { code: "" } : _default; //this to this
+        _case = data.imeshcookie && isSet(ReqObj.UserDetail.fn) && ReqObj.UserDetail.fn === "" && typeCode === 1 ? 
+          {
+            classArray: ["ProductName", "ContactDetail", "Isq"],
+            numberOfClassCalled: 3,
+            type: "name",
+            nonMandatory: { name: true },
+          }
+        : _case;
+      } else {
+        // if (!data.imeshcookie) _case = { classArray: ["ProductName", "UserLogin", "ContactDetail", "Isq"], numberOfClassCalled: 4, type: "name", nonMandatory: { name: false } };
+        if (!data.imeshcookie) {
+          _case = { code: "" };
+        } //this to this
+        else if (data.imeshcookie && isSet(ReqObj.UserDetail.fn) && ReqObj.UserDetail.fn === "")
+          _case = {
+            classArray: ["ProductName", "ContactDetail", "Isq"],
+            numberOfClassCalled: 3,
+            type: "name",
+            nonMandatory: { name: false },
+          };
+        else _case = _default;
+      }
+      _case["code"] = _that._classStringCode(_case.classArray);
+    } else if (typeOfForm === "imenquiry") {
+      _case = data.imeshcookie && isSet(data.iso) && (!_contactScreen(data.iso) || (data.iso === "IN" && _contactScreen(data.iso) && _mandatDetailsFilled() && isSecondEnq(tmpId) && ReqObj.UserDetail.uv === "")) ? { code: "e", classArray: ["EnquireNow"], numberOfClassCalled: 1 } : { code: "" };
+    } else if (typeOfForm === "bl") {
+      var nonm = currentISO() !== "IN" || Bl09(tmpId) ? false : true;
+      _case =data.imeshcookie && !NEC() ? 
+        {
+          code: "b",
+          classArray: ["ProductName", "Isq"],
+          numberOfClassCalled: 2,
+        }
+      : data.imeshcookie ?
+        {
+          code: "b",
+          classArray: ["ProductName", "ContactDetail"],
+          numberOfClassCalled: 2,
+          nonMandatory: { name: nonm },
+        }
+      : { code: "" };
+      if (Bl01(tmpId)) {
+        var nonm = currentISO() !== "IN" ? false : true;
+        _case = data.imeshcookie ? 
+          {
+            code: "b",
+            classArray: isBlInlineFr(tmpId)
+              ? ["ProductName", "ContactDetail", "RequirementDtl"]
+              : ["ProductName", "ContactDetail", "Isq"],
+            numberOfClassCalled: 3,
+            type: "name",
+            nonMandatory: { name: nonm },
+          }
+        : { code: "" };
+      }
+    } else _case = { code: "" };
+    return _case;
+  };
+  
+  FormSeq.prototype.updateNumberOfClassCalled = function (numberOfClassCalled) {
+    this.NumberofClassCalled = numberOfClassCalled;
+  };
+  FormSeq.prototype.returnClassObjects = function (loop, _className, _classData) {
+    var that = this;
+    var _obj = that.classObjects(_className, _classData);
+    return {
+      object: {
+        obj: _obj,
+        toReplace: _classData.extraKeys[loop + 1].tr,
+        isService: _classData.extraKeys[loop + 1].is,
+        array: _classData.array[loop + 1],
+        hooks: _classData.hooks[loop + 1],
+      },
+      tmpId: _classData.tmpId,
+      that: _classData.that,
+      AfterService: _classData.afterService[loop + 1],
+      hasFallback: _classData.extraKeys[loop + 1].hf,
+      FallbackObj: _classData.extraKeys[loop + 1].fobj,
+      md: isSet(_classData.md) ? _classData.md[loop + 1] : null,
+      message: isSet(_classData.message) ? _classData.message[loop + 1] : null,
+      type: isSet(_classData.type) ? _classData.type : null,
+      nonMandatory: isSet(_classData.nonMandatory)
+        ? _classData.nonMandatory
+        : null,
+      additionalkey: isSet(_classData.additionalkey)
+        ? _classData.additionalkey
+        : null,
+    };
+  };
+  FormSeq.prototype.classObjects = function (_className, _classData) {
+    switch (_className.toLowerCase()) {
+      case "enquirenow":
+        return new EnquireNow();
+      case "userlogin":
+        return new UserLogin(_classData.tmpId);
+      case "contactdetail":
+        return isSet(_classData.type) && _classData.type.code === "name"
+          ? new ContactDetail(1, 0, 0)
+          : new ContactDetail(1, 1, 1);
+      case "userverification":
+        return new UserVerification(_classData.tmpId);
+      case "isq":
+        return ReqObj.Form[_classData.tmpId].GlobalIsqObject;
+      case "requirementdtl":
+        return new RequirementDtl(_classData.tmpId);
+      case "moredetails":
+        return new MoreDetails(_classData.tmpId);
+      case "thankyou":
+        return new ThankYou(_classData.tmpId);
+      case "productname":
+        return new ProductName(_classData.tmpId);
+      case "blstaticques":
+        return new BlStaticQues(_classData.tmpId);
+      // default : return _that.returnDefaultObj(_classData)
+    }
+  };
+  
+  FormSeq.prototype._reqbox = function (tmpId, data) {
+    var _that = this;
+    var _rclassObj = {
+      numberOfClassCalled: 1,
+      hooks: { 1: { pre: [], post: [] } },
+      classArray: ["RequirementDtl"],
+      array: { 1: data.array },
+      that: _that,
+      tmpId: tmpId,
+      afterService: { 1: [] },
+      extraKeys: { 1: { tr: true, is: false, hf: false, fobj: null } },
+      copyhooks: true,
+      leadServiceObj: { 1: "generate" },
+    };
+    return _rclassObj;
+  };   
+
+  FormSeq.prototype._returnLastScreen = function (tmpId) {
+    var _that = this;
+    var LastScreen = "";
+    if (isSet(ReqObj.Form[tmpId].UiArray[_that.StepCounter])) {
+      for (
+        var j = 0;
+        j < ReqObj.Form[tmpId].UiArray[_that.StepCounter].length;
+        j++
+      ) {
+        LastScreen =
+          LastScreen +
+          ConstructorName(ReqObj.Form[tmpId].UiArray[_that.StepCounter][j].Obj);
+      }
+    }
+    return LastScreen;
+  };
+  /*-------------------------------new Seq----------------------------------------- */
+// FormSeq Pre

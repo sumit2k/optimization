@@ -7,11 +7,15 @@ Post.js -:
 	- form close on click function
 	- BLEnqPopUpDefault, OpenChatBLPopup
 	- Generation
+	- LeftSide and RightSide
+	- FormSeq Post
 
 Pre.js -:
 	- Global variables
 	- UserCookie, iploc
+	- FormSeq Pre
 	- UserLogin
+	- Isq
 	- Form Identifying functions
 	- Initialize form/Openform function
 	- FormDefaultsFromProperty function (nested)
