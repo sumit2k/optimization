@@ -363,59 +363,6 @@ function isRadioOtherClicked(revent) {
   RadioBoxEl.removeClass("sl-box chksl");
   RadioBoxEl.children().children(".bechk-in").children().hide();
 }
-function RadioClick(tmpId) {
-  $(".radioClick")
-    .off("click")
-    .on("click", function (event) {
-      var tempId = event.target.id;
-      tempId = tempId.substr(1, 4);
-      var imeshcookie = imeshExist();
-      if (IsChatbl(tmpId))
-        $("#t" + tmpId + "_submitNo2") //chat bl bug
-          .parent()
-          .addClass("dn");
-      var curEl = this;
-      var name = $(this).attr("name");
-      var isSelected = $(curEl).hasClass("waschecked");
-
-      $("input[name='" + name + "']").each(function () {
-        $(this).prop("checked", false).removeClass("waschecked");
-        $(this).parent().removeClass("sl-box chksl");
-        $(this).siblings("label").children(".bechk-in").children().hide();
-      });
-      var crb = false;
-      if (!isSelected) {
-        if (
-          $("#t" + tmpId + "ques" + name.charAt(name.length - 1))
-            .text()
-            .toLowerCase() === "why do you need this"
-        )
-          crb = true;
-        if (
-          $("#" + curEl.id)
-            .val()
-            .toLowerCase() === "for reselling" ||
-          $("#" + curEl.id)
-            .val()
-            .toLowerCase() === "for business use"
-        ) {
-          ReqObj.Form[tempId].cName.rb = true;
-        } else {
-          ReqObj.Form[tempId].cName.rb = false;
-        }
-        $(curEl).prop("checked", true).addClass("waschecked");
-        $(curEl).parent().siblings(".oth_bx").children("input").val("");
-        IsChatbl(tempId) || isSSB(tempId)
-          ? ""
-          : $(curEl).parent().addClass("sl-box chksl");
-        $(curEl).siblings("label").children(".bechk-in").children().show();
-        if (crb === true && !isEnq(tmpId)) onCName(tmpId, true);
-      } else if (!IsChatbl(tmpId) && crb === true && !isEnq(tmpId)) {
-        ReqObj.Form[tempId].cName.rb = false;
-        onCName(tmpId, true);
-      }
-    });
-}
 
 function CheckBoxClick(tmpId) {
   setTimeout(function () {
@@ -696,11 +643,6 @@ function isHindi(str) {
 
 function isAllCharacters(str) {
   var exp = /^[a-zA-Z ]+$/;
-  return exp.test(str);
-}
-
-function isAllNumbers(str) {
-  var exp = /^[0-9]*$/;
   return exp.test(str);
 }
 
@@ -2874,20 +2816,6 @@ function ThankYou(tmpId) {
    * @function : BlEnqGeneration  - generates BL or Enq
    */
   /* Generation Class Starts here */
-  function Generation(arg, blIntent) {
-    this.v4iilexCookie = "";
-    this.imeshCookie = "";
-    this.iplocCookie = "";
-    this.imEqGlCookie = "";
-    this.siteEntryPage = "";
-    this.adcampCookie = "";
-    this.emktgCookie = ""; /* */
-    this.geoLocCookie = "";
-    this.iso = "";
-    this.arg = arg;
-    this.className = "Generation";
-    this.blIntent = blIntent;
-  }
   Generation.prototype.defaultEvents = function () {};
   Generation.prototype.onSubmit = function (tmpId) {
     this.cookies();

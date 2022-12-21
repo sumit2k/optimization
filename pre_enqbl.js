@@ -831,6 +831,65 @@ function isSticky(tmpId) {
     return isProd;
   }
 
+  function isAllNumbers(str) {
+    var exp = /^[0-9]*$/;
+    return exp.test(str);
+  }
+
+  function RadioClick(tmpId) {
+    $(".radioClick")
+      .off("click")
+      .on("click", function (event) {
+        var tempId = event.target.id;
+        tempId = tempId.substr(1, 4);
+        var imeshcookie = imeshExist();
+        if (IsChatbl(tmpId))
+          $("#t" + tmpId + "_submitNo2") //chat bl bug
+            .parent()
+            .addClass("dn");
+        var curEl = this;
+        var name = $(this).attr("name");
+        var isSelected = $(curEl).hasClass("waschecked");
+  
+        $("input[name='" + name + "']").each(function () {
+          $(this).prop("checked", false).removeClass("waschecked");
+          $(this).parent().removeClass("sl-box chksl");
+          $(this).siblings("label").children(".bechk-in").children().hide();
+        });
+        var crb = false;
+        if (!isSelected) {
+          if (
+            $("#t" + tmpId + "ques" + name.charAt(name.length - 1))
+              .text()
+              .toLowerCase() === "why do you need this"
+          )
+            crb = true;
+          if (
+            $("#" + curEl.id)
+              .val()
+              .toLowerCase() === "for reselling" ||
+            $("#" + curEl.id)
+              .val()
+              .toLowerCase() === "for business use"
+          ) {
+            ReqObj.Form[tempId].cName.rb = true;
+          } else {
+            ReqObj.Form[tempId].cName.rb = false;
+          }
+          $(curEl).prop("checked", true).addClass("waschecked");
+          $(curEl).parent().siblings(".oth_bx").children("input").val("");
+          IsChatbl(tempId) || isSSB(tempId)
+            ? ""
+            : $(curEl).parent().addClass("sl-box chksl");
+          $(curEl).siblings("label").children(".bechk-in").children().show();
+          if (crb === true && !isEnq(tmpId)) onCName(tmpId, true);
+        } else if (!IsChatbl(tmpId) && crb === true && !isEnq(tmpId)) {
+          ReqObj.Form[tempId].cName.rb = false;
+          onCName(tmpId, true);
+        }
+      });
+  }
+
   /**
   for future if we need to replace all duplicate tracking fired
   then replace numberToFind with number
@@ -13187,3 +13246,19 @@ ContactDetail.prototype.selectCity = function (event, ui) {
 };
   // ContactDetail
 
+  // Generation
+function Generation(arg, blIntent) {
+  this.v4iilexCookie = "";
+  this.imeshCookie = "";
+  this.iplocCookie = "";
+  this.imEqGlCookie = "";
+  this.siteEntryPage = "";
+  this.adcampCookie = "";
+  this.emktgCookie = ""; /* */
+  this.geoLocCookie = "";
+  this.iso = "";
+  this.arg = arg;
+  this.className = "Generation";
+  this.blIntent = blIntent;
+}
+// Generation
