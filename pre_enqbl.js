@@ -14325,6 +14325,10 @@ function typeQuantity(event) {
 
 
 // Misc
+function notempty(id) {
+  return isSet($(id).length) && $(id).val() != "";
+}
+
 function handleSubmitButton(btnObj, tmpId, data) {
     if (!IsChatbl(tmpId)) {
       //adwords_ch
