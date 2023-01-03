@@ -9415,6 +9415,149 @@ function removeYTLoader(tmpId, type) {
 }
 
 // Youtube 
+// Side initialize
+
+/*
+  Currently there are only  two sections left and right. More sections can be added ! Follow the same pattern.
+  */
+  function sectionInitialisationStepWise(tmpId, step) {
+    leftSideInitialise(tmpId, step);
+    rightSideInitialise(tmpId, step);
+    if (pdpInactiveBL(tmpId)) {
+      let relatedProdHtml = downSideInitialise(tmpId);
+      if (!document.getElementById("recommendProd")) {
+        $("#t" + tmpId + "_mcont").append(relatedProdHtml);
+      }
+  
+      if(relatedProdHtml!=''){
+          $("#recommendProd").css({
+              display: "block",
+          });
+      }
+    }
+  }
+  
+  function downSideInitialise(tmpId) {
+      let brd_mcat_id = ReqObj.Form[tmpId].mcatId;
+      let forms_data = $.parseJSON(
+          sessionStorage.getItem("formsPla" + brd_mcat_id)
+      );
+      
+      return (isSet(forms_data) && forms_data.length>1) ? recomendedProds(forms_data,tmpId) : '';
+  }
+  
+  function recomendedProds(forms_data,tmpId) {
+      if(isSet(forms_data)){
+          let html = `<!-- Similar Section -->
+              <div id="recommendProd" class="VSP-SEC">
+              <div class="vsp-heading">
+                  <h3>View Similar products</h3>
+              </div>
+              <ul id="prodList" class="ProBoxUL">`;
+          let count=0;
+          forms_data.forEach((item) => {
+              count+=1;
+              item.ProdUrl = item.ProdUrl + '&blform=1';
+              html += `<li class="berds10" id='recomProd${count}' onclick="bltrack(${count},${tmpId})">
+                            <a target="_blank" href=${item.ProdUrl} class="ProBox-Item disp-inl">
+                                <div class="Proimg">
+                                    <img src=${item.ProdImage} />
+                                </div>
+                                <p class="procontent color3 atxu cbl_fs16 befwt">${item.ProdName}</p>
+                                <p class="proPrice">${item.Price}</p>
+                            </a>
+                      </li>`;
+          });
+  
+          html += `</ul></div>`;
+          return html;
+      }
+  }
+  function bltrack(count,tmpId){
+      ReqObj.Form['0'+tmpId].inactiveBL = true;
+      blenqGATracking("Inactive BL", "Prod"+count, getEventLabel(), 0, "0901");
+      ReqObj.Form['0'+tmpId].inactiveBL = false;
+  }
+
+
+  
+  function leftSideInitialise(tmpId, step) {
+    // this will create inner contaniers for left section acc to type of form
+    new LeftSide(tmpId, ReqObj.Form[tmpId].typeofform, step);
+  }
+  
+  function rightSideInitialise(tmpId, step) {
+    // this will create inner contaniers for right section acc to type of form
+    if (step === 0) new RightSide(tmpId, ReqObj.Form[tmpId].typeofform, step);
+  }
+  
+  function initialiseOuterSection(tmpId) {
+    // this will create outer containers for left and right sections
+    $("#t" + tmpId + "_leftsection").html("");
+    $("#t" + tmpId + "_rightsection").html("");
+    $("#t" + tmpId + "_leftsection").html(
+      sectionInitialise(getSections(tmpId, ReqObj.Form[tmpId].typeofform)["left"])
+    );
+    $("#t" + tmpId + "_rightsection").html(
+      sectionInitialise(
+        getSections(tmpId, ReqObj.Form[tmpId].typeofform)["right"]
+      )
+    );
+  }
+  
+  function sectionInitialise(section_obj) {
+    var len = section_obj.length;
+    var html = "";
+    for (var i = 0; i < len; i++) {
+      html +=
+        returnContainer(
+          section_obj[i].section_id,
+          section_obj[i].section_element,
+          section_obj[i].section_class,
+          "",
+          "",
+          ""
+        ) + "</div>";
+    }
+    return html;
+  }
+  
+  function getSections(tmpId, typeofform) {
+    // section wise object
+    var section_obj = {};
+    section_obj[typeofform] = {
+      left: getSectionObject(tmpId, typeofform, "left"),
+      right: getSectionObject(tmpId, typeofform, "right"),
+    };
+    return section_obj[typeofform];
+  }
+  
+  function getSectionObject(tmpId, typeofform, side) {
+    // by using defined global variables
+    var sectionnumber = section_number[typeofform][side];
+    var data = {};
+    var arr = [];
+    for (var i = 1; i <= sectionnumber; i++) {
+      // don't start from 0 if 0 pass sectionnumber + 1 in class
+      data["section_id"] = "t" + tmpId;
+      data["section_element"] = section_class[typeofform][side][i]["id"];
+      data["section_name"] = section_class[typeofform][side][i]["name"];
+      data["section_class"] = section_class[typeofform][side][i]["cls"];
+      arr.push(createSectionObject(data));
+    }
+    return arr;
+  }
+  
+  function createSectionObject(data) {
+    // object will be created
+    return {
+      section_id: data["section_id"],
+      section_name: data["section_name"],
+      section_class: data["section_class"],
+      section_element: data["section_element"],
+    };
+  }
+// Side initialize
 
 // MISC
 
