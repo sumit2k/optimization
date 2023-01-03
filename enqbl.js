@@ -25,32 +25,7 @@
     if (cn === true) return { ask: true, what: "Company Name", key: 0 };
     else if (gst === true) return { ask: true, what: "GST Number", key: 1 };
     return { ask: false, what: "", key: -1 };
-  }
-  
-  function flagDetach(tmpId) {
-    if ($("#t" + tmpId + "flagdiv2").length > 0) {
-      var ele = $("#t" + tmpId + "country_dropd").detach();
-      $("#t" + tmpId + "flagdiv2").append(ele);
-    }
-  }
-  
-  function addDetachedFlag(tmpId) {
-    if (isSet(tmpId) && tmpId !== "") {
-      flagDetach(tmpId);
-    } else {
-      var arr = template_array;
-      var len = arr.length;
-      for (var i = 0; i < len; i++) {
-        flagDetach(arr[i]);
-      }
-    }
-  }
-  
-  function detachFlag2(tmpId) {
-    var ele = $("#t" + tmpId + "country_dropd").detach();
-    $("#t" + tmpId + "flagdiv2").append(ele);
-  }
-  
+  }  
   var addScrollingInDdBl = function (eleId) {
     var d = "";
     $("#" + eleId + " div ul li").click(function () {

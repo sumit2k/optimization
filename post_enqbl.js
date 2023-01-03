@@ -10206,6 +10206,10 @@ function DirectSubmitWithoutBlur(tmpId) {
     ReqObj.Form[tmpId].isBlQtutShown = false;
   }
 }  
+function detachFlag2(tmpId) {
+  var ele = $("#t" + tmpId + "country_dropd").detach();
+  $("#t" + tmpId + "flagdiv2").append(ele);
+}
 // function SuggestorHit() {
   //   var submit_url = "https://dev-suggest.imimg.com/suggest/suggest.php?q=jammu&tag=suggestions&limit=40&type=city&fields=state%2Cid%2Cstateid%2Cflname%2Calias&display_fields=value%2C%3Dstate&display_separator=%2C+&match=fuzzy&catid=101&showloc=1&p=42";
   //   $.ajax({

@@ -15523,7 +15523,24 @@ function getMcatImage(tmpId, cbObj, left) {
     }
   }
 }
+function flagDetach(tmpId) {
+  if ($("#t" + tmpId + "flagdiv2").length > 0) {
+    var ele = $("#t" + tmpId + "country_dropd").detach();
+    $("#t" + tmpId + "flagdiv2").append(ele);
+  }
+}
 
+function addDetachedFlag(tmpId) {
+  if (isSet(tmpId) && tmpId !== "") {
+    flagDetach(tmpId);
+  } else {
+    var arr = template_array;
+    var len = arr.length;
+    for (var i = 0; i < len; i++) {
+      flagDetach(arr[i]);
+    }
+  }
+}
 
 // Misc
 
