@@ -9807,5 +9807,174 @@ function ConversationCenterWrapper(tmpId, message) {
 }
 
 
+function showHideArrow(clickeve, todo) {
+  var append =
+    isSet(clickeve.cttype) && clickeve.cttype.toLowerCase() === "video"
+      ? "Video"
+      : "";
+  $("#t" + clickeve.initialdata.tmpId + "_beup").removeClass("bedsnone");
+  $("#t" + clickeve.initialdata.tmpId + "_beleft" + append).removeClass(
+    "bedsnone"
+  );
 
+  if (todo === "down") {
+    $("#t" + clickeve.initialdata.tmpId + "_bedown")
+      .removeClass("bedsnone")
+      .off("click")
+      .on(
+        "click",
+        {
+          receivingData: clickeve,
+        },
+        moveDownImage
+      );
+    $("#t" + clickeve.initialdata.tmpId + "_beright" + append)
+      .off("click")
+      .on(
+        "click",
+        {
+          receivingData: clickeve,
+        },
+        moveDownImage
+      );
+    $("#t" + clickeve.initialdata.tmpId + "_beup").addClass("bedsnone");
+    $("#t" + clickeve.initialdata.tmpId + "_beleft" + append).addClass(
+      "bedsnone"
+    );
+  } else if (todo === "up") {
+    $("#t" + clickeve.initialdata.tmpId + "_beup")
+      .removeClass("bedsnone")
+      .off("click")
+      .on(
+        "click",
+        {
+          receivingData: clickeve,
+        },
+        moveUpImage
+      );
+    $("#t" + clickeve.initialdata.tmpId + "_beleft" + append)
+      .off("click")
+      .on(
+        "click",
+        {
+          receivingData: clickeve,
+        },
+        moveUpImage
+      );
+    $("#t" + clickeve.initialdata.tmpId + "_bedown").addClass("bedsnone");
+    $("#t" + clickeve.initialdata.tmpId + "_beright" + append).addClass(
+      "bedsnone"
+    );
+  } else if (todo === "between") {
+    $("#t" + clickeve.initialdata.tmpId + "_beright" + append)
+      .off("click")
+      .on(
+        "click",
+        {
+          receivingData: clickeve,
+        },
+        moveDownImage
+      );
+    $("#t" + clickeve.initialdata.tmpId + "_bedown")
+      .removeClass("bedsnone")
+      .off("click")
+      .on(
+        "click",
+        {
+          receivingData: clickeve,
+        },
+        moveDownImage
+      );
+    $("#t" + clickeve.initialdata.tmpId + "_beleft" + append)
+      .off("click")
+      .on(
+        "click",
+        {
+          receivingData: clickeve,
+        },
+        moveUpImage
+      );
+    $("#t" + clickeve.initialdata.tmpId + "_beup")
+      .removeClass("bedsnone")
+      .off("click")
+      .on(
+        "click",
+        {
+          receivingData: clickeve,
+        },
+        moveUpImage
+      );
+  }
+}
+
+function moveUpImage(event) {
+  //var items = $("imgslider.item-im");
+  var key = event.data.receivingData.mediakey.key;
+  var index = event.data.receivingData.mediakey.startingindex;
+  var formType =
+    ReqObj.Form[
+      event.data.receivingData.initialdata.tmpId
+    ].formType.toLowerCase() === "enq"
+      ? "Send Enquiry"
+      : "Post Buy Leads";
+  //var from = index + 1;
+  index = index - 1;
+  //blenqGATracking(formType, ReqObj.Form[event.data.receivingData.initialdata.tmpId].ctaName + "|next_" + from + "to" + index + "|total-" + event.data.receivingData.mediakey.key.length, getEventLabel(), 0, event.data.receivingData.initialdata.tmpId);
+  var tmpObj = returnUpdatedData(index, event);
+  tmpObj.index = index; //
+  event.data.receivingData.mediakey.startingindex = index;
+  if (tmpObj.type.toLowerCase() === "video") {
+    event.data.receivingData["cttype"] = "video";
+    event.data.receivingData["vidUrl"] = tmpObj["vidUrl"];
+    $(
+      "#t" + event.data.receivingData.initialdata.tmpId + "_imglodr"
+    ).removeClass("bedsnone");
+  } else {
+    event.data.receivingData["cttype"] = "image";
+    $("#t" + event.data.receivingData.initialdata.tmpId + "_imglodr").addClass(
+      "bedsnone"
+    );
+  }
+  event.data.receivingData.initialdata.obj.insertIntoProdMediaHtml(
+    event.data.receivingData,
+    "slider",
+    "#t" + event.data.receivingData.initialdata.tmpId + "_slider" + index
+  );
+}
+
+function moveDownImage(event) {
+  //var items = $("imgslider.item-im");
+  var key = event.data.receivingData.mediakey.key;
+  var index = parseInt(event.data.receivingData.mediakey.startingindex);
+  var formType =
+    ReqObj.Form[event.data.receivingData.initialdata.tmpId].formType === "Enq"
+      ? "Send Enquiry"
+      : "Post Buy Leads";
+  var len = event.data.receivingData.mediakey.key.length;
+  index = index + 1;
+  //blenqGATracking(formType, ReqObj.Form[event.data.receivingData.initialdata.tmpId].ctaName + "|prev_" + from + "to" + index + "|total-" + event.data.receivingData.mediakey.key.length, getEventLabel(), 0, event.data.receivingData.initialdata.tmpId);
+  var tmpObj = returnUpdatedData(index, event);
+  tmpObj.index = index;
+  event.data.receivingData.mediakey.startingindex = index;
+  if (tmpObj.type.toLowerCase() === "video") {
+    event.data.receivingData["cttype"] = "video";
+    event.data.receivingData["vidUrl"] = tmpObj["vidUrl"];
+    $(
+      "#t" + event.data.receivingData.initialdata.tmpId + "_imglodr"
+    ).removeClass("bedsnone");
+  } else {
+    $("#t" + event.data.receivingData.initialdata.tmpId + "_imglodr").addClass(
+      "bedsnone"
+    );
+    event.data.receivingData["cttype"] = "image";
+  }
+  event.data.receivingData.initialdata.obj.insertIntoProdMediaHtml(
+    event.data.receivingData,
+    "slider",
+    "#t" + event.data.receivingData.initialdata.tmpId + "_slider" + index
+  );
+}  
+function returnUpdatedData(index, event) {
+  return event.data.receivingData.mediakey.key[index];
+}
   // MISC
