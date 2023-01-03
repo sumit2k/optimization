@@ -6639,8 +6639,6 @@ function MoreDetailService(tmpId, which) {
     skiphtml2 += "</div>";
     return skiphtml2;
   }
-  
-  
 
   function IsFormBL(tmpId) {
     var BLFormNames = ["bl", "chatbl", "chatbl-inline"];
