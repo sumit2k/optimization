@@ -10650,3 +10650,234 @@ function StaticMessage() {
   // }
   
   // MISC
+
+  //Heading
+  function defaultScreenMsg(ctanamemodid, tmpId, ctaname) {
+    return isEnq(tmpId)
+      ? direnqImage(tmpId) ? "" : "Please provide a few details to get quick response from the supplier"
+      : imeshExist() === ""
+      ? getLoginHeading(ctanamemodid, tmpId, ctaname)
+      : loginDefaultmsg(tmpId, ctaname, "Connect with ");
+  }
+  
+  function loginGetmsg(tmpId, msg, addon) {
+    var usertype = currentISO() !== "IN" ? "email" : "mobile";
+    var hcls = isMoglixUi(tmpId) ? "BL_Fwb" : "befwt";
+    return (
+      returnSpan("", "", msg, hcls) +
+      " " +
+      addon +
+      ' from "' +
+      ReqObj.Form[tmpId].rcvName +
+      '" on your ' +
+      usertype +
+      " quickly"
+    );
+  }
+  
+  function loginGetmsgSpecialCase(tmpId, msg, addon) {
+    var usertype = currentISO() !== "IN" ? "email" : "mobile";
+    return (
+      returnSpan("", "", msg, "befwt") +
+      " " +
+      addon +
+      " on your " +
+      usertype +
+      " quickly"
+    );
+  }
+  
+  function loginDefaultmsg(tmpId, ctaname, msg) {
+    if (isImageVidEnq(tmpId))
+      return (
+        returnSpan("", "", "Get Best Quotes", "befwt") +
+        " for " +
+        ReqObj.Form[tmpId].prodName
+      );
+    else
+      return (
+        msg + '"' + returnSpan("", "", ReqObj.Form[tmpId].rcvName, "befwt") + '"'
+      );
+  }
+  
+  function contactLogMsg(tmpId, ctaname, msg) {
+    return msg + '"' + ReqObj.Form[tmpId].rcvName + '" for more information';
+  }
+  
+  function contactMsg(tmpId, ctaname) {
+    if(direnqImage(tmpId)){
+      return "";
+    }
+    else{
+      return returnSpan("", "", "Supplier wants to know more about you", "befwt");
+    }
+    // return returnSpan("", "", "Supplier wants to know more about you", "befwt");
+  }
+  
+  function getLoginHeading(ctanamemodid, tmpId, ctaname) {
+    switch (ctanamemodid) {
+      case "get best quote":
+        return loginGetmsg(tmpId, ctaname, "");
+      case "get quote":
+        return loginGetmsg(tmpId, ctaname, "");
+      case "get latest price":
+        return loginGetmsg(tmpId, ctaname, "and details");
+      case "inlineenq":
+        return loginDefaultmsg(tmpId, ctaname); //
+      case "send email":
+        return loginDefaultmsg(tmpId, ctaname, "Connect with "); //
+      case "send sms":
+        return loginDefaultmsg(tmpId, ctaname, "Connect with "); //
+      case "contact seller":
+        return loginGetmsgSpecialCase(tmpId, "Contact Seller", "and get details");
+      case "contact seller_next":
+        return loginGetmsgSpecialCase(tmpId, "Contact Seller", "and get details");
+      case "contact seller_pre":
+        return loginGetmsgSpecialCase(tmpId, "Contact Seller", "and get details");
+      case "contact supplier":
+        return loginGetmsgSpecialCase(
+          tmpId,
+          "Contact Supplier",
+          "and get details"
+        );
+      case "click to call":
+        return loginDefaultmsg(tmpId, ctaname, "Connect with "); //
+      case "ask price":
+        return loginGetmsg(tmpId, "Ask for price", "and details");
+      case "ask for price":
+        return loginGetmsg(tmpId, "Ask for price", "and details");
+      case "no price":
+        return loginGetmsg(tmpId, "Ask for price", "and details");
+      case "request a call back":
+        return loginGetmsg(tmpId, "", "Request a Call Back ");
+      case "contact now":
+        return contactLogMsg(tmpId, ctaname, "Contact ");
+      default:
+        return loginDefaultmsg(tmpId, ctaname, "Connect with ");
+    }
+  }
+  
+  function getContactHeading(ctanamemodid, tmpId, ctaname) {
+    switch (ctanamemodid) {
+      case "all":
+        return contactMsg(tmpId, ctaname);
+      /*Do not remove this code*/
+      // case "get best quote": return loginDefaultmsg(tmpId, ctaname);
+      // case "get quote": return loginDefaultmsg(tmpId, ctaname);
+      // case "get latest price": return loginDefaultmsg(tmpId, ctaname);
+      // case "inlineenq": return loginDefaultmsg(tmpId, ctaname);
+      // case "send email": return loginDefaultmsg(tmpId, ctaname);
+      // case "send sms": return loginDefaultmsg(tmpId, ctaname);
+      // case "contact seller": return loginDefaultmsg(tmpId, ctaname);
+      // case "contact seller_next": return loginDefaultmsg(tmpId, ctaname);
+      // case "contact seller_pre": return loginDefaultmsg(tmpId, ctaname);
+      // case "click to call": return loginDefaultmsg(tmpId, ctaname);
+      // case "ask price": return loginDefaultmsg(tmpId, "Ask Price");
+      // case "ask for price": return loginDefaultmsg(tmpId, "Ask Price");
+      // case "no price": return loginDefaultmsg(tmpId, "Ask Price");
+      // case "request a call back": return loginGetmsg(tmpId, "", "get a Call Back");
+      // case "contact now": return contactLogMsg(tmpId, ctaname, "Contact ");
+      /* Do not remove this code*/
+      default:
+        return loginDefaultmsg(tmpId, ctaname, "Connect with ");
+    }
+  }
+  
+  function returnIsqHeading(tmpId, ctaname) {
+    return isSet(ReqObj.Form[tmpId].ctaheadingappend) &&
+      ReqObj.Form[tmpId].ctaheadingappend === true
+      ? returnSpan("", "", ctaname, "befwt") +
+          "\n" +
+          " by adding a few details of your requirement"
+      : "Adding a few details of your requirement can get you quick response from the supplier";
+  }
+  
+  function getIsqHeading(ctanamemodid, tmpId, ctaname) {
+    switch (ctanamemodid) {
+      case "get best quote":
+        return returnIsqHeading(tmpId, "Get Best Quote");
+      case "get quote":
+        return returnIsqHeading(tmpId, "Get Quote");
+      case "get latest price":
+        return returnIsqHeading(tmpId, "Get Latest Price");
+      case "contact seller":
+        return returnIsqHeading(tmpId, "Contact Seller");
+      case "contact seller_next":
+        return returnIsqHeading(tmpId, "Contact Seller");
+      case "contact seller_pre":
+        return returnIsqHeading(tmpId, "Contact Seller");
+      case "contact supplier":
+        return returnIsqHeading(tmpId, "Contact Supplier");
+      case "ask price":
+        return returnIsqHeading(tmpId, "Ask Price");
+      case "ask for price":
+        return returnIsqHeading(tmpId, "Ask for price");
+      //case 'all': return "Adding a few details of your requirement can get you quick response from the supplier";
+      default:
+        if(direnqImage(tmpId)){
+          return "";
+        }
+        else{
+          return "Adding a few details of your requirement can get you quick response from the supplier";
+        }
+        
+    }
+  }
+  
+  function getReqHeading(ctanamemodid, tmpId, ctaname) {
+    switch (ctanamemodid) {
+      case "all":
+        return "Send a quick message to the seller for more information.";
+      default:
+        return defaultCaseHeading(ctanamemodid, tmpId, ctaname);
+    }
+  }
+  
+  function getUserVerificationHeading(ctanamemodid, tmpId, ctaname) {
+    switch (ctanamemodid) {
+      case "all":
+        if(direnqImage(tmpId)){
+          return "";
+        }
+        else{
+          return "Confirm your requirement";
+        }
+        // return "Confirm your requirement";
+      default:
+        return defaultCaseHeading(ctanamemodid, tmpId, ctaname);
+    }
+  }
+  
+  function getBlStaticIsqReqHeading(ctanamemodid, tmpId, ctaname) {
+    switch (ctanamemodid) {
+      case "all":
+        if(direnqImage(tmpId)){
+          return "";
+        }
+        else{
+          return "Almost done!";
+        }
+        // return "Almost done!";
+      default:
+        defaultCaseHeading(ctanamemodid, tmpId, ctaname);
+    }
+  }
+  
+  function getContactDetailOnCloseInHeading(ctanamemodid, tmpId, ctaname) {
+    switch (ctanamemodid) {
+      case "all":
+        return "Looks like you missed a few details!";
+      default:
+        return defaultCaseHeading(ctanamemodid, tmpId, ctaname);
+    }
+  }
+  
+  function getContactDetailOnCloseNotInHeading(ctanamemodid, tmpId, ctaname) {
+    switch (ctanamemodid) {
+      case "all":
+        return "Awesome! You're Done";
+      default:
+        return defaultCaseHeading(ctanamemodid, tmpId, ctaname);
+    }
+  }
+  //Heading
