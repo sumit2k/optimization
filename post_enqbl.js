@@ -10207,6 +10207,17 @@ function DirectSubmitWithoutBlur(tmpId) {
   }
 }  
 
+  
+  
+function SanitizeId(id) {
+  return isSet(id)
+    ? !isNaN(id)
+      ? !isNaN(parseInt(id, 10))
+        ? parseInt(id, 10)
+        : defaultGenerationId
+      : defaultGenerationId
+    : defaultGenerationId;
+}
 function callfunc(foundArray, ObjectToFind) {
   for (var y = 0; y < foundArray.length; y++) {
     if (

@@ -3812,14 +3812,7 @@
     return ReqObj.OverlayHtml.replace(regex, tmpId);
   }
   
-  function loadOverlay() {
-    if (
-      isSet($("#t0901_bewrapper").html()) &&
-      $("#t0901_bewrapper").html() !== ""
-    ) {
-      ReqObj.OverlayHtml = $("#t0901_bewrapper").html();
-    }
-  }
+  
   /*-----------------new proposed seq---------------------- */
   function _makeExtraKey(_classArray, _fallback) {
     var extraKey = {};
@@ -4019,17 +4012,6 @@
     usercookie = new UserCookie();
   }
   
-  
-  
-  function SanitizeId(id) {
-    return isSet(id)
-      ? !isNaN(id)
-        ? !isNaN(parseInt(id, 10))
-          ? parseInt(id, 10)
-          : defaultGenerationId
-        : defaultGenerationId
-      : defaultGenerationId;
-  }
   
   //this function takes object (strictly)
   function isObjectEmpty(obj) {

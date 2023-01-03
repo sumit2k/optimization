@@ -15776,4 +15776,13 @@ function addDetachedFlag(tmpId) {
   }
 }
 
+function loadOverlay() {
+    if (
+      isSet($("#t0901_bewrapper").html()) &&
+      $("#t0901_bewrapper").html() !== ""
+    ) {
+      ReqObj.OverlayHtml = $("#t0901_bewrapper").html();
+    }
+  }
+
 // Misc
