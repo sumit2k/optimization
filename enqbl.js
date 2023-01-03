@@ -4048,37 +4048,9 @@
       });
     }
     return count;
-  }
+  } 
   
-  function StaticMessage() {
-    var constantText = "Get verified supplier details instantly on your ";
-    if (currentISO() === "IN") {
-      constantText += "mobile";
-    } else constantText += "email";
-    return constantText;
-  }
-  
-  function ShowNameField(tmpId) {
-    var ipcookie = iplocExist();
-    if (!usercookie.getParameterValue(imeshExist(), "fn")) {
-      if (
-        currentISO() !== "IN" ||
-        (ReqObj.ipLoc.zoneISO === "OTHER" && ipcookie === "")
-      )
-        return true;
-      else {
-        if (
-          isSet(ReqObj.Form[tmpId].HideNameonFirstStep) &&
-          parseInt(ReqObj.Form[tmpId].HideNameonFirstStep, 10) === 1
-        )
-          return false;
-        return true;
-      }
-    } else {
-      return false;
-    }
-  }
-  
+ 
   function HideSuggester() {
     $("ul.ui-autocomplete").each(function () {
       $(this).hide();
@@ -4165,12 +4137,7 @@
     }
   }  
 
-  function getTimeStamp() {
-    var date = new Date();
-    var time = date.getHours() * 60 * 60 + date.getMinutes() * 60 + date.getSeconds();
-    return time % 10 === 0 ? true : false;
-  }
-
+ 
   function CallGeneration(tmpId) {
     if (isSet(tmpId)) {
       if (

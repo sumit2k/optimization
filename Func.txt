@@ -8,4 +8,6 @@ flagwrapper
 showBanner
 custTypeCheck
 detachFlag2
-onPlayerStateChange
+ShowNameField
+StaticMessage
+  

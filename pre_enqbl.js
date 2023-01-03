@@ -14371,7 +14371,241 @@ function addBlLoader(tmpId, type) {
 }
 
 // loaders
+
+// Flagsugg
+function FlagSuggestor() {
+  this.tmpId = "";
+  this.fromwhere = "";
+  this.hitObject = {};
+}
+function setCountryISO(revent, ui) {
+  var that = flagsugg;
+  if (isSet(ui["data"]) && isSet(ui["data"].cname))
+    ReqObj["CountryName"] = ui["data"].cname;
+  // js errors t.data is undefined and can't read undefined reading cname
+  if (isSet(revent) && isSet(revent.type) && revent.type == "click") {
+    var tmid = ui.id;
+    if (isBl(tmid) || isSSB(tmid)) {
+      savelogin(tmid, ui);
+      if (Bl01(tmid)) saveQuantity(tmid);
+    }
+  }
+  that.setCountry(revent, ui);
+  // if(!isSet(revent) && ui["data"].cname != "India" && ReqObj.setflag)
+  if (
+    !isSet(revent) &&
+    isSet(ui["data"]) &&
+    ui["data"].cname != "India" &&
+    ReqObj.setflag
+  ) {
+    revent = { type: "click" };
+    ReqObj.setflag = 0;
+  }
+  if (isSet(revent) && revent.type === "click") that.sequenceUpdate(revent, ui);
+}
+FlagSuggestor.prototype.setCountry = function (event, ui) {
+  /* loop over templates to update the flag */
+  var that = flagsugg;
+  var len = isSet(template_array) ? template_array.length : 0;
+  for (var i = 0; i < len; i++) {
+    // if(!isSet(event)&&ui["data"].cname=="India"&&ReqObj.Form[template_array[i]]["flagcalling"]!=0){
+    //     //this.valuesOnSelecting(template_array[i], ui);
+    //     continue;}
+
+    // ReqObj.Form[template_array[i]]["flagcalling"]++;
+    that.selectCountryISO(template_array[i], ui);
+    //if(!isSet(event))setCountryName(template_array[i]);
+  }
+};
+FlagSuggestor.prototype.sequenceUpdate = function (event, ui) {
+  /* sequence is updated, html will be formed again and suggestor will be called again as "load" */
+
+  var toCheck = false;
+  if (!imeshExist()) {
+    ReqObj.TempName = "";
+  }
+  var len = isSet(template_array) ? template_array.length : 0;
+  var isDetachCalled = false;
+  for (var i = 0; i < len; i++) {
+    if (isDetachCalled === false) {
+      addDetachedFlag();
+      isDetachCalled = true;
+    }
+    var id = template_array[i];
+    //if ((Bl09(id) || Enq09(id)) && $("#t" + id + "flagdiv2").length) detachFlag2(id);
+    if ($.inArray(template_array[i].substring(0, 2), BlPopup) === -1) {
+      ReqObj.Form[template_array[i]].flags.isFlagSuggSet = false;
+      //addBlLoader(template_array[i], "left"); /* when user changes from suggestor - loader must be shown check code */
+      formToUpdate(template_array[i], "changeflag");
+    }
+    if (
+      (template_array[i].substring(0, 2) === "09" &&
+        $("#t" + template_array[i] + "_bewrapper").length > 0 &&
+        $("#t" + template_array[i] + "_bewrapper").css("display") ===
+          "block") ||
+      template_array[i].substring(0, 2) === "08"
+    ) {
+      ReqObj.Form[template_array[i]].flags.isFlagSuggSet = false;
+      // var clickid = isSet(event.path) ? event.path[4].id : event.explicitOriginalTarget.parentElement.parentElement.parentElement.parentElement.id;
+      // ReqObj.Form[template_array[i]].flag_track = clickid.includes("country_dropd") ? 2 : 1;
+      addBlLoader(template_array[i], "left");
+      AfterFormDefaults(template_array[i], "changeflag");
+      // OpenForm(ReqObj.Form[template_array[i]]);
+    }
+  }
+};
+FlagSuggestor.prototype.selectCountryISO = function (tmpId, ui) {
+  var that = this;
+  var formType = ReqObj.Form[tmpId].formType.toLowerCase();
+  if (isSet(ui["data"]) && isSet(ui["data"].cname))
+    ReqObj["CountryName"] = ui["data"].cname;
+  // js errors t.data is undefined and can't read undefined reading cname
+  if (isSet(ui["data"]) && isSet(ui["data"].icon_order))
+    //js error cannot read properties of undefined (reading 'icon_order')
+    $("#t" + tmpId + "flag dt a span").attr(
+      "style",
+      "background-position:0px -" + ui.data.icon_order * 11 + "px"
+    ); /*  */
+  that.valuesOnSelecting(tmpId, ui); /* On select values are updated */
+  if (!isSet(validation)) createGlobalObject();
+  if (ui.value) {
+    var text = ui.data.cname === "India" ? "Mobile" : "Email";
+    var maxlength = ui.data.cname === "India" ? "10" : "";
+    var labeltext = ui.data.cname === "India" ? isBlInlineFr(tmpId) ? text + " Number*" : text + " Number" : isBlInlineFr(tmpId) ? text + " ID*" : text + " ID"; //adwords_ch
+    if(pdpInactiveBL(tmpId)){
+      labeltext = ui.data.cname === "India" ? text + " Number <span class='redc'>*</span>" : text + " ID <span class='redc'>*</span>";
+    }
+    var label = IsChatbl(tmpId) ? "Okay, Please Share your " + labeltext : labeltext;
+    var placeholder = "Enter your " + text.toLowerCase();
+    if (!IsChatbl(tmpId)) {
+      var helpmsg = ui.data.cname === "India" ? "number" : "email";
+      $("#t" + tmpId + "_helpmsg").html(
+        "Seller will contact you on this " + helpmsg
+      );
+    }
+    pdpenqImage(tmpId) ? "" : $("#t" + tmpId + "_label-l").html(label);
+    $("#t" + tmpId + "_login_field").attr("placeholder", placeholder);
+    $("#t" + tmpId + "_login_field").attr("maxlength", maxlength);
+    $("#t" + tmpId + "_login_field").val("");
+
+    if (isSet(ui.data) && ui.data.cname === "India") {
+      if (Enq04(tmpId)) $("#t" + tmpId + "_pdpPimg").removeClass("frUsr");
+      if (isBlInlineFlag(tmpId)) {
+        $("#t" + tmpId + "_blin").removeClass("flgn");
+        $("#t" + tmpId + "_dliso").removeClass("bedsnone");
+      }
+      if (
+        (tmpId.substring(0, 2) === "09" ||
+          (tmpId.substring(0, 2) === "04" && isEnq(tmpId))) &&
+        isSet(ReqObj.Form[tmpId].nec) &&
+        isSet(ReqObj.Form[tmpId].nec.classCount)
+      )
+        $(
+          "#t" + tmpId + "_contactinfo" + ReqObj.Form[tmpId].nec.classCount
+        ).addClass("bedsnone");
+      ReqObj.Form[tmpId].isTNCShownOnFirstStep = false;
+      $("#t" + tmpId + "_iso")
+        .attr("value", ReqObj.isoFlag)
+        .removeClass("bedsnone");
+      $("#t" + tmpId + "_tCond").addClass("bedsnone");
+      if (!IsChatbl(tmpId) && !isSSB(tmpId)) {
+        var clr =
+          isGlIdEven(tmpId) && tmpId.substr(0, 2) === "01"
+            ? ""
+            : isImageVidEnq(tmpId)
+            ? ""
+            : "background-color : rgb(0, 166, 153)";
+        $("#t" + tmpId + "_submit")
+          .removeAttr("disabled")
+          .attr("style", clr);
+      }
+      // $("#t" + tmpId + "_submitdiv").attr("class", "befstgo");
+      $("#t" + tmpId + "_login_field")
+        .on("keypress", validation.isNumberKey)
+        .removeClass("highlight-err")
+        .removeClass("beemail");
+      $("#t" + tmpId + "_msg_primary_info_err_login").addClass("bedsnone");
+    } else {
+      if (isBlInlineFlag(tmpId)) {
+        $("#t" + tmpId + "_blin").addClass("flgn");
+        //$("#t" + tmpId + "_dliso").addClass("bedsnone");
+      }
+      if (Enq04(tmpId)) $("#t" + tmpId + "_pdpPimg").addClass("frUsr");
+      if (
+        (tmpId.substring(0, 2) === "09" || tmpId.substring(0, 2) === "04") &&
+        isSet(ReqObj.Form[tmpId].nec) &&
+        isSet(ReqObj.Form[tmpId].nec.classCount)
+      )
+        $(
+          "#t" + tmpId + "_contactinfo" + ReqObj.Form[tmpId].nec.classCount
+        ).removeClass("bedsnone");
+      $("#t" + tmpId + "clslog").addClass("eqFrUs");
+      $("#t" + tmpId + "_iso").addClass("bedsnone");
+      if (
+        (isEnq(tmpId) || isBl(tmpId)) &&
+        isSet(ReqObj.Form[tmpId].nec) &&
+        $("#t" + tmpId + "_q_mobile_f" + ReqObj.Form[tmpId].nec.classCount)
+          .length > 0
+      )
+        $("#t" + tmpId + "_iso")
+          .attr("value", ReqObj.isoFlag)
+          .removeClass("bedsnone");
+      ReqObj.Form[tmpId].isTNCShownOnFirstStep = true;
+      ShowHideTNC(tmpId);
+      $("#t" + tmpId + "_login_field")
+        .off("keypress")
+        .removeClass("highlight-err")
+        .addClass("beemail");
+      $("#t" + tmpId + "_msg_primary_info_err_login").addClass("bedsnone");
+
+      if (IsChatbl(tmpId)) {
+        $("#t" + tmpId + "flag").removeClass("bedsnone");
+      }
+      if (isSSB(tmpId)) foreignUserTransition(tmpId, ui.data.iso);
+    }
+    if (IsChatbl(tmpId)) {
+      ShowHideTNC(tmpId);
+    }
+  }
+};
+FlagSuggestor.prototype.valuesOnSelecting = function (tmpId, ui) {
+  var that = this;
+  if(isSet(ui.data) && isSet(ui.data.iso) && isSet(ui.data.cname)) //js errors
+    UpdateISO(ui.data.iso, ui.data.cname); /* updating ISO */
+  if(isSet(ui.value)){
+  ReqObj.isoFlag =
+    ui.value.substring(0, 1) === "+"
+      ? ui.value
+      : "+" + ui.value; /* mobile field user phcc */
+  }
+};
+var filterFunction = function (event) {
+  var tmpId = event.target.name;
+  var eleId = "t" + tmpId + "country_dropd";
+  var flagId = "t" + tmpId + "_flagInput";
+  var input = document.getElementById(flagId);
+  var filter = input.value.toUpperCase();
+  var div = document.getElementById(eleId);
+  var a = div.getElementsByTagName("li");
+
+  for (var i = 0; i < a.length; i++) {
+    var txtValue = a[i].textContent || a[i].innerText;
+    if (txtValue.toUpperCase().indexOf(filter) > -1) {
+      a[i].style.display = "";
+    } else {
+      a[i].style.display = "none";
+    }
+  }
+};
+// Flagsugg
+
 // Misc
+function getTimeStamp() {
+  var date = new Date();
+  var time = date.getHours() * 60 * 60 + date.getMinutes() * 60 + date.getSeconds();
+  return time % 10 === 0 ? true : false;
+}
+
 function notempty(id) {
   return isSet($(id).length) && $(id).val() != "";
 }
@@ -15543,230 +15777,3 @@ function addDetachedFlag(tmpId) {
 }
 
 // Misc
-
-// Flagsugg
-function FlagSuggestor() {
-  this.tmpId = "";
-  this.fromwhere = "";
-  this.hitObject = {};
-}
-function setCountryISO(revent, ui) {
-  var that = flagsugg;
-  if (isSet(ui["data"]) && isSet(ui["data"].cname))
-    ReqObj["CountryName"] = ui["data"].cname;
-  // js errors t.data is undefined and can't read undefined reading cname
-  if (isSet(revent) && isSet(revent.type) && revent.type == "click") {
-    var tmid = ui.id;
-    if (isBl(tmid) || isSSB(tmid)) {
-      savelogin(tmid, ui);
-      if (Bl01(tmid)) saveQuantity(tmid);
-    }
-  }
-  that.setCountry(revent, ui);
-  // if(!isSet(revent) && ui["data"].cname != "India" && ReqObj.setflag)
-  if (
-    !isSet(revent) &&
-    isSet(ui["data"]) &&
-    ui["data"].cname != "India" &&
-    ReqObj.setflag
-  ) {
-    revent = { type: "click" };
-    ReqObj.setflag = 0;
-  }
-  if (isSet(revent) && revent.type === "click") that.sequenceUpdate(revent, ui);
-}
-FlagSuggestor.prototype.setCountry = function (event, ui) {
-  /* loop over templates to update the flag */
-  var that = flagsugg;
-  var len = isSet(template_array) ? template_array.length : 0;
-  for (var i = 0; i < len; i++) {
-    // if(!isSet(event)&&ui["data"].cname=="India"&&ReqObj.Form[template_array[i]]["flagcalling"]!=0){
-    //     //this.valuesOnSelecting(template_array[i], ui);
-    //     continue;}
-
-    // ReqObj.Form[template_array[i]]["flagcalling"]++;
-    that.selectCountryISO(template_array[i], ui);
-    //if(!isSet(event))setCountryName(template_array[i]);
-  }
-};
-FlagSuggestor.prototype.sequenceUpdate = function (event, ui) {
-  /* sequence is updated, html will be formed again and suggestor will be called again as "load" */
-
-  var toCheck = false;
-  if (!imeshExist()) {
-    ReqObj.TempName = "";
-  }
-  var len = isSet(template_array) ? template_array.length : 0;
-  var isDetachCalled = false;
-  for (var i = 0; i < len; i++) {
-    if (isDetachCalled === false) {
-      addDetachedFlag();
-      isDetachCalled = true;
-    }
-    var id = template_array[i];
-    //if ((Bl09(id) || Enq09(id)) && $("#t" + id + "flagdiv2").length) detachFlag2(id);
-    if ($.inArray(template_array[i].substring(0, 2), BlPopup) === -1) {
-      ReqObj.Form[template_array[i]].flags.isFlagSuggSet = false;
-      //addBlLoader(template_array[i], "left"); /* when user changes from suggestor - loader must be shown check code */
-      formToUpdate(template_array[i], "changeflag");
-    }
-    if (
-      (template_array[i].substring(0, 2) === "09" &&
-        $("#t" + template_array[i] + "_bewrapper").length > 0 &&
-        $("#t" + template_array[i] + "_bewrapper").css("display") ===
-          "block") ||
-      template_array[i].substring(0, 2) === "08"
-    ) {
-      ReqObj.Form[template_array[i]].flags.isFlagSuggSet = false;
-      // var clickid = isSet(event.path) ? event.path[4].id : event.explicitOriginalTarget.parentElement.parentElement.parentElement.parentElement.id;
-      // ReqObj.Form[template_array[i]].flag_track = clickid.includes("country_dropd") ? 2 : 1;
-      addBlLoader(template_array[i], "left");
-      AfterFormDefaults(template_array[i], "changeflag");
-      // OpenForm(ReqObj.Form[template_array[i]]);
-    }
-  }
-};
-FlagSuggestor.prototype.selectCountryISO = function (tmpId, ui) {
-  var that = this;
-  var formType = ReqObj.Form[tmpId].formType.toLowerCase();
-  if (isSet(ui["data"]) && isSet(ui["data"].cname))
-    ReqObj["CountryName"] = ui["data"].cname;
-  // js errors t.data is undefined and can't read undefined reading cname
-  if (isSet(ui["data"]) && isSet(ui["data"].icon_order))
-    //js error cannot read properties of undefined (reading 'icon_order')
-    $("#t" + tmpId + "flag dt a span").attr(
-      "style",
-      "background-position:0px -" + ui.data.icon_order * 11 + "px"
-    ); /*  */
-  that.valuesOnSelecting(tmpId, ui); /* On select values are updated */
-  if (!isSet(validation)) createGlobalObject();
-  if (ui.value) {
-    var text = ui.data.cname === "India" ? "Mobile" : "Email";
-    var maxlength = ui.data.cname === "India" ? "10" : "";
-    var labeltext = ui.data.cname === "India" ? isBlInlineFr(tmpId) ? text + " Number*" : text + " Number" : isBlInlineFr(tmpId) ? text + " ID*" : text + " ID"; //adwords_ch
-    if(pdpInactiveBL(tmpId)){
-      labeltext = ui.data.cname === "India" ? text + " Number <span class='redc'>*</span>" : text + " ID <span class='redc'>*</span>";
-    }
-    var label = IsChatbl(tmpId) ? "Okay, Please Share your " + labeltext : labeltext;
-    var placeholder = "Enter your " + text.toLowerCase();
-    if (!IsChatbl(tmpId)) {
-      var helpmsg = ui.data.cname === "India" ? "number" : "email";
-      $("#t" + tmpId + "_helpmsg").html(
-        "Seller will contact you on this " + helpmsg
-      );
-    }
-    pdpenqImage(tmpId) ? "" : $("#t" + tmpId + "_label-l").html(label);
-    $("#t" + tmpId + "_login_field").attr("placeholder", placeholder);
-    $("#t" + tmpId + "_login_field").attr("maxlength", maxlength);
-    $("#t" + tmpId + "_login_field").val("");
-
-    if (isSet(ui.data) && ui.data.cname === "India") {
-      if (Enq04(tmpId)) $("#t" + tmpId + "_pdpPimg").removeClass("frUsr");
-      if (isBlInlineFlag(tmpId)) {
-        $("#t" + tmpId + "_blin").removeClass("flgn");
-        $("#t" + tmpId + "_dliso").removeClass("bedsnone");
-      }
-      if (
-        (tmpId.substring(0, 2) === "09" ||
-          (tmpId.substring(0, 2) === "04" && isEnq(tmpId))) &&
-        isSet(ReqObj.Form[tmpId].nec) &&
-        isSet(ReqObj.Form[tmpId].nec.classCount)
-      )
-        $(
-          "#t" + tmpId + "_contactinfo" + ReqObj.Form[tmpId].nec.classCount
-        ).addClass("bedsnone");
-      ReqObj.Form[tmpId].isTNCShownOnFirstStep = false;
-      $("#t" + tmpId + "_iso")
-        .attr("value", ReqObj.isoFlag)
-        .removeClass("bedsnone");
-      $("#t" + tmpId + "_tCond").addClass("bedsnone");
-      if (!IsChatbl(tmpId) && !isSSB(tmpId)) {
-        var clr =
-          isGlIdEven(tmpId) && tmpId.substr(0, 2) === "01"
-            ? ""
-            : isImageVidEnq(tmpId)
-            ? ""
-            : "background-color : rgb(0, 166, 153)";
-        $("#t" + tmpId + "_submit")
-          .removeAttr("disabled")
-          .attr("style", clr);
-      }
-      // $("#t" + tmpId + "_submitdiv").attr("class", "befstgo");
-      $("#t" + tmpId + "_login_field")
-        .on("keypress", validation.isNumberKey)
-        .removeClass("highlight-err")
-        .removeClass("beemail");
-      $("#t" + tmpId + "_msg_primary_info_err_login").addClass("bedsnone");
-    } else {
-      if (isBlInlineFlag(tmpId)) {
-        $("#t" + tmpId + "_blin").addClass("flgn");
-        //$("#t" + tmpId + "_dliso").addClass("bedsnone");
-      }
-      if (Enq04(tmpId)) $("#t" + tmpId + "_pdpPimg").addClass("frUsr");
-      if (
-        (tmpId.substring(0, 2) === "09" || tmpId.substring(0, 2) === "04") &&
-        isSet(ReqObj.Form[tmpId].nec) &&
-        isSet(ReqObj.Form[tmpId].nec.classCount)
-      )
-        $(
-          "#t" + tmpId + "_contactinfo" + ReqObj.Form[tmpId].nec.classCount
-        ).removeClass("bedsnone");
-      $("#t" + tmpId + "clslog").addClass("eqFrUs");
-      $("#t" + tmpId + "_iso").addClass("bedsnone");
-      if (
-        (isEnq(tmpId) || isBl(tmpId)) &&
-        isSet(ReqObj.Form[tmpId].nec) &&
-        $("#t" + tmpId + "_q_mobile_f" + ReqObj.Form[tmpId].nec.classCount)
-          .length > 0
-      )
-        $("#t" + tmpId + "_iso")
-          .attr("value", ReqObj.isoFlag)
-          .removeClass("bedsnone");
-      ReqObj.Form[tmpId].isTNCShownOnFirstStep = true;
-      ShowHideTNC(tmpId);
-      $("#t" + tmpId + "_login_field")
-        .off("keypress")
-        .removeClass("highlight-err")
-        .addClass("beemail");
-      $("#t" + tmpId + "_msg_primary_info_err_login").addClass("bedsnone");
-
-      if (IsChatbl(tmpId)) {
-        $("#t" + tmpId + "flag").removeClass("bedsnone");
-      }
-      if (isSSB(tmpId)) foreignUserTransition(tmpId, ui.data.iso);
-    }
-    if (IsChatbl(tmpId)) {
-      ShowHideTNC(tmpId);
-    }
-  }
-};
-FlagSuggestor.prototype.valuesOnSelecting = function (tmpId, ui) {
-  var that = this;
-  if(isSet(ui.data) && isSet(ui.data.iso) && isSet(ui.data.cname)) //js errors
-    UpdateISO(ui.data.iso, ui.data.cname); /* updating ISO */
-  if(isSet(ui.value)){
-  ReqObj.isoFlag =
-    ui.value.substring(0, 1) === "+"
-      ? ui.value
-      : "+" + ui.value; /* mobile field user phcc */
-  }
-};
-var filterFunction = function (event) {
-  var tmpId = event.target.name;
-  var eleId = "t" + tmpId + "country_dropd";
-  var flagId = "t" + tmpId + "_flagInput";
-  var input = document.getElementById(flagId);
-  var filter = input.value.toUpperCase();
-  var div = document.getElementById(eleId);
-  var a = div.getElementsByTagName("li");
-
-  for (var i = 0; i < a.length; i++) {
-    var txtValue = a[i].textContent || a[i].innerText;
-    if (txtValue.toUpperCase().indexOf(filter) > -1) {
-      a[i].style.display = "";
-    } else {
-      a[i].style.display = "none";
-    }
-  }
-};
-// Flagsugg

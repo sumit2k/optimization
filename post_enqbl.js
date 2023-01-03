@@ -10245,6 +10245,33 @@ function detachFlag2(tmpId) {
   else blStop = 1;
 }
 
+function ShowNameField(tmpId) {
+  var ipcookie = iplocExist();
+  if (!usercookie.getParameterValue(imeshExist(), "fn")) {
+    if (
+      currentISO() !== "IN" ||
+      (ReqObj.ipLoc.zoneISO === "OTHER" && ipcookie === "")
+    )
+      return true;
+    else {
+      if (
+        isSet(ReqObj.Form[tmpId].HideNameonFirstStep) &&
+        parseInt(ReqObj.Form[tmpId].HideNameonFirstStep, 10) === 1
+      )
+        return false;
+      return true;
+    }
+  } else {
+    return false;
+  }
+}
+function StaticMessage() {
+  var constantText = "Get verified supplier details instantly on your ";
+  if (currentISO() === "IN") {
+    constantText += "mobile";
+  } else constantText += "email";
+  return constantText;
+}
 
 // function SuggestorHit() {
   //   var submit_url = "https://dev-suggest.imimg.com/suggest/suggest.php?q=jammu&tag=suggestions&limit=40&type=city&fields=state%2Cid%2Cstateid%2Cflname%2Calias&display_fields=value%2C%3Dstate&display_separator=%2C+&match=fuzzy&catid=101&showloc=1&p=42";
