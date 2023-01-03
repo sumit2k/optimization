@@ -1,15 +1,4 @@
 //functions
-function OpenChatBLPopup(tmpId) {
-  isBLFormOpen = true;
-  if (IsChatBLInline(tmpId)) chatwidgetTransitions(tmpId);
-  chatblTransition(tmpId);
-  updateChatBlProdName(tmpId);
-  chatblFirstMsg(tmpId);
-  if (!IsChatBLInline(tmpId)) {
-    stopBgScroll();
-    $(".t" + tmpId + "blk_scrn").removeClass("dn");
-  }
-}
 
 function FinishEnquiryService(tmpId, data_arr) {
   if (
@@ -87,45 +76,6 @@ function getEventLabel(toappend) {
 function ValidGenId(id) {
   if (ValidNumber(id) && parseInt(id, 10) > 1) return true;
   else return false;
-}
-function blenqGATracking(eventCategory,eventAction,eventLabel,isinteraactive,tmpId) {
-  if (isSet(ReqObj.Form[tmpId]) &&(ReqObj.Form[tmpId].toFireGaTracking === true || ReqObj.Form[tmpId].noSampling === true || isinteraactive === 1 || ReqObj.Form[tmpId].inactiveBL)) {
-    var event_type = isinteraactive === 0 ? "IMEvent" : "IMEvent-NI";
-    if (glmodid == "PRODDTL" && eventAction == "Redirect:ProductUrl") {
-      event_type = "IMEvent";
-    }
-    var modid = eventCategory === "iploc" ? glmodid : ReqObj.Form[tmpId].modId;
-    var CD_Additional_Data =
-      tmpId === 0 ? modid : modid + "-" + ReqObj.Form[tmpId].refText;
-    eventLabel =
-      ReqObj.seller_cta && (ReqObj.su_cta == 0 || ReqObj.su_cta == 1)
-        ? eventLabel + " |SA"
-        : eventLabel;
-
-    //_gaq.push(['_trackEvent', eventCategory, eventAction, eventLabel, 0, true]);
-    imgtm.push({
-      event: event_type,
-      eventCategory: eventCategory,
-      eventAction: eventAction,
-      eventLabel: eventLabel,
-      CD_Additional_Data: CD_Additional_Data,
-    });
-  }
-}
-
-function blenqGATrackingMisc(eventCategory,eventAction,eventLabel,isinteraactive,tmpId,refText) {
-  // ReqObj.Form[tmpId].modId,  ReqObj.Form[tmpId].form_type
-  var event_type = isinteraactive === 0 ? "IMEvent" : "IMEvent-NI";
-  var modid = glmodid;
-  var CD_Additional_Data = modid + "-" + refText;
-  //_gaq.push(['_trackEvent', eventCategory, eventAction, eventLabel, 0, true]);
-  imgtm.push({
-    event: event_type,
-    eventCategory: eventCategory,
-    eventAction: eventAction,
-    eventLabel: eventLabel,
-    CD_Additional_Data: CD_Additional_Data,
-  });
 }
 
 function thankYouTrack(tmpId, msg, sellerId) {
@@ -767,29 +717,6 @@ function chatblFirstMsg(tmpId) {
       }
     }
   }, 300);
-}
-
-function chatwidgetTransitions(tmpId) {
-  $("#t" + tmpId + "_chatBL").addClass("cbl_smwrap");
-  $("#t" + tmpId + "_bl_form_wrapper_cta").toggleClass("bedsnone");
-  $("#t" + tmpId + "message_indicator").addClass("dn");
-  $("#t" + tmpId + "_msgDiv").addClass("bedsnone");
-  $($("#t" + tmpId + "_blchatfooter").children()[0])
-    .removeClass("cbl_bg1")
-    .addClass("cbl_bgf1");
-  if (
-    !(
-      isSet($("#t" + tmpId + "_submitNo2")) &&
-      $("#t" + tmpId + "_submitNo2").length > 0
-    )
-  ) {
-    $("#t" + tmpId + "_blchatfooter").append(skipDiv2(tmpId)); //chat bl bug
-    $("#t" + tmpId + "_submitNo2")
-      .parent()
-      .addClass("dn");
-  }
-
-  $($("#scrollTop").children()[0]).removeClass("tpbCbl"); //for dir
 }
 
 function chatblTransition(tmpId) {
@@ -2614,43 +2541,7 @@ function ThankYou(tmpId) {
     return pwhtml;
   }
   
-  function plawidget(val) {
-    $.ajax({
-      cache: true,
-      url: "//apps.imimg.com/" + "index.php?r=Newreqform/WidgetData",
-      // url: appsServerName + 'index.php?r=Newreqform/WidgetData',
-      type: "GET",
-      crossOrigin: true,
-      crossDomain: true,
-      data: {
-        modid: ReqObj.Form[val].modId,
-        mcatid: ReqObj.Form[val].mcatId,
-      },
-      dataType: "json",
-      timeout: 3000,
-      success: function (res) {
-        if (
-          isSet(res) &&
-          res["Status"] == 200 &&
-          isSet(res["RECOMMENDED DATA"])
-        ) {
-          // sessionStorage.setItem("plaWidget-" + ReqObj.Form[val].mcatId, JSON.stringify(res["RECOMMENDED DATA"]));
-          try {
-            sessionStorage.setItem(
-              "plaWidget-" + ReqObj.Form[val].mcatId,
-              JSON.stringify(res["RECOMMENDED DATA"])
-            );
-          } catch (err) {
-            // quota_exceeded_error
-          }
-        }
-      },
-      error: function (XMLHttpRequest, textStatus, errorThrown) {
-        console.log(XMLHttpRequest + textStatus + errorThrown);
-      },
-    });
-  }
-  
+ 
   ThankYou.prototype.payNumber = function (data) {
     // return (data["formType"] === "bl") ? returnContainer("", "", "befs16 txt-cnt", "", "Have an urgent requirement ?" + returnSpan("", "", "Call us at 81-8181-8181", "befwt"), "margin-top:50px;") + '</div>' : "";
   
@@ -9886,7 +9777,77 @@ function BlEnqOnError(revent, res) {
     skiphtml1 += "</div>";
     return skiphtml1;
   }
+
+  function plawidget(val) {
+    $.ajax({
+      cache: true,
+      url: "//apps.imimg.com/" + "index.php?r=Newreqform/WidgetData",
+      // url: appsServerName + 'index.php?r=Newreqform/WidgetData',
+      type: "GET",
+      crossOrigin: true,
+      crossDomain: true,
+      data: {
+        modid: ReqObj.Form[val].modId,
+        mcatid: ReqObj.Form[val].mcatId,
+      },
+      dataType: "json",
+      timeout: 3000,
+      success: function (res) {
+        if (
+          isSet(res) &&
+          res["Status"] == 200 &&
+          isSet(res["RECOMMENDED DATA"])
+        ) {
+          // sessionStorage.setItem("plaWidget-" + ReqObj.Form[val].mcatId, JSON.stringify(res["RECOMMENDED DATA"]));
+          try {
+            sessionStorage.setItem(
+              "plaWidget-" + ReqObj.Form[val].mcatId,
+              JSON.stringify(res["RECOMMENDED DATA"])
+            );
+          } catch (err) {
+            // quota_exceeded_error
+          }
+        }
+      },
+      error: function (XMLHttpRequest, textStatus, errorThrown) {
+        console.log(XMLHttpRequest + textStatus + errorThrown);
+      },
+    });
+  }
+  function OpenChatBLPopup(tmpId) {
+    isBLFormOpen = true;
+    if (IsChatBLInline(tmpId)) chatwidgetTransitions(tmpId);
+    chatblTransition(tmpId);
+    updateChatBlProdName(tmpId);
+    chatblFirstMsg(tmpId);
+    if (!IsChatBLInline(tmpId)) {
+      stopBgScroll();
+      $(".t" + tmpId + "blk_scrn").removeClass("dn");
+    }
+  }
   
+  function chatwidgetTransitions(tmpId) {
+    $("#t" + tmpId + "_chatBL").addClass("cbl_smwrap");
+    $("#t" + tmpId + "_bl_form_wrapper_cta").toggleClass("bedsnone");
+    $("#t" + tmpId + "message_indicator").addClass("dn");
+    $("#t" + tmpId + "_msgDiv").addClass("bedsnone");
+    $($("#t" + tmpId + "_blchatfooter").children()[0])
+      .removeClass("cbl_bg1")
+      .addClass("cbl_bgf1");
+    if (
+      !(
+        isSet($("#t" + tmpId + "_submitNo2")) &&
+        $("#t" + tmpId + "_submitNo2").length > 0
+      )
+    ) {
+      $("#t" + tmpId + "_blchatfooter").append(skipDiv2(tmpId)); //chat bl bug
+      $("#t" + tmpId + "_submitNo2")
+        .parent()
+        .addClass("dn");
+    }
+    $($("#scrollTop").children()[0]).removeClass("tpbCbl"); //for dir
+  }
+    
   function skipDiv2(tmpId) {
     //chat bl bug
     var skiphtml2 = returnContainer("", "", "cbl_resend cbl_skip", "", "", "");

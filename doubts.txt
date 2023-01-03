@@ -3,3 +3,5 @@
 2.  percent of pre post
 3.  single page bl?
 4.  On entering name like validation
+5.  PDP,PDF chat bl
+6.  inactiveBL

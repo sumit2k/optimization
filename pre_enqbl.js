@@ -16222,6 +16222,47 @@ function loadOverlay() {
       ? true
       : false;
   }
+
+  function blenqGATracking(eventCategory,eventAction,eventLabel,isinteraactive,tmpId) {
+    if (isSet(ReqObj.Form[tmpId]) &&(ReqObj.Form[tmpId].toFireGaTracking === true || ReqObj.Form[tmpId].noSampling === true || isinteraactive === 1 || ReqObj.Form[tmpId].inactiveBL)) {
+      var event_type = isinteraactive === 0 ? "IMEvent" : "IMEvent-NI";
+      if (glmodid == "PRODDTL" && eventAction == "Redirect:ProductUrl") {
+        event_type = "IMEvent";
+      }
+      var modid = eventCategory === "iploc" ? glmodid : ReqObj.Form[tmpId].modId;
+      var CD_Additional_Data =
+        tmpId === 0 ? modid : modid + "-" + ReqObj.Form[tmpId].refText;
+      eventLabel =
+        ReqObj.seller_cta && (ReqObj.su_cta == 0 || ReqObj.su_cta == 1)
+          ? eventLabel + " |SA"
+          : eventLabel;
+  
+      //_gaq.push(['_trackEvent', eventCategory, eventAction, eventLabel, 0, true]);
+      imgtm.push({
+        event: event_type,
+        eventCategory: eventCategory,
+        eventAction: eventAction,
+        eventLabel: eventLabel,
+        CD_Additional_Data: CD_Additional_Data,
+      });
+    }
+  }
+  
+  function blenqGATrackingMisc(eventCategory,eventAction,eventLabel,isinteraactive,tmpId,refText) {
+    // ReqObj.Form[tmpId].modId,  ReqObj.Form[tmpId].form_type
+    var event_type = isinteraactive === 0 ? "IMEvent" : "IMEvent-NI";
+    var modid = glmodid;
+    var CD_Additional_Data = modid + "-" + refText;
+    //_gaq.push(['_trackEvent', eventCategory, eventAction, eventLabel, 0, true]);
+    imgtm.push({
+      event: event_type,
+      eventCategory: eventCategory,
+      eventAction: eventAction,
+      eventLabel: eventLabel,
+      CD_Additional_Data: CD_Additional_Data,
+    });
+  }
+
   
   // Misc
 
