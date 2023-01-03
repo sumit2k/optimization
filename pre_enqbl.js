@@ -15359,4 +15359,58 @@ function MakeWrapper(arrayofQues, tmpId, SuffixHtmlObj, type) {
     return normalHtml;
   }
 }
+
+function ConversationLeftWrapper(tmpId, message, classObj, name) {
+  /* add attributes at end  */
+  if (isSet(message) && message !== "") {
+    if (IsChatbl(tmpId) && !isSet(name)) {
+      return classObj.leftright + message + "</div>";
+    }
+    return (
+      '<div class="' +
+      classObj.leftright +
+      '"><div class="' +
+      classObj.classtotest +
+      '">' +
+      message +
+      "</div></div>"
+    );
+  }
+}
+function RenderHtml(FormIdSel, HtmlArray, tmpId, screenNumber) {
+  if (!isSet(HtmlArray)) HtmlArray = [];
+  var DisplayHtml = "";
+  for (var u = 0; u < HtmlArray.length; ++u) {
+    for (var i = 0; i < HtmlArray[u].length; i++) {
+      DisplayHtml += HtmlArray[u][i];
+    }
+  }
+  if (DisplayHtml !== "") {
+    var html = "";
+    if (IsPrevBtnImplemented(tmpId)) {
+      html += "<div id='" + CounterScreenId(tmpId, 0).elid + "'>";
+      html += DisplayHtml;
+      html += "</div>";
+    } else {
+      html += DisplayHtml;
+    }
+    isBlInline(tmpId) ? FormIdSel.html(html) : FormIdSel.append(html);
+  }
+  if (
+    pdpInactiveBL(tmpId) &&
+    ReqObj.Form[tmpId].FormSequence._screenCounter === 1
+  ) {
+    if (
+      document.getElementById("t0901_contactinfo1") &&
+      currentISO() !== "IN"
+    ) {
+      $("#t0901_contactinfo1").remove();
+      $("#name_email").append(ReqObj.Form[tmpId].ContactDetail["1"]);
+      $("#name_email").addClass("NameEmail");
+      $("#name_email").css({
+        width: "600px",
+      });
+    }
+  }
+}
 // Misc
