@@ -14606,6 +14606,19 @@ function getTimeStamp() {
   return time % 10 === 0 ? true : false;
 }
 
+ //Scroll Bottom
+ function scrollSmoothToBottom(id) {
+  var scrollDiv = document.getElementById(id);
+  if (isSet(scrollDiv)) {
+    $("#" + id).animate(
+      {
+        scrollTop: scrollDiv.scrollHeight - scrollDiv.clientHeight,
+      },
+      500
+    );
+  }
+}
+
 function notempty(id) {
   return isSet($(id).length) && $(id).val() != "";
 }
