@@ -10143,4 +10143,68 @@ function CheckLocalStorage() {
   }
 }
 
+function CheckForUpdate() {
+  var imeshcookie = imeshExist();
+  for (var key in ReqObj.UserDetail) {
+    if (
+      ReqObj.UserDetail[key] !== usercookie.getParameterValue(imeshcookie, key)
+    )
+      return true;
+  }
+  return false;
+}
+
+function RefactorUiArray(tmpId) {
+  //find objects for isq and rd box and all those things which changes with product
+  for (var b = 0; b < PnameDependent.length; b++) {
+    callfunc(
+      ReqObj.Form[tmpId].UiArray[ReqObj.Form[tmpId].FormSequence.StepCounter],
+      PnameDependent[b]
+    );
+    RemoveService(
+      ReqObj.Form[tmpId].FormSequence.FullServiceArray[
+        ReqObj.Form[tmpId].FormSequence.StepCounter
+      ],
+      PnameDependent[b]
+    );
+  }
+}
+ /**
+   * this function fires on enter press
+   *
+   * @param {*} tmpId
+   */
+ function RefactorFormArrays(tmpId) {       
+  RefactorUiArray(tmpId);
+}
+
+/**
+ *@description
+ *@usage this function is used when user presses enter on product name field
+ * @param {*} tmpId
+ */
+
+function DirectSubmitWithoutBlur(tmpId) {
+  SetFormHtmlDefaultValue(tmpId);
+  if (parseInt(ReqObj.Form[tmpId].disableRd) === 1) {
+    ReqObj.Form[tmpId].flags.isDescDivShown = true;
+  } else {
+    ReqObj.Form[tmpId].flags.isDescDivShown = false;
+  }
+  setTemplateDefaultValue(
+    tmpId.substring(0, 2),
+    tmpId.substring(2, 4),
+    ReqObj.Form[tmpId],
+    ReqObj.Form[tmpId].flags.isDescDivShown
+  );
+
+  ReqObj.Form[tmpId].mcatId !== "-1" || ReqObj.Form[tmpId].catId !== "-1"
+    ? GetIsq(tmpId)
+    : "";
+  ReqObj.Form[tmpId].GlobalIsqObject = new Isq(tmpId);
+  if (isSet(ReqObj.Form[tmpId].isBlQtutShown)) {
+    ReqObj.Form[tmpId].isBlQtutShown = false;
+  }
+}  
+
   // MISC
