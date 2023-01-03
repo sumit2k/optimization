@@ -14907,4 +14907,5 @@ function ssbClass(type, tmpId) {
   if (type === "htmli") return isnewSSB(tmpId) ? "nb-SbHd" : "mb-SbHd";
   if (type === "disable") return isnewSSB(tmpId) ? "nb-inpDisb" : "mb-inpDisb";
 }
+
 // Misc

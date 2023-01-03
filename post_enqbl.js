@@ -2011,6 +2011,286 @@ function MoreDetails(tmpId) {
     blenqGATracking(form_type, tracking, getEventLabel(), 0, tmpId);
     ReqObj.Form[tmpId].noSampling = sampling;
   };
+
+  function onURLName(tmpId) {
+    var url =
+      urlConditions(tmpId).ask === false &&
+      typeof ReqObj.UserDetail.isurl === "undefined"
+        ? true
+        : urlConditions(tmpId).ask;
+    if (
+      imeshExist() !== "" &&
+      url &&
+      (ReqObj.miniDetailHit.ping === false ||
+        ReqObj.miniDetailHit.reply.success === true)
+    ) {
+      $("#t" + tmpId + "_cdiv").append(
+        mdtlHtml(tmpId, 0, { ask: true, what: "URL", key: 2 })
+      );
+      ReqObj.Form[tmpId].url.html = true;
+    }
+  }
+  
+  function onCName(tmpId, callFromEvent) {
+    if (
+      ((tmpId.substring(0, 2) === "09" &&
+        ReqObj.Form[tmpId].formType.toLowerCase() === "enq") ||
+        isSSB(tmpId)) &&
+      $("#t" + tmpId + "_cbx").length === 0
+    ) {
+      if (cNameConditions(tmpId)) {
+        if ($("#t" + tmpId + "_cdiv").length !== 0) {
+          if (
+            (isSSB(tmpId) &&
+              (ReqObj.miniDetailHit.ping === false ||
+                ReqObj.miniDetailHit.reply.success === true)) ||
+            !isSSB(tmpId)
+          )
+            $("#t" + tmpId + "_cdiv").html(
+              mdtlHtml(tmpId, 0, { ask: true, what: "Company Name", key: 0 })
+            );
+          (isSSB(tmpId) && isnewSSB(tmpId)) || isEnq(tmpId)
+            ? ""
+            : manipulateWidth(tmpId, ReqObj.Form[tmpId].cName.cnameId);
+          if (
+            isEnq(tmpId) &&
+            $("#t" + tmpId + "_reqbox").length > 0 &&
+            currentISO() !== "IN"
+          )
+            manipulateWidth(tmpId, ReqObj.Form[tmpId].cName.cnameId);
+          ReqObj.Form[tmpId].cName.fs = true;
+          ReqObj.Form[tmpId].cName.cdiv = true;
+        }
+      } else {
+        if (
+          callFromEvent === true &&
+          ReqObj.UserDetail.cName === "" &&
+          (ReqObj.Form[tmpId].cName.tov1 === true ||
+            ReqObj.Form[tmpId].cName.rb === true)
+        ) {
+        } else {
+          $("#t" + tmpId + "_cdiv").html("");
+          ReqObj.Form[tmpId].cName.fs = false;
+          ReqObj.Form[tmpId].cName.cdiv = false;
+        }
+      }
+    } else if (
+      tmpId.substring(0, 2) === "09" &&
+      ReqObj.Form[tmpId].formType.toLowerCase() === "enq"
+    ) {
+      if (
+        $("#t" + tmpId + "_cbx").length === 1 &&
+        !cNameConditions(tmpId) &&
+        !cNameIsq(tmpId)
+      ) {
+        ReqObj.Form[tmpId].cName.isShown = false;
+        $("#t" + tmpId + "_cbx").addClass("bedsnone");
+      } else {
+        ReqObj.Form[tmpId].cName.isShown = true;
+        $("#t" + tmpId + "_cbx").removeClass("bedsnone");
+      }
+    }
+  }
+
+  function mdtlError(tmpId, id, md) {
+    var html = "";
+    var cls =
+      (isOtherEnq(tmpId) && tmpId.substring(0, 2) === "09") ||
+      (isOtherEnq(tmpId) && ReqObj.Form[tmpId].FormSequence.StepCounter > 0)
+        ? "be-erbx beerrp bedsnone"
+        : isSSB(tmpId)
+        ? "mb-ertxt mb-mt10 bedsnone"
+        : "be-erbx bedsnone";
+    html = returnContainer("t" + tmpId, "_mdtlerror_" + md.suffix, cls, "", "");
+    html += returnContainer("t" + tmpId, id + "_errmsg", "", "content", "");
+    html += "</div >";
+    html =
+      (isOtherEnq(tmpId) && tmpId.substring(0, 2) === "09") ||
+      (isOtherEnq(tmpId) && ReqObj.Form[tmpId].FormSequence.StepCounter > 0) ||
+      isSSB(tmpId)
+        ? html
+        : html + '<a class="be-erarw" data-role="arrow"></a>';
+    html += "</div >";
+    return html;
+  }
+  
+  function cnameTooltip(tmpId, outerid) {
+    var cls =
+      isMoglixUi(tmpId) && outerid == "_company_ncbx"
+        ? "int-ct3 info_iconeqbl Tleft"
+        : "int-ct3 info_iconeqbl";
+    return (
+      '<div class="' +
+      cls +
+      '"> <div class="blnewform_sprit inft bepr inth inftIcn" style="position: relative!important;"> <div class="inthDtl dn beabult"> <p class>Make sure your company name:</p><ul> <li>is longer than 4 characters</li><li>is not the name of contact person</li><li>is not the name of product you sell</li><li>is not generic e.g. \'textile\',\'SEO services\', \'travel agency\' </li></ul> </div></div></div>'
+    );
+  }
+  
+  function mdtlHtml(tmpId, todo, md) {
+    var oldui = (isEnq(tmpId) || isBl(tmpId)) && md.ui === "old" ? true : false;
+    var ui = mdtlUI(tmpId, md, oldui);
+    var err = md.key === 2 || md.key === 0 ? mdtlError(tmpId, ui.id, md) : "";
+    var cls = IsChatbl(tmpId)
+      ? "cpNm cbl_txt"
+      : isEnq(tmpId) && oldui === false
+      ? "be-slbox inpt_errorbx inPlace mdplc"
+      : "cpNm";
+    if (oldui === true) cls += " oldui";
+    else cls += " newui";
+    if(pdpInactiveBL(tmpId)) cls += " cbl_br10";
+    ui.placeholder = isEnq(tmpId) && oldui === false ? "" : ui.placeholder;
+    var inp = returnInput(
+      "t" + tmpId,
+      ui.id,
+      "text",
+      ui.id,
+      ui.placeholder,
+      cls,
+      "",
+      ui.insty,
+      ui.maxlength,
+      ""
+    );
+    var htmlobj = {
+      OuterWrapper:
+        "<div id='t" + tmpId + ui.outerid + "' class='" + ui.dvc + "'>",
+      Label:
+        "<label id='t" +
+        tmpId +
+        ui.outerid +
+        "_lbl' style='" +
+        ui.lbls +
+        "' class='" +
+        ui.lblc +
+        "'>" +
+        ui.lbtxt +
+        "</label>",
+      UserInput: isSSB(tmpId)
+        ? isnewSSB(tmpId)
+          ? inp + err
+          : "<div class='mb-InCon'>" + inp + err + "</div>"
+        : isBlInline(tmpId)
+        ? "<div class='pflx1'>" + inp + err + "</div>"
+        : IsChatbl(tmpId)
+        ? inp + skipDiv1(tmpId)
+        : inp + err, //chat bl bug
+      ClosingWrapper: "</div>",
+      Tooltip: cnameTooltip(tmpId, ui.outerid),
+    };
+    if (md.key === 0 && !IsChatbl(tmpId)) {
+      htmlobj.Label =
+        !oldui && isEnq(tmpId)
+          ? htmlobj.Label
+          : "<div class='cbl_df'>" + htmlobj.Label + htmlobj.Tooltip + "</div>";
+      htmlobj.ClosingWrapper += !oldui && isEnq(tmpId) ? htmlobj.Tooltip : "";
+    }
+    var html =
+      htmlobj.OuterWrapper +
+      htmlobj.Label +
+      htmlobj.UserInput +
+      htmlobj.ClosingWrapper;
+    if (md.key === 0) ReqObj.Form[tmpId].cName.chtml = true;
+    if (md.key === 1) ReqObj.Form[tmpId].gst.html = true;
+    return todo === 1 ? htmlobj : html;
+  }
+  
+  function mdtlUI(tmpId, md, oldui) {
+    var lblr =
+      ReqObj.Form[tmpId].formType.toLowerCase() === "enq"
+        ? isMoglixUi(tmpId)
+          ? ""
+          : pdpenqImage(tmpId)
+          ? "color:#05796F"
+          : "color:#111"
+        : "color:#696969";
+    var ins =
+      ReqObj.Form[tmpId].formType.toLowerCase() === "bl"
+        ? ""
+        : "border-radius: 7px;";
+    var mdtext =
+      md.key === 1
+        ? "GST Number"
+        : md.key === 2
+        ? "Website URL"
+        : "Company/ Business Name";
+    if (md.key === 0) ReqObj.Form[tmpId].cName["cnameId"] = "_cname_" + md.suffix;
+    return {
+      id:
+        md.key === 0
+          ? "_cname_" + md.suffix
+          : md.key === 1
+          ? "_gstname"
+          : "_urlname",
+      outerid:
+        md.key === 0 ? "_company_" + md.suffix : md.key === 1 ? "_gst" : "_url",
+      placeholder:
+        md.key === 2
+          ? "Eg: www.johnenterprise.com"
+          : md.key === 0
+          ? IsChatBLInline(tmpId) || pdpenqImage(tmpId)
+            ? "Eg: Suguna Foods Private Limited"
+            : "Eg: John Enterprises, Suguna Foods Private Limited"
+          : IsChatbl(tmpId)
+          ? "Please enter your " + mdtext
+          : (md.key === 2 &&
+              ReqObj.Form[tmpId].formType.toLowerCase() === "bl") ||
+            md.key === 1
+          ? "Please enter " + mdtext + " to reach more sellers"
+          : "Please enter your " + mdtext,
+      lbtxt: IsChatbl(tmpId)
+        ? md.key === 0
+          ? "Please provide your <span class='befwt'>Company/ Business Name</span> to get quick response from the supplier"
+          : "Please enter <span class='befwt'>" +
+            mdtext +
+            "</span> to get quick response from the supplier"
+        : md.key === 0
+        ? "Company/ Business Name"
+        : mdtext,
+      dvc: isSSB(tmpId)
+        ? isnewSSB(tmpId)
+          ? "nb-frm nb-mt25"
+          : "mb-flex mb-fxstrt mb-pdt15"
+        : isBlInline(tmpId)
+        ? "idsf pfstrt mb20"
+        : isEnq(tmpId) && oldui === false
+        ? isMoglixUi(tmpId)
+          ? "eqflot beW5 bemt10 pr"
+          : pdpenqImage(tmpId)
+          ? "eqflot eCwd"
+          : "eqflot beW5"
+        : isMoglixUi(tmpId)
+        ? "bemt10 pr"
+        : pdpenqImage(tmpId)
+        ? "bemt10 pr eCnm"
+        : "bemt10",
+      lblc: isSSB(tmpId)
+        ? isnewSSB(tmpId)
+          ? "nb-fmlbl"
+          : "mb-lbl"
+        : isBlInline(tmpId)
+        ? "fs15 cl11"
+        : isEnq(tmpId) && oldui === false
+        ? "be-lbl"
+        : "",
+      lbls:
+        isSSB(tmpId) ||
+        isBlInline(tmpId) ||
+        IsChatbl(tmpId) ||
+        (isEnq(tmpId) && oldui === false)
+          ? ""
+          : "padding: 12px 0px 9px 0px;font-size: 15px;" +
+            lblr +
+            ";pointer-events: none;line-height:14px;display: block;",
+      insty:
+        isSSB(tmpId) || (isEnq(tmpId) && oldui === false)
+          ? ""
+          : IsChatbl(tmpId)
+          ? "width:100%;max-width:100%"
+          : "height:42px;vertical-align:top;padding:0px 0 0 8px;font-size: 15px;border:1px solid #c9c6c6;background-color:#fff;color: #000;box-sizing:border-box;width: 50%" +
+            ins,
+      maxlength: md.key === 1 ? "15" : "",
+    };
+  }
 //   mdscreen
 
 //   tqscreen
