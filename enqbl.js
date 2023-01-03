@@ -3482,68 +3482,6 @@
     return html;
   }
   
-  function getMcatImage(tmpId, cbObj, left) {
-    if (
-      isSet(tmpId) &&
-      isSet(ReqObj.Form[tmpId]) &&
-      isSet(ReqObj.Form[tmpId].formType)
-    ) {
-      if (
-        isSet(ReqObj.Form[tmpId].mcatId) &&
-        parseInt(ReqObj.Form[tmpId].mcatId) > -1 &&
-        isSet(ReqObj.Form[tmpId].modId) &&
-        ReqObj.Form[tmpId].modId !== -1 &&
-        ReqObj.Form[tmpId].modId !== ""
-      ) {
-        $("#t" + tmpId + "_imglodr").removeClass("bedsnone");
-        ReqObj.Form[tmpId].displayImage =
-          isSet(ReqObj.Form[tmpId].displayImage) &&
-          ReqObj.Form[tmpId].displayImage === ""
-            ? ""
-            : ReqObj.Form[tmpId].displayImage;
-        ReqObj.Form[tmpId].zoomImage = "";
-        ReqObj.mcatImage = "";
-        ReqObj.mcatdtl.ping = true;
-        fireAjaxRequest({
-          data: {
-            ga: {
-              s: false,
-              f: true,
-              gatype: "McatDtl",
-              source: "",
-            },
-            tmpId: tmpId,
-            ajaxObj: {
-              obj: "",
-              s: {
-                ss: 0,
-                sf: {
-                  af: 0,
-                  pa: 0,
-                },
-                f: 0,
-              },
-              f: {
-                f: 0,
-              },
-            },
-            ajaxtimeout: 3000,
-            ajaxdata: {
-              modid: ReqObj.Form[tmpId].modId,
-              mcatid: parseInt(ReqObj.Form[tmpId].mcatId),
-            },
-            hitfinserv: "",
-            type: 9,
-            key: {
-              cbObj: cbObj,
-              left: left,
-            },
-          },
-        });
-      }
-    }
-  }
-  
   function ShowOtp(tmpId) {
     var imeshcookie = imeshExist();
     if (
