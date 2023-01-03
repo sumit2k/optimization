@@ -385,9 +385,6 @@ function MoreDetailService(tmpId, which) {
     ];
   }
   
-  function notempty(id) {
-    return isSet($(id).length) && $(id).val() != "";
-  }
   
   function rvalue(tmpId, id) {
     if (
