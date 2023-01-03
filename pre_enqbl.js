@@ -16243,6 +16243,16 @@ function loadOverlay() {
         return getChatBlHeading(tmpId, fromscreen);
     }
   }
-
+  function defaultCaseHeading(ctanamemodid, tmpId, ctaname) {
+    switch (ctanamemodid) {
+      case "sticky right":
+        return "";
+      default:
+        return isSet(ReqObj.Form[tmpId].heading) &&
+          ReqObj.Form[tmpId].heading.trim() !== ""
+          ? ReqObj.Form[tmpId].heading
+          : "Send Enquiry to the Seller";
+    }
+  }
   // Heading
   
