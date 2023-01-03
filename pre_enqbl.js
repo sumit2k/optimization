@@ -15215,4 +15215,46 @@ function returnGenObject(tmpId, array, hooks, that, type) {
     FallbackObj: null,
   };
 }
+
+function manipulateWidth(tmpId, id) {
+  var siblingElement =
+    $("#t" + tmpId + "_cdiv").html() !== "" &&
+    $("#t" + tmpId + "_cdiv").html() !== null
+      ? $("#t" + tmpId + "_cdiv")
+      : $("#t" + tmpId + "_cbx");
+  var arr = siblingElement.siblings();
+  var len = arr.length;
+  var widthSet = false;
+  if (len === 0) {
+    $("#t" + tmpId + id).width("60%");
+    widthSet = true;
+  }
+  if (
+    isSet($(".newui")) &&
+    len === 0 &&
+    isSet($(".newui").parent().attr("id")) &&
+    isBl($(".newui").parent().attr("id").substr(1, 4))
+  ) {
+    $(".newui").width("60%");
+    widthSet = true;
+  } else {
+    for (var i = len - 1; i >= 0; i--) {
+      if (
+        $("#" + arr[i].id).html() !== "" &&
+        arr[i].id === "t" + tmpId + "_reqbox"
+      ) {
+        widthSet = true;
+        if ($("#t" + tmpId + "_reqBoxTemplates").outerWidth() <= 100)
+          $("#t" + tmpId + id).width("86%");
+        else
+          $("#t" + tmpId + id).width(
+            $("#t" + tmpId + "_reqBoxTemplates").outerWidth()
+          );
+        break;
+      }
+    }
+  }
+  if (widthSet === false) $("#t" + tmpId + id).width("60%");
+}
+
 // Misc
