@@ -9009,5 +9009,32 @@ function ThankYou(tmpId) {
       return true;
     });
   }
+  function skipDiv1(tmpId) {
+    //chat bl bug
+    var skiphtml1 = returnContainer("", "", "cbl_resend cbl_skip", "", "", "");
+    skiphtml1 += returnButton(
+      "t" + tmpId,
+      "_submitNo1",
+      "Skip",
+      "cbl_brd1 cbl_clr1 cbl_cp"
+    );
+    skiphtml1 += "</div>";
+    return skiphtml1;
+  }
   
+  function skipDiv2(tmpId) {
+    //chat bl bug
+    var skiphtml2 = returnContainer("", "", "cbl_resend cbl_skip", "", "", "");
+    skiphtml2 += returnButton(
+      "t" + tmpId,
+      "_submitNo2",
+      "Skip",
+      "cbl_brd1 cbl_clr1 cbl_cp"
+    );
+    skiphtml2 += "</div>";
+    return skiphtml2;
+  }
+  function flagwrapper(message) {
+    return '<div class="cbl_flag">' + message + "</div>";
+  }
   // MISC
