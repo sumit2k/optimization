@@ -15943,5 +15943,29 @@ function loadOverlay() {
         return { tr: true, is: false, hf: false, fobj: null };
     }
   }
+  
+  //improve logic for this function
+  function ShowReqBox(tmpId) {
+    if (
+      isBlInline(tmpId) &&
+      currentISO() !== "IN" &&
+      isNewInlineBl(tmpId) &&
+      showQuantityUnit(tmpId, ReqObj.Form[tmpId].IsqArray, 2)
+    ) {
+      return false;
+    }
+    if (
+      isBlInline(tmpId) &&
+      currentISO() !== "IN" &&
+      isNewInlineBl(tmpId) &&
+      !showQuantityUnit(tmpId, ReqObj.Form[tmpId].IsqArray, 2)
+    ) {
+      return true;
+    }
+    if (isBlInline(tmpId) && isNewInlineBl(tmpId)) return false;
+    if (ReqObj.Form[tmpId].flags.isDescDivShown === true) return false;
+    else return true;
+  }
+  
 
 // Misc
