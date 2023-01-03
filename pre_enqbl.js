@@ -15135,4 +15135,13 @@ function blInlineTransition(tmpId) {
     $("#t" + tmpId + "_hdg").removeClass("bedsnone");
   }
 }
+function Validation() {
+  var usercookie = new UserCookie(); //hatadena
+  this.result = {
+    type: true,
+    error: "",
+  };
+  this.usercountry = currentISO();
+}
+
 // Misc
