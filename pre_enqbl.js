@@ -14911,5 +14911,123 @@ function ssbClass(type, tmpId) {
   if (type === "htmli") return isnewSSB(tmpId) ? "nb-SbHd" : "mb-SbHd";
   if (type === "disable") return isnewSSB(tmpId) ? "nb-inpDisb" : "mb-inpDisb";
 }
+function returnIsoHtml(tmpId, isoclass, isovalue) {
+  /* add attributes at end */
+  if (!isSet(isovalue)) isovalue = "";
+  return (
+    '<input type="text" value="' +
+    isovalue +
+    '" readonly="" name="iso" id="t' +
+    tmpId +
+    '_iso" class="' +
+    isoclass +
+    '" tabindex="-1" disabled="disabled">'
+  );
+}
+
+function returnInput(tmpId, element, type, name, placeholder, inputclass, value, inlinestyle, maxlength, attribute) {
+  /* add attributes at end  */
+  return (
+    '<input id="' +
+    tmpId +
+    element +
+    '" type="' +
+    type +
+    '" name="' +
+    name +
+    '" value="' +
+    value +
+    '" class="' +
+    inputclass +
+    '" placeholder="' +
+    placeholder +
+    '" maxlength="' +
+    maxlength +
+    '" style="' +
+    inlinestyle +
+    '"' +
+    attribute +
+    '="">'
+  );
+}
+
+function returnButton(tmpId, element, buttontext, buttonclass, bstyle) {
+  /* add attributes at end  */
+  return (
+    '<button id="' +
+    tmpId +
+    element +
+    '" class="' +
+    buttonclass +
+    '" style="' +
+    bstyle +
+    '">' +
+    buttontext +
+    "</button>"
+  );
+}
+
+function returnContainer(tmpId, element, containerclass, datarole, divtext, style) {
+  /* add attributes at end  */
+  if (!isSet(divtext)) divtext = "";
+  return (
+    '<div id="' +
+    tmpId +
+    element +
+    '" class="' +
+    containerclass +
+    '" data-role="' +
+    datarole +
+    '" style="' +
+    style +
+    '">' +
+    divtext
+  );
+}
+
+function returnTextarea(tmpId, element, containerclass, placeholder) {
+  /* add attributes at end  */
+  return (
+    '<textarea id="' +
+    tmpId +
+    element +
+    '" class="' +
+    containerclass +
+    '" placeholder="' +
+    placeholder +
+    '" />'
+  );
+}
+
+function returnSpan(tmpId, element, text, spanclass, style) {
+  /* add attributes at end  */
+  return (
+    '<span id="' + tmpId + element + '" class="' + spanclass + '" style="' + style + '" >' + text + "</span>"
+  );
+}
+
+function returnLabel(tmpId, text, element, labelclass) {
+  /* add attributes at end  */
+  return (
+    '<label id="' + tmpId + element + '" class="' + labelclass + '">' + text + "</label>"
+  );
+}
+
+function returnDl(tmpId, element, dlclass, disabled) {
+  /* add attributes at end  */
+  return (
+    '<dl id="' + tmpId + element + '" class="' + dlclass + '" disabled="' + disabled + '"></dl>'
+  );
+}
+
+function returnCustomElement(tmpId,element,customele,value,optionid,selected,optiontext) {
+  return (
+    "<" + customele + ' value="' + value + '" optionid="' + optionid + '"' + selected + " >" + optiontext + "</" + customele + ">"
+  );
+}
+
+function returnAnswer(tmpId, key) {
+  return ReqObj.Form[tmpId].UserInputs[key];
+}
 
 // Misc
