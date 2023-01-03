@@ -3864,22 +3864,7 @@
           : [];
     }
     return array;
-  } 
-  
-  function NEC() {
-    if (isSet(ReqObj.UserDetail.fn) && ReqObj.UserDetail.fn) {
-      if (currentISO() === "IN") {
-        if ( ReqObj.UserDetail.em && (ReqObj.UserDetail.ctid || ReqObj.UserDetail.cityname || ReqObj.UserDetail.ctoth) )
-          return false;
-        else return true;
-      } else {
-        if (ReqObj.UserDetail.mb1) return false;
-        else return true;
-      }
-    } else {
-      return true;
-    }
-  }
+  }  
     
   function setDetail(key) {
     return ReturnCorrectVal(
