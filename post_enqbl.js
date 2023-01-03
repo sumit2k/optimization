@@ -988,6 +988,44 @@ function ShowTncError(tmpId) {
 function RemoveTncError(tmpId) {
   $("#t" + tmpId + "_error_tCond").addClass("bedsnone");
 }
+function modificationOnBack(tmpId) {
+  if (
+    isSet($("#t" + tmpId + "_cname_ocbx").val()) &&
+    $("#t" + tmpId + "_cname_ocbx").val() !== ""
+  ) {
+    $("#t" + tmpId + "ncbx").addClass("bedsnone");
+    $("#t" + tmpId + "ocbx").removeClass("bedsnone");
+  } else if (
+    isSet($("#t" + tmpId + "_cname_ncbx").val()) &&
+    $("#t" + tmpId + "_cname_ncbx").val() !== ""
+  ) {
+    $("#t" + tmpId + "ocbx").addClass("bedsnone");
+    $("#t" + tmpId + "ncbx").removeClass("bedsnone");
+  } else if (
+    isSet($("#t" + tmpId + "_cname_ocbx").val()) &&
+    $("#t" + tmpId + "_cname_ocbx").val() === "" &&
+    isSet($("#t" + tmpId + "_cname_ncbx").val()) &&
+    $("#t" + tmpId + "_cname_ncbx").val() === ""
+  ) {
+    $("#t" + tmpId + "ocbx").removeClass("bedsnone");
+    $("#t" + tmpId + "ncbx").removeClass("bedsnone");
+  }
+  //   if(isSet($($('input[type=text].oldui')[0]).val()) && $($('input[type=text].oldui')[0]).val() !== ""){
+  //     $($('input[type=text].newui')[0]).parent().addClass('bedsnone')
+  //     $($('input[type=text].newui')[0]).parent().parent().addClass("bedsnone")
+  //     $($('input[type=text].oldui')[0]).parent().removeClass('bedsnone')
+  //   }
+  //   else if (isSet($($('input[type=text].newui')[0]).val()) && $($('input[type=text].newui')[0]).val() !== ""){
+  //     $($('input[type=text].oldui')[0]).parent().addClass('bedsnone')
+  //     $($('input[type=text].newui')[0]).parent().removeClass('bedsnone')
+  //     $($('input[type=text].newui')[0]).parent().parent().removeClass("bedsnone")
+  //   }
+  //   else if(isSet($($('input[type=text].oldui')[0]).val()) && $($('input[type=text].oldui')[0]).val() === "" && $($('input[type=text].newui')[0]).val() === "") {
+  //     $($('input[type=text].oldui')[0]).parent().removeClass('bedsnone')
+  //     $($('input[type=text].newui')[0]).parent().removeClass('bedsnone')
+  //     $($('input[type=text].newui')[0]).parent().parent().removeClass("bedsnone")
+  //   }
+}
 
 // Miscellaneous
 
@@ -8476,3 +8514,51 @@ function ThankYou(tmpId) {
     }
   };
   // BlStaticQues
+
+  // MISC
+  function InlineDefault(tmpId) {       
+    $("#t" + tmpId + "_allBtn").html("");
+    $("#t" + tmpId + "_thankDiv")
+      .html("")
+      .addClass("bedsnone");
+    if (!ispdp(tmpId)) {
+      $("#t" + tmpId + "_mcont").css({
+        display: "flex",
+      });
+    }
+  }
+  
+  function ShowSkip(array, tmpId) {
+    var MandatoryClass = ["Isq", "BlStaticQues"];
+    if (isSet(array)) {
+      for (var i = 0; i < array.length; i++) {
+        if ($.inArray(ConstructorName(array[i].Obj), MandatoryClass) !== -1)
+          return false;
+      }
+      return true;
+    }
+    return true;
+  }
+  
+  function ShowButton(array, tmpId) {
+    // MoreDetails
+    var HideButtonClass = [
+      "ThankYou",
+      "UserVerification",
+      "ProductNameQuestion",
+      "UserLogin",
+      "ProductName",
+      "ContactDetail",
+      "TermsConditions",
+      "CountrySugg",
+    ];
+    if (isSet(array)) {
+      for (var i = 0; i < array.length; i++) {
+        if ($.inArray(ConstructorName(array[i].Obj), HideButtonClass) !== -1)
+          return false;
+      }
+      return true;
+    }
+    return true;
+  }
+  // MISC
