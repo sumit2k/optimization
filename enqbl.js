@@ -2355,12 +2355,7 @@
     }
   }
   //loadScript();
-  function onPlayerStateChange(event) {
-    if (event.data !== 1) blStop = 0;
-    else blStop = 1;
-  }
- 
-  
+
   function CreateSeq(NewObjConf) {
     if (isSet(NewObjConf)) {
       ReplaceObject(NewObjConf.object, NewObjConf.tmpId, NewObjConf.that);

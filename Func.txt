@@ -7,3 +7,5 @@ ShowStaticQuestionForeign(tmpId)
 flagwrapper
 showBanner
 custTypeCheck
+detachFlag2
+onPlayerStateChange
