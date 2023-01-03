@@ -10,10 +10,7 @@ function OpenChatBLPopup(tmpId) {
     $(".t" + tmpId + "blk_scrn").removeClass("dn");
   }
 }
-function BLEnqPopUpDefault(tmpId) {
-  ReqObj.updateImage = 0;
-  OpenBLEnqPopup(tmpId);
-}
+
 function FinishEnquiryService(tmpId, data_arr) {
   if (
     isSet(ReqObj.Form[tmpId].flags) &&
@@ -9898,19 +9895,7 @@ function BlEnqOnError(revent, res) {
       '">'
     );
   }
-  //Scroll Bottom
-  function scrollSmoothToBottom(id) {
-    var scrollDiv = document.getElementById(id);
-    if (isSet(scrollDiv)) {
-      $("#" + id).animate(
-        {
-          scrollTop: scrollDiv.scrollHeight - scrollDiv.clientHeight,
-        },
-        500
-      );
-    }
-  }
-  
+   
   function newchatblScroll(id, tmpId) {
     $("#t" + tmpId + "_scroll").animate(
       {
@@ -9952,119 +9937,6 @@ function BlEnqOnError(revent, res) {
     return '<div class="cbl_flag">' + message + "</div>";
   }
 
-  function OpenBLEnqPopup(tmpId) {
-    isBLFormOpen = true;
-    var imeshcookie = imeshExist();
-    $("#t" + tmpId + "_leftS").removeAttr("style");
-    if (!pdpenqImage(tmpId)) {
-      $("#t" + tmpId + "_thankDiv").removeClass("eqTst eqRes");
-      $("#t" + tmpId + "_mcont").removeClass("eqTst eqRes");
-    }
-    if (ReqObj.Form[tmpId].formType.toLowerCase() === "enq") {
-      if (imeshcookie === "") $("#t" + tmpId + "_leftR").addClass("lftMgn");
-      else if (!pdpInactiveBL(tmpId))
-        $("#t" + tmpId + "_leftR").removeClass("lftMgn");
-      $("#t" + tmpId + "_thankDiv").addClass("oEq");
-      $("#t" + tmpId + "_mcont").addClass("oEq");
-      $("#t" + tmpId + "_mcont").removeClass("eqImSec");
-      $("#t" + tmpId + "_thankDiv").removeClass("eqImSec");
-      if (currentISO() !== "IN") $("#t" + tmpId + "_thankDiv").addClass("fnUser");
-    } else {
-      if (
-        ReqObj.Form[tmpId].formType.toLowerCase() === "bl" &&
-        tmpId.substring(0, 2) === "09"
-      ) {
-        $("#t" + tmpId + "_thankDiv").removeClass("eqImSec");
-        $("#t" + tmpId + "_mcont").addClass("blder");
-      } else {
-        $("#t" + tmpId + "_mcont").removeClass("blder");
-      }
-      $("#t" + tmpId + "_mcont").removeClass("oEq");
-      $("#t" + tmpId + "_thankDiv").removeClass("oEq");
-      if (currentISO() !== "IN")
-        $("#t" + tmpId + "_thankDiv").removeClass("fnUser");
-      if (imeshcookie === "") $("#t" + tmpId + "_leftR").removeClass("lftMgn");
-      else $("#t" + tmpId + "_leftR").removeClass("lftMgn");
-    } // resizing
-    if (               //bl-inline bug
-        ReqObj.Form[tmpId].formType.toLowerCase() === "bl" &&
-        tmpId.substring(0, 2) === "01"
-      ){
-        $("#t" + tmpId + "_thankDiv").removeClass("eqImSec");
-      }
-    if (currentISO() === "IN") $("#t" + tmpId + "_thankDiv").removeClass("nfusr");
-    $("#t" + tmpId + "_thankDiv").removeClass("BL_Thnky");
-    $("#t" + tmpId + "_bewrapper")
-      .removeClass("bedsnone")
-      .css({
-        display: "block",
-      });
-    if (!isMoglixUi(tmpId)) {
-      $("#t" + tmpId + "_blkwrap").removeClass("e_bgc");
-      $("#t" + tmpId + "_bewrapper").removeClass("e_opn");
-      if ($("#t" + tmpId + "OtpMainHeading").hasClass("e_hdg"))
-        $("#t" + tmpId + "OtpMainHeading").remove();
-      if (
-        $("#t" + tmpId + "_mcont")
-          .parent()
-          .hasClass("e_whm")
-      )
-        $("#t" + tmpId + "_mcont")
-          .parent()
-          .removeClass()
-          .addClass("be-frmcont");
-      if (!ispdp(tmpId)) {
-        $("#t" + tmpId + "_mcont").removeClass("bedsnone").css({
-          display: "flex",
-        });
-      } else {
-        $("#t" + tmpId + "_mcont").css({
-          display: "block",
-        });
-      }
-      $("#t" + tmpId + "_leftsection").removeClass();
-      if ($("#t" + tmpId + "_leftR").hasClass("e_p20")) {
-        $("#t" + tmpId + "_leftR")
-          .removeClass()
-          .addClass("be-Rsc be-frmpop");
-      }
-      if (pdpInactiveBL(tmpId)) {
-        $("#t" + tmpId + "_leftR")
-          .removeClass()
-          .addClass("be-Rsc be-frmpop lftMgn be-Rsc2 cbl_br8");
-      }
-    } else if (isMoglixUi(tmpId)) {
-      $("#t" + tmpId + "_blkwrap").addClass("e_bgc");
-      $("#t" + tmpId + "_leftR")
-        .removeClass()
-        .addClass("e_p20");
-      $("#t" + tmpId + "_bewrapper").addClass("e_opn");
-      $("#t" + tmpId + "_mcont")
-        .parent()
-        .removeClass()
-        .addClass("e_whm");
-      $("#t" + tmpId + "_mcont")
-        .removeClass()
-        .css({
-          display: "",
-        });
-    }
-  
-    updateKeyTypeOfForm(tmpId);
-    initialiseOuterSection(tmpId); // left and right sections initialisation
-    sectionInitialisationStepWise(tmpId, 0); // step wise intialisation
-    if (
-      !(
-        isSet(ReqObj.Form[tmpId].zoomImage) && ReqObj.Form[tmpId].zoomImage !== ""
-      ) &&
-      ReqObj.mcatdtl.ping === true &&
-      ReqObj.mcatdtl.response === false
-    )
-      $("#t" + tmpId + "_imglodr").removeClass("bedsnone");
-    else $("#t" + tmpId + "_imglodr").addClass("bedsnone");
-    $("#search_string").blur();
-    stopBgScroll();
-  }
 
   function MoreDetailService(tmpId, which) {
     var data = ContactDetail.prototype.getData(tmpId, which);
