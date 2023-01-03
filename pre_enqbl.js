@@ -15030,4 +15030,109 @@ function returnAnswer(tmpId, key) {
   return ReqObj.Form[tmpId].UserInputs[key];
 }
 
+function blInlineTransition(tmpId) {
+  //adwords_ch
+  if (isBlInlineFr(tmpId)) {
+    var pgtp = "Exporters";
+    if (
+      typeof ims !== "undefined" &&
+      isSet(ims) &&
+      isSet(ims.pageType) &&
+      ims.pageType !== ""
+    ) {
+      pgtp = ims.pageType === "Service" ? "Service Providers" : "Exporters";
+    }
+
+    $("#t" + tmpId + "_sidePanel")
+      .html(
+        '<p class="fs18">Looking to source <span id="t' +
+          tmpId +
+          '_mcatNameAdw" class="bo fstit">' +
+          ReqObj.Form[tmpId].mcatName +
+          '</span> from India?</p><p class="fs16 fmt15">Verified ' +
+          pgtp +
+          ' are just a click away <span>→</span></p><hr class="spt"> <p class="fs13 bo">IndiaMART is India\'s largest online B2B marketplace<br>Connecting Global Buyers with Indian Exporters</p>'
+      )
+      .removeClass()
+      .addClass("fAdl fs0 wf");
+
+    $("#t" + tmpId + "_contactdiv").remove();
+    $("#t" + tmpId + "_wrpDiv")
+      .removeClass()
+      .addClass("fAdm df");
+    $("#t" + tmpId + "_sidePanel")
+      .siblings()
+      .removeClass()
+      .addClass("fAdr flx1");
+    $("#t" + tmpId + "_hdg").html("");
+    $("#t" + tmpId + "_inlineBL").removeClass();
+    return;
+  }
+  if (isGlIdEven(tmpId)) {
+    var contact_html = "";
+    if (imeshExist() != "") {
+      var name =
+        isSet(ReqObj.UserDetail["fn"]) && ReqObj.UserDetail !== ""
+          ? ReqObj.UserDetail["fn"].length <= 15
+            ? ReqObj.UserDetail["fn"]
+            : ReqObj.UserDetail["fn"].substr(0, 12) + "..."
+          : "";
+      var gdClass =
+        ReqObj.UserDetail["fn"] !== ""
+          ? "inCrl pdinb ml5 gd"
+          : "inCrl pdinb ml5 gd dn";
+      var primary_info =
+        currentISO() !== "IN"
+          ? ReqObj.UserDetail["em"]
+          : "+91-" + ReqObj.UserDetail["mb1"];
+      var secondary_info =
+        currentISO() !== "IN"
+          ? ReqObj.UserDetail["mb1"]
+          : ReqObj.UserDetail["em"];
+      contact_html =
+        '<div class="be-fhdg clr_blue" id="t' +
+        tmpId +
+        '_hdg1">' +
+        getBLHeading(tmpId, "") +
+        '</div><div class="idsf id_aic inUsrh icrP pr ipb10 ml5 bemt5"><span class="' +
+        gdClass +
+        '"></span> <span class="pdinb ml5 befs14">' +
+        name +
+        '</span> <span class="pdinb ml5 inAr"></span><div class="inUsrM p15"><div><b>Your Contact Information</b></div><span class="idb">' +
+        ReqObj.UserDetail["fn"] +
+        '</span> <span class="idb">' +
+        primary_info +
+        '</span> <span class="idb">' +
+        secondary_info +
+        "</span></div></div>";
+    } else {
+      contact_html =
+        '<div class="be-fhdg clr_blue" id="t' +
+        tmpId +
+        '_hdg1">' +
+        getBLHeading(tmpId, "") +
+        "</div>";
+    }
+    $("#t" + tmpId + "_sidePanel").addClass("bedsnone");
+    $("#t" + tmpId + "_inlineBL")
+      .removeClass()
+      .addClass("inEql mr20 ibgc p15_25 bdr5 inBxSh iwd100 pr");
+    $("#t" + tmpId + "_contactdiv").html(contact_html);
+    $("#t" + tmpId + "_wrpDiv").removeClass("betbl");
+    ReqObj.Form[tmpId].screenNumber < 0
+      ? $("#t" + tmpId + "_hdg").addClass("bedsnone")
+      : ReqObj.Form[tmpId].currentScreen.toLowerCase() !== "userverification"
+      ? $("#t" + tmpId + "_hdg").removeClass("bedsnone")
+      : "";
+    $("#t" + tmpId + "_belodr").css("width", "100%");
+  } else {
+    $("#t" + tmpId + "_sidePanel").removeClass("bedsnone");
+    $("#t" + tmpId + "_inlineBL")
+      .removeClass()
+      .addClass("be-mdleWrap belft betbl bebxs bebdr1");
+    $("#t" + tmpId + "_contactdiv").html("");
+    $("#t" + tmpId + "_belodr").removeAttr("style");
+    $("#t" + tmpId + "_hdg").removeClass("bedsnone");
+  }
+}
 // Misc
