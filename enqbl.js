@@ -6978,27 +6978,3 @@
     return 5;
   }
   
-  function ReturnBlUserName(tmpId) {
-    var BLname = "";
-    var firstName = "";
-    if (isSet(ReqObj.UserDetail["fn"]) && ReqObj.UserDetail["fn"] !== "")
-      firstName = ReqObj.UserDetail["fn"];
-    else firstName = usercookie.getParameterValue(imeshExist(), "fn");
-    if (IsChatbl(tmpId) && isSet(firstName) && firstName !== "") {
-      var classtotest = !IsChatbl(tmpId)
-        ? chatBlClass(tmpId, "left")
-        : "txt_area cbl_bg1";
-      var leftright = IsChatbl(tmpId) ? "cbl_ques cbl_vh" : "";
-      BLname = ConversationLeftWrapper(
-        tmpId,
-        "Welcome " + firstName,
-        {
-          classtotest: classtotest,
-          leftright: leftright,
-        },
-        "name"
-      );
-    }
-    return BLname;
-  }
-  
