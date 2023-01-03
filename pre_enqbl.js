@@ -14808,6 +14808,33 @@ function ReturnBlUserName(tmpId) {
   }
   return BLname;
 }
+function showQuantityUnit(tmpId, arr, type) {
+  var isq = arr;
+  var isq_length = isSet(isq) ? isq.length : 0;
+  for (var i = 0; i < isq_length; i++) {
+    if (isq[i].length === 2) {
+      var isqtype = [
+        isq[i][0].IM_SPEC_MASTER_DESC.toLowerCase(),
+        isq[i][1].IM_SPEC_MASTER_DESC.toLowerCase(),
+      ];
+      if (
+        $.inArray("quantity", isqtype) ||
+        $.inArray("quantity unit", isqtype)
+      ) {
+        ReqObj.Form[tmpId].quantityunit = isq[i];
+        if (type === 1) {
+          return ReqObj.Form[tmpId].quantityunit[0]
+            .IM_CAT_SPEC_CATEGORY_TYPE === "2"
+            ? false
+            : true;
+        }
+        return true;
+      }
+      return false;
+    }
+  }
+  return false;
+}
 
 
 // Misc

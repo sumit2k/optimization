@@ -6580,39 +6580,6 @@ function MoreDetailService(tmpId, which) {
     );
   }
   
-  function returnA(tmpId, element, href, target, aclass) {
-    /* add attributes at end  */
-    return (
-      '<a href="' + href + '" target="' + target + '" class="' + aclass + '">'
-    );
-  }
-  
-  function returnImg(tmpId, element, src, imgclass) {
-    /* add attributes at end  */
-    return (
-      '<img id="' +
-      tmpId +
-      element +
-      '"src="' +
-      src +
-      '" class="' +
-      imgclass +
-      '">'
-    );
-  }
-  
-  function returnOption(tmpId, element, value, optionid, optiontext) {
-    return (
-      '<option value="' +
-      value +
-      '" optionid="' +
-      optionid +
-      '">' +
-      optiontext +
-      "</option>"
-    );
-  }
-  
   function returnCustomElement(
     tmpId,
     element,
@@ -6671,10 +6638,6 @@ function MoreDetailService(tmpId, which) {
     );
     skiphtml2 += "</div>";
     return skiphtml2;
-  }
-  
-  function addLine() {
-    return '<div class="cbl_line"></div>';
   }
   
   function ssbClass(type, tmpId) {
@@ -6795,36 +6758,6 @@ function MoreDetailService(tmpId, which) {
           return true;
       else return false;
   }
-  
-  function showQuantityUnit(tmpId, arr, type) {
-    var isq = arr;
-    var isq_length = isSet(isq) ? isq.length : 0;
-    for (var i = 0; i < isq_length; i++) {
-      if (isq[i].length === 2) {
-        var isqtype = [
-          isq[i][0].IM_SPEC_MASTER_DESC.toLowerCase(),
-          isq[i][1].IM_SPEC_MASTER_DESC.toLowerCase(),
-        ];
-        if (
-          $.inArray("quantity", isqtype) ||
-          $.inArray("quantity unit", isqtype)
-        ) {
-          ReqObj.Form[tmpId].quantityunit = isq[i];
-          if (type === 1) {
-            return ReqObj.Form[tmpId].quantityunit[0]
-              .IM_CAT_SPEC_CATEGORY_TYPE === "2"
-              ? false
-              : true;
-          }
-          return true;
-        }
-        return false;
-      }
-    }
-    return false;
-  }
-  
-  
   
   function GetObjectKeys(obj) {
     if (!Object.keys) {
