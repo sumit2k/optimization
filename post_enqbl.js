@@ -9559,6 +9559,155 @@ function removeYTLoader(tmpId, type) {
   }
 // Side initialize
 
+/*----------------------------------------------IntentGeneration------------------------------------------ */
+  
+function GenerateIntent(data) {
+  var form_type =
+    !isSet(data["form_type"]) || data["form_type"] === ""
+      ? ""
+      : data["form_type"];
+  if (form_type === "")
+    form_type =
+      !isSet(data["formType"]) || data["formType"] === ""
+        ? ""
+        : data["formType"];
+  data["form_type"] = form_type;
+  var tmpId =
+    parseInt(data["tmpId"]) === 0 || !isSet(data["tmpId"]) ? 0 : data["tmpId"];
+  data["tmpId"] = "";
+  if (
+    data["form_type"].toLowerCase() !== "" &&
+    data["form_type"].toLowerCase() === "bl"
+  ) {
+    var blIntent = data["BLIntent"].toLowerCase();
+    if (isSet(blIntent) && blIntent !== "") {
+      if (blIntent === "yes" && data["ctaName"].toLowerCase() === "mcat video")
+        data["flag"] = 16;
+      if (blIntent === "yes" && data["ctaName"].toLowerCase() !== "mcat video")
+        data["flag"] = 14;
+    }
+  } //
+  data = ObjectTrim(data);
+  if (imeshExist() !== "") {
+    var s = parseInt(data["flag"]) === 12 && tmpId !== 0 ? true : false;
+    var f = tmpId !== 0 ? true : false;
+    fireAjaxRequest({
+      data: {
+        ga: {
+          gatype: "IntentGeneration",
+          s: s,
+          f: f,
+          source: "",
+        },
+        tmpId: tmpId,
+        ajaxObj: {
+          obj: "",
+          s: {
+            ss: 0,
+            sf: {
+              af: 0,
+              pa: 0,
+            },
+            f: 0,
+          },
+          f: {
+            f: 0,
+          },
+        },
+        ajaxtimeout: 0,
+        ajaxdata: data,
+        hitfinserv: "",
+        type: 0,
+      },
+    });
+  }
+}
+
+
+/*------------------------------------Enquiry On Success-------------------------------------------*/
+
+function EnqGenOnSuccess(event, res) {
+  if (ReqObj.Form[event.data.tmpId].insert === "I")
+    var IsResponseIdValid = ValidGenId(res.queryid);
+  if (
+    isSet(ReqObj.Form[event.data.tmpId].insert) &&
+    ((ReqObj.Form[event.data.tmpId].insert === "I" && IsResponseIdValid) ||
+      ReqObj.Form[event.data.tmpId].insert !== "I")
+  ) {
+    if (ReqObj.Form[event.data.tmpId].insert === "I") {
+      ReqObj.Form[event.data.tmpId].generationId = SanitizeId(res.queryid);
+      ReqObj.Form[event.data.tmpId].query_destination = res.query_destination;
+      disableEnquiryButton(event.data.tmpId);
+    }
+  }
+  if (ReqObj.Form[event.data.tmpId].toFireIsq === true)
+    new Isq(event.data.tmpId).onSubmit(event.data.tmpId, true);
+  if (
+    isEnq(event.data.tmpId) &&
+    ReqObj.Form[event.data.tmpId].ReqDtlBox &&
+    isSet(ReqObj.Form[event.data.tmpId].flags.isEnrichCalled) &&
+    !ReqObj.Form[event.data.tmpId].flags.isEnrichCalled
+  )
+    new RequirementDtl(event.data.tmpId).onSubmit(event.data.tmpId, true);
+  if (event.data.tmpId === ReqObj.finEnq) {
+    ReqObj.finEnq = "";
+    var data = {
+      ofr_id: res.queryid,
+      rfq_queryDestination: res.query_destination,
+      modId: event.data.ajaxdata.modid,
+    };
+    var data_arr = { sr: "gen", data_res: data };
+    FinishEnquiryService(event.data.tmpId, data_arr);
+  }
+}
+/*------------------------------------BL On Success-------------------------------------------*/
+
+function BLGenOnSuccess(event, res) {
+  if (
+    ReqObj.Form[event.data.tmpId].insert === "I" &&
+    IsFormBL(event.data.tmpId)
+  )
+    var IsResponseIdValid = ValidGenId(res.ofr);
+
+  if (
+    isSet(res) &&
+    isSet(ReqObj.Form[event.data.tmpId].insert) &&
+    ((ReqObj.Form[event.data.tmpId].insert === "I" && IsResponseIdValid) ||
+      ReqObj.Form[event.data.tmpId].insert !== "I")
+  ) {
+    if (
+      IsFormBL(event.data.tmpId) &&
+      ReqObj.Form[event.data.tmpId].insert === "I"
+    ) {
+      ReqObj.Form[event.data.tmpId].generationId = SanitizeId(res.ofr);
+    }
+  }
+  if (
+    ReqObj.Form[event.data.tmpId].formType.toLowerCase() === "bl" &&
+    ReqObj.Form[event.data.tmpId].toFireIsq === true
+  )
+    new Isq(event.data.tmpId).onSubmit(event.data.tmpId, true);
+  if (
+    (Bl09(event.data.tmpId) ||
+      Bl01(event.data.tmpId) ||
+      Bl04(event.data.tmpId)) &&
+    ReqObj.Form[event.data.tmpId].ReqDtlBox &&
+    isSet(ReqObj.Form[event.data.tmpId].flags.isEnrichCalled) &&
+    !ReqObj.Form[event.data.tmpId].flags.isEnrichCalled
+  )
+    new RequirementDtl(event.data.tmpId).onSubmit(event.data.tmpId, true);
+}
+/*------------------------------------Enquiry/BL On Error-------------------------------------------*/
+
+function BlEnqOnError(revent, res) {
+  usercookie.deleteCookie("imEqGl");
+  $("#t" + revent.data.tmpId + "_cls")
+    .off("click")
+    .on("click", function (event) {
+      CloseForm(revent.data.tmpId);
+    });
+}
+
 // MISC
 
   function InlineDefault(tmpId) {       
