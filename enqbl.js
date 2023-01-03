@@ -6640,45 +6640,8 @@ function MoreDetailService(tmpId, which) {
     return skiphtml2;
   }
   
-  function ssbClass(type, tmpId) {
-    if (type === "label") return isnewSSB(tmpId) ? "nb-fmlbl" : "mb-lbl";
-    if (type === "reqBxLbl")
-      return isnewSSB(tmpId) ? "nb-fmlbl" : "mb-lbl mb-mt10";
-    if (type === "wrprClass")
-      return isnewSSB(tmpId) ? "nb-frm nb-mt25" : "mb-flex mb-pdt15 mb-fxstrt";
-    if (type === "radin") return isnewSSB(tmpId) ? "nb-radin" : "mb-radin";
-    if (type === "radio")
-      return isnewSSB(tmpId) ? "nb-rad radioClick" : "mb-rad radioClick";
-    if (type === "radlbl") return isnewSSB(tmpId) ? "nb-radlbl" : "mb-radlbl";
-    if (type === "otp")
-      return isnewSSB(tmpId)
-        ? "nb-flex nb-otpm "
-        : "mb-wdIn mb-flex mb-otpm mb-otpHt";
-    if (type === "skipotp") return isnewSSB(tmpId) ? "nb-crPnt" : "mb-crPnt";
-    if (type === "resendotp")
-      return isnewSSB(tmpId) ? "nb-rsd nb-crPnt" : "mb-rsd mb-crPnt";
-    if (type === "errorotp")
-      return isnewSSB(tmpId)
-        ? "nb-ertxt nb-dib bedsnone"
-        : "mb-ertxt mb-dib bedsnone";
-    if (type === "verifyotp")
-      return isnewSSB(tmpId) ? "nb-mbuTxt nb-lh18" : "mb-mbuTxt mb-lh18";
-    if (type === "otplabel")
-      return isnewSSB(tmpId) ? "nb-lbl nb-pdt10 nb-pdr10" : "mb-lbl";
-    if (type === "otpwrap")
-      return isnewSSB(tmpId)
-        ? "nb-flex nb-pdt15 nb-fxstrt"
-        : "mb-flex mb-pdt15 mb-fxstrt";
-    if (type === "speccity")
-      return isnewSSB(tmpId) ? "nb-w160 nb-Mr15" : "mb-w222 mb-Mr15";
-    if (type === "html")
-      return isnewSSB(tmpId)
-        ? "nb-SbHd nb-hp nb-pr nb-pdt15 nb-crPnt"
-        : "mb-SbHd mb-hp mb-pr mb-pdt15 mb-crPnt";
-    if (type === "htmli") return isnewSSB(tmpId) ? "nb-SbHd" : "mb-SbHd";
-    if (type === "disable") return isnewSSB(tmpId) ? "nb-inpDisb" : "mb-inpDisb";
-  }
   
+
   function IsFormBL(tmpId) {
     var BLFormNames = ["bl", "chatbl", "chatbl-inline"];
   
