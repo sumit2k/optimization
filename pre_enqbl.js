@@ -15871,4 +15871,41 @@ function loadOverlay() {
     ReqObj[windowctrlscroll] = window_width1;
   });
 
+   
+  function questionTransition(formType, tmpId) {
+    if (
+      isSet(formType) &&
+      $.inArray(formType.toLowerCase(), showElemonForm) === -1
+    ) {
+      if (IsPrevBtnImplemented(tmpId)) {
+        $($("#t" + tmpId + "_bl_form").children()).each(function () {
+          $(this).css("display", "none");
+        });
+      } else {
+        if (!isSSB(tmpId) && !isBlInline(tmpId))
+          $("#t" + tmpId + "_bl_form").html("");
+      }
+    } else if (
+      isSet(formType) &&
+      $.inArray(formType.toLowerCase(), showElemonForm) !== -1
+    ) {
+      $(".t" + tmpId + "_userInput").each(function () {
+        $(this).remove();
+        chatblHideTransition(tmpId);
+      });
+      if (!ReqObj.Form[tmpId].NotSure) ShowUserAns(tmpId);
+      else {
+        var classtotest = chatBlClass(tmpId, "right");
+        var leftright = IsChatbl(tmpId) ? "message-right1" : "";
+        $("#t" + tmpId + "_bl_form").append(
+          ConversationRightWrapper(tmpId, NotFilled, {
+            classtotest: classtotest,
+            leftright: leftright,
+          })
+        );
+      }
+    }
+  }
+  
+  
 // Misc
