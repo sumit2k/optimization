@@ -5280,16 +5280,7 @@
     } else {
     }
   }
-  
-  function SetAutoCompleteClass(tmpId, suffix) {
-    var autocompleteClass = "be-sugg t" + tmpId + suffix;
-    if (IsChatbl(tmpId)) {
-      autocompleteClass += " bl-chat";
-    } else if (isSSB(tmpId)) autocompleteClass += " mb-prod-sugg";
-  
-    return autocompleteClass;
-  }
-  
+ 
   function updateChatWidgetGlobalVar(tmpId) {
     if (IsChatBLInline(tmpId) && tmpId.substring(0, 2) === "08") {
       isChatWidgetOpen = $("#t" + tmpId + "_chatBL").hasClass("cbl_vh")
