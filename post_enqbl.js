@@ -10543,6 +10543,26 @@ function RemoveService(arr, ObjectToFind) {
 function currentIpCountry() {
   return usercookie.getParameterValue(usercookie.getCookie("iploc"), "gcnnm");
 }
+ 
+function ShowProdName(tmpId) {
+  if (
+    ReqObj.Form[tmpId].modrefType.toLowerCase() === "product" &&
+    !BlEnqGenerated(tmpId) &&
+    (ReqObj.Form[tmpId].prodName === "" ||
+      (ReqObj.Form[tmpId].prodName === "" && IsChatbl(tmpId)) ||
+      (ReqObj.Form[tmpId].formType.toLowerCase() === "bl" &&
+        (tmpId.substring(0, 2) === "09" || tmpId.substring(0, 2) === "04")) ||
+      (ReqObj.Form[tmpId].formType.toLowerCase() === "enq" &&
+        (tmpId.substring(0, 2) === "04" || tmpId.substring(0, 2) === "01")))
+  ) {
+    ReqObj.Form[tmpId].flags.WasProdNamePresent = true;
+    ReqObj.Form[tmpId].isproductshown = true;
+    return true; //
+  } else {
+    return ReqObj.Form[tmpId].flags.WasProdNamePresent;
+  }
+} 
+
 function detachFlag2(tmpId) {
   var ele = $("#t" + tmpId + "country_dropd").detach();
   $("#t" + tmpId + "flagdiv2").append(ele);
