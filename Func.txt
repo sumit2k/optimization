@@ -5,3 +5,5 @@ ShowSkip(array, tmpId)
 ShowButton(array, tmpId)
 ShowStaticQuestionForeign(tmpId)
 flagwrapper
+showBanner
+custTypeCheck
