@@ -14737,7 +14737,39 @@ function OpenBLEnqPopup(tmpId) {
   $("#search_string").blur();
   stopBgScroll();
 }
-
+function CheckBoxClick(tmpId) {
+  setTimeout(function () {
+    $(".cbl_chekbx").focus();
+  }, 1800);
+  $(".cbl_chekbx_btn ")
+    .off("click")
+    .on("click", function () {
+      if (IsChatbl(tmpId)) {
+        $("#t" + tmpId + "_submitNo1") //chat bl bug
+          .parent()
+          .addClass("dn");
+      }
+    });
+  $(".CheckboxClick")
+    .off("click")
+    .on("click", function () {
+      if (IsChatbl(tmpId)) {
+        $("#t" + tmpId + "_submitNo1") //chat bl bug
+          .parent()
+          .addClass("bedsnone");
+      }
+      var checkBox = $(this);
+      if (checkBox.siblings("input").prop("checked")) {
+        checkBox.children(".bechk-in").children().hide();
+        checkBox.parent().removeClass("chksl");
+      } else {
+        checkBox.children(".bechk-in").children().show();
+        IsChatbl(tmpId) || isSSB(tmpId)
+          ? ""
+          : checkBox.parent().addClass("chksl");
+      }
+    });
+}
 function notempty(id) {
   return isSet($(id).length) && $(id).val() != "";
 }
