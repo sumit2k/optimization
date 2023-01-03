@@ -14836,5 +14836,38 @@ function showQuantityUnit(tmpId, arr, type) {
   return false;
 }
 
+function ShowIsq(tmpId) {
+  //|| (tmpId.substring(0, 2) === "09" && currentISO() !== "IN")
+  if (
+      parseInt(ReqObj.Form[tmpId].disableIsq) === 1 ||
+      (currentISO() !== "IN" && ReqObj.Form[tmpId].Isq.HasHtmlCalled === true)
+  )
+      return false;
+  else if(pdpenq(tmpId) && !ShowReqBox(tmpId)){
+      return false;
+  }
+  else if (
+      ReqObj.Form[tmpId].IsqArray === "" ||
+      ReqObj.Form[tmpId].prevCount < ReqObj.Form[tmpId].IsqLength
+  )
+      return true;
+  else return false;
+}
+
+function GetObjectKeys(obj) {
+if (!Object.keys) {
+  var keys = [];
+
+  for (var key in obj) {
+    if (obj.hasOwnProperty(key)) {
+      keys.push(key);
+    }
+  }
+  return keys;
+} else {
+  return Object.keys(obj);
+}
+}
+
 
 // Misc
