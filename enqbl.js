@@ -2425,42 +2425,7 @@
       }
     }
   }
-  
-  function questionTransition(formType, tmpId) {
-    if (
-      isSet(formType) &&
-      $.inArray(formType.toLowerCase(), showElemonForm) === -1
-    ) {
-      if (IsPrevBtnImplemented(tmpId)) {
-        $($("#t" + tmpId + "_bl_form").children()).each(function () {
-          $(this).css("display", "none");
-        });
-      } else {
-        if (!isSSB(tmpId) && !isBlInline(tmpId))
-          $("#t" + tmpId + "_bl_form").html("");
-      }
-    } else if (
-      isSet(formType) &&
-      $.inArray(formType.toLowerCase(), showElemonForm) !== -1
-    ) {
-      $(".t" + tmpId + "_userInput").each(function () {
-        $(this).remove();
-        chatblHideTransition(tmpId);
-      });
-      if (!ReqObj.Form[tmpId].NotSure) ShowUserAns(tmpId);
-      else {
-        var classtotest = chatBlClass(tmpId, "right");
-        var leftright = IsChatbl(tmpId) ? "message-right1" : "";
-        $("#t" + tmpId + "_bl_form").append(
-          ConversationRightWrapper(tmpId, NotFilled, {
-            classtotest: classtotest,
-            leftright: leftright,
-          })
-        );
-      }
-    }
-  }
-  
+ 
   function IsPrevBtnImplemented(tmpId) {
     if (notEmpty(tmpId)) {
       var tmpIdArr = ["09"];
@@ -3810,45 +3775,7 @@
     loadOverlay();
     var regex = /0901/gi;
     return ReqObj.OverlayHtml.replace(regex, tmpId);
-  }
-  
-  
-  /*-----------------new proposed seq---------------------- */
-  function _makeExtraKey(_classArray, _fallback) {
-    var extraKey = {};
-    var count = 0;
-    for (var ele in _classArray) {
-      count += 1;
-      extraKey[count] = _extraKey(_classArray[ele], _fallback);
-    }
-    return extraKey;
-  }
-  function _extraKey(_className, _fallback) {
-    switch (
-      _className.toString().toLowerCase() // tr : toReplace, is:Service, hf:hasFallback, fObj : fallbackObj
-    ) {
-      case "enquirenow":
-        return { tr: false, is: false, hf: true, fobj: null };
-      case "userlogin":
-        return { tr: true, is: false, hf: false, fobj: null };
-      case "contactdetail":
-        return { tr: false, is: false, hf: false, fobj: null };
-      case "userverification":
-        return { tr: false, is: false, hf: false, fobj: null };
-      case "isq":
-        return { tr: false, is: false, hf: true, fobj: _fallback };
-      case "requirementdtl":
-        return { tr: true, is: false, hf: false, fobj: null };
-      case "moredetails":
-        return { tr: true, is: false, hf: false, fobj: null };
-      case "thankyou":
-        return { tr: false, is: false, hf: false, fobj: null };
-      case "productname":
-        return { tr: true, is: false, hf: false, fobj: null };
-      case "blstaticques":
-        return { tr: true, is: false, hf: false, fobj: null };
-    }
-  }
+  }  
   
   function _makeDataAndServiceArr(_classArray, attribute, type) {
     var array = {};

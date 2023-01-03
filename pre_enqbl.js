@@ -15907,5 +15907,41 @@ function loadOverlay() {
     }
   }
   
-  
+  /*-----------------new proposed seq---------------------- */
+  function _makeExtraKey(_classArray, _fallback) {
+    var extraKey = {};
+    var count = 0;
+    for (var ele in _classArray) {
+      count += 1;
+      extraKey[count] = _extraKey(_classArray[ele], _fallback);
+    }
+    return extraKey;
+  }
+  function _extraKey(_className, _fallback) {
+    switch (
+      _className.toString().toLowerCase() // tr : toReplace, is:Service, hf:hasFallback, fObj : fallbackObj
+    ) {
+      case "enquirenow":
+        return { tr: false, is: false, hf: true, fobj: null };
+      case "userlogin":
+        return { tr: true, is: false, hf: false, fobj: null };
+      case "contactdetail":
+        return { tr: false, is: false, hf: false, fobj: null };
+      case "userverification":
+        return { tr: false, is: false, hf: false, fobj: null };
+      case "isq":
+        return { tr: false, is: false, hf: true, fobj: _fallback };
+      case "requirementdtl":
+        return { tr: true, is: false, hf: false, fobj: null };
+      case "moredetails":
+        return { tr: true, is: false, hf: false, fobj: null };
+      case "thankyou":
+        return { tr: false, is: false, hf: false, fobj: null };
+      case "productname":
+        return { tr: true, is: false, hf: false, fobj: null };
+      case "blstaticques":
+        return { tr: true, is: false, hf: false, fobj: null };
+    }
+  }
+
 // Misc
