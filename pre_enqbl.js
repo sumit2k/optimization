@@ -15256,5 +15256,107 @@ function manipulateWidth(tmpId, id) {
   }
   if (widthSet === false) $("#t" + tmpId + id).width("60%");
 }
+function MakeWrapper(arrayofQues, tmpId, SuffixHtmlObj, type) {
+  if (isSet(ReqObj.Form[tmpId].formType) && IsChatbl(tmpId)) {
+    var Questext = IsChatbl(tmpId)
+      ? "<div class = 'txt_area cbl_bg1'>"
+      : "<div class='Question'>";
+    var userInput = IsChatbl(tmpId)
+      ? ""
+      : "<div class='t" + tmpId + "_userInput' class='bewbg'>";
+    for (var i = 0; i < arrayofQues.length; i++) {
+      for (var j = 0; j < arrayofQues[i].length; j++) {
+        Questext += arrayofQues[i][j].Label;
+        // userInput += "<span class='bepr'>" + arrayofQues[i][j].UserInput + "</span>";
+        userInput += arrayofQues[i][j].UserInput;
+      }
+    }
+    Questext += "</div>";
+    userInput += "</div>";
+    var textToWrap = !IsChatbl(tmpId)
+      ? Questext + userInput
+      : type === "ques"
+      ? Questext
+      : userInput;
 
+    var classtotest = chatBlClass(tmpId, "left");
+    var leftright = IsChatbl(tmpId) ? SuffixHtmlObj.SuffixOuterHtml : "";
+    return ConversationLeftWrapper(tmpId, textToWrap, {
+      classtotest: classtotest,
+      leftright: leftright,
+    });
+  } else {
+    var normalHtml = SuffixHtmlObj.SuffixOuterHtml;
+    var beRowHtml = "";
+    var closingRowDiv = "";
+    var ClearBothDiv = "";
+
+    if (isSet(SuffixHtmlObj)) {
+      if (isSet(SuffixHtmlObj.suffix) && SuffixHtmlObj.suffix !== "") {
+        if (SuffixHtmlObj.suffix === "_isqBox" || SuffixHtmlObj.suffix === "_contactinfo" || SuffixHtmlObj.suffix === "_Prodname") {
+          var clsName = currentISO() !== "IN" && SuffixHtmlObj.isPhone === true ? isMoglixUi(tmpId) ? "eqflot eqIsf eqIsMn mt19 pr" : "eqflot eqIsf eqIsMn mt19"
+            : isMoglixUi(tmpId)? "eqflot bepr bemt10" : "eqflot bepr";
+
+          var wrapClass = isSSB(tmpId) ? ssbClass("wrprClass", tmpId) : isBlInline(tmpId) ? isBlInlineFr(tmpId) ? " fmb15" : " idsf pfstrt mb20" : pdpInactiveBL(tmpId) ? SuffixHtmlObj.suffix === "_contactinfo" ? "" : " be-row2" : " be-row";
+
+          beRowHtml += SuffixHtmlObj.suffix === "_contactinfo" && isOtherEnq(tmpId) ? "<div class='" + clsName + "'>" : "<div class='" + wrapClass + "'>";closingRowDiv += "</div>";
+        }
+
+        if (SuffixHtmlObj.suffix === "_contactinfo") {
+          if (isBlFirstfold(tmpId))
+            ClearBothDiv += "<div class='beclr'></div>";
+          else {
+            if (currentISO() === "IN")
+              ClearBothDiv += "<div class='beclr'></div>";
+          }
+        }
+
+      }
+    }
+
+    if (pdpInactiveBL(tmpId) &&SuffixHtmlObj.suffix === "_contactinfo" && arrayofQues.length == 3) {
+      normalHtml += '<div class="NameEmail">';
+    }
+
+    for (var i = 0; i < arrayofQues.length; i++) {
+      for (var j = 0; j < arrayofQues[i].length; j++) {
+
+        if ( isSet(arrayofQues[i][j].WrapClass) && arrayofQues[i][j].WrapClass != "" && SuffixHtmlObj.suffix === "_isqBox")
+          beRowHtml = "<div class='" + wrapClass + " " + arrayofQues[i][j].WrapClass +"'>";
+
+        if (!isSSB(tmpId) ||(isSSB(tmpId) && SuffixHtmlObj.suffix !== "_isqBox")) {
+          if (pdpInactiveBL(tmpId) && SuffixHtmlObj.suffix === "_contactinfo" && arrayofQues.length == 3 && i == 2) {
+            normalHtml += "</div>";
+          }
+          normalHtml += beRowHtml;
+        }
+
+        if (isSet(arrayofQues[i][j].WrapClass) &&arrayofQues[i][j].WrapClass != "" &&SuffixHtmlObj.suffix === "_isqBox")
+          beRowHtml = "<div class='" + wrapClass + "'>";
+
+        if (isSSB(tmpId) && SuffixHtmlObj.suffix === "_isqBox") {
+          beRowHtml =(isSet(arrayofQues[i].clsNm) && arrayofQues[i].clsNm === false) ||(isSet(arrayofQues[i][j].clsNm) &&arrayofQues[i][j].clsNm === false)
+              ? "<div class=''>"
+              : "<div class='" + ssbClass("wrprClass", tmpId) + "'>";
+          normalHtml += beRowHtml;
+        }
+
+        if (isSet(arrayofQues[i][j].isenquire) &&arrayofQues[i][j].isenquire === true) {
+          normalHtml =SuffixHtmlObj.SuffixOuterHtml + "<div class='eqmb5 eqmt20'>";
+        }
+
+        normalHtml +=
+          arrayofQues[i][j].OuterWrapper +
+          arrayofQues[i][j].Label +
+          arrayofQues[i][j].UserInput +
+          arrayofQues[i][j].ClosingWrapper;
+      }
+      normalHtml += closingRowDiv;
+    }
+
+    normalHtml += SuffixHtmlObj.SuffixClosingHtml;
+    normalHtml += ClearBothDiv;
+    return normalHtml;
+  }
+}
 // Misc
