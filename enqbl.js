@@ -3864,27 +3864,8 @@
           : [];
     }
     return array;
-  }
+  } 
   
-  /**-------------------new seq----------------------------- */
-  function _mandatDetailsFilled() {
-    var ct = ReqObj.UserDetail.ctid || ReqObj.UserDetail.cityname || ReqObj.UserDetail.ctoth ? true : false;
-    return ct === true && isSet(ReqObj.UserDetail.fn) && ReqObj.UserDetail.fn ? true : false; // if city and name not present return true else false
-  }
-  function userCity() {
-    if ( ReqObj.UserDetail.ctid === "" && ReqObj.UserDetail.cityname === "" && ReqObj.UserDetail.ctoth === "")
-      return "";
-    else return "notEmpty";
-  }
-  function _contactScreen(iso) {
-    if (iso === "IN") {
-      var ct = userCity();
-      return (isSet(ReqObj.UserDetail.fn) && ReqObj.UserDetail.fn === "") || ReqObj.UserDetail.em === "" || ct === "" ? true : false;
-    } else {
-      return (isSet(ReqObj.UserDetail.fn) && ReqObj.UserDetail.fn === "") || ReqObj.UserDetail.mb1 === "" ? true : false;
-    }
-  }
-  /**-------------------new seq----------------------------- */
   function NEC() {
     if (isSet(ReqObj.UserDetail.fn) && ReqObj.UserDetail.fn) {
       if (currentISO() === "IN") {
@@ -3905,60 +3886,14 @@
       usercookie.getParameterValue(imeshExist(), key),
       ReturnCorrectVal(ReqObj.UserDetail[key], "")
     );
-  }
-  
-  function SetUserDetails(where) {
-    createGlobalObject();
-    var imeshcookie = imeshExist();
-    ReqObj.UserDetail["fn"] =
-      isSet(where) && where == "changeflag"
-        ? ""
-        : ReturnCorrectVal(
-            usercookie.getParameterValue(imeshcookie, "fn"),
-            ReqObj.UserDetail["fn"]
-          );
-    ReqObj.UserDetail["em"] =
-      isSet(where) && where == "changeflag"
-        ? ""
-        : ReturnCorrectVal(
-            usercookie.getParameterValue(imeshcookie, "em"),
-            ReqObj.UserDetail["em"]
-          );
-    ReqObj.UserDetail["ctid"] =
-      isSet(where) && where == "changeflag"
-        ? ""
-        : ReturnCorrectVal(
-            usercookie.getParameterValue(imeshcookie, "ctid"),
-            ReqObj.UserDetail["ctid"]
-          );
-    ReqObj.UserDetail["mb1"] =
-      isSet(where) && where == "changeflag"
-        ? ""
-        : ReturnCorrectVal(
-            usercookie.getParameterValue(imeshcookie, "mb1"),
-            ReqObj.UserDetail["mb1"]
-          );
-    ReqObj.UserDetail["uv"] =
-      isSet(where) && where == "changeflag"
-        ? ""
-        : ReturnCorrectVal(
-            usercookie.getParameterValue(imeshcookie, "uv"),
-            ReqObj.UserDetail["uv"]
-          );
-  }
-  
-  SetUserDetails();
+  }  
   
   function setIPDetails(resp) {
     ReqObj.IPDetails["countryiso"] = resp.geoip_countryiso;
     ReqObj.IPDetails["countryname"] = resp.geoip_countryname;
     ReqObj.IPDetails["ipaddress"] = resp.geoip_ipaddress;
-  }
+  }    
   
-  
-  function currentIpCountry() {
-    return usercookie.getParameterValue(usercookie.getCookie("iploc"), "gcnnm");
-  }
   function tofindindexfn(array, component, obj) {
     for (var i = 0; i < array.length; i++) {
       if (ConstructorName(array[i][obj]).toLowerCase() === component) {
@@ -3992,20 +3927,11 @@
       });
   }
   
-  $(document).ready(function () {
-    var window_width1 = $(window).width();
-    ReqObj[windowctrlscroll] = window_width1;
-  });
-  
   function resumeBgScroll() {
     $("html").removeClass("scroll_layout");
     $(".gl-wrapper").css("width", 100 + "%");
-  }
-  
-  //all global variable should be in one place
-  
-  loadOverlay();
-  
+  }  
+    
   function createGlobalObject() {
     /* USE ONLY IF OBJECTS CAN BE REINITIALIZED, WITH NO HARM ! */
     validation = new Validation();

@@ -10248,6 +10248,9 @@ function RemoveService(arr, ObjectToFind) {
     }
   }
 }
+function currentIpCountry() {
+  return usercookie.getParameterValue(usercookie.getCookie("iploc"), "gcnnm");
+}
 function detachFlag2(tmpId) {
   var ele = $("#t" + tmpId + "country_dropd").detach();
   $("#t" + tmpId + "flagdiv2").append(ele);

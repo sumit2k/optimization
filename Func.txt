@@ -10,4 +10,5 @@ custTypeCheck
 detachFlag2
 ShowNameField
 StaticMessage
+currentIpCountry
   

@@ -15785,4 +15785,75 @@ function loadOverlay() {
     }
   }
 
+  //all global variable should be in one place
+  
+  loadOverlay();
+
+  /**-------------------new seq----------------------------- */
+  function _mandatDetailsFilled() {
+    var ct = ReqObj.UserDetail.ctid || ReqObj.UserDetail.cityname || ReqObj.UserDetail.ctoth ? true : false;
+    return ct === true && isSet(ReqObj.UserDetail.fn) && ReqObj.UserDetail.fn ? true : false; // if city and name not present return true else false
+  }
+  function userCity() {
+    if ( ReqObj.UserDetail.ctid === "" && ReqObj.UserDetail.cityname === "" && ReqObj.UserDetail.ctoth === "")
+      return "";
+    else return "notEmpty";
+  }
+  function _contactScreen(iso) {
+    if (iso === "IN") {
+      var ct = userCity();
+      return (isSet(ReqObj.UserDetail.fn) && ReqObj.UserDetail.fn === "") || ReqObj.UserDetail.em === "" || ct === "" ? true : false;
+    } else {
+      return (isSet(ReqObj.UserDetail.fn) && ReqObj.UserDetail.fn === "") || ReqObj.UserDetail.mb1 === "" ? true : false;
+    }
+  }
+  /**-------------------new seq----------------------------- */
+  
+  function SetUserDetails(where) {
+    createGlobalObject();
+    var imeshcookie = imeshExist();
+    ReqObj.UserDetail["fn"] =
+      isSet(where) && where == "changeflag"
+        ? ""
+        : ReturnCorrectVal(
+            usercookie.getParameterValue(imeshcookie, "fn"),
+            ReqObj.UserDetail["fn"]
+          );
+    ReqObj.UserDetail["em"] =
+      isSet(where) && where == "changeflag"
+        ? ""
+        : ReturnCorrectVal(
+            usercookie.getParameterValue(imeshcookie, "em"),
+            ReqObj.UserDetail["em"]
+          );
+    ReqObj.UserDetail["ctid"] =
+      isSet(where) && where == "changeflag"
+        ? ""
+        : ReturnCorrectVal(
+            usercookie.getParameterValue(imeshcookie, "ctid"),
+            ReqObj.UserDetail["ctid"]
+          );
+    ReqObj.UserDetail["mb1"] =
+      isSet(where) && where == "changeflag"
+        ? ""
+        : ReturnCorrectVal(
+            usercookie.getParameterValue(imeshcookie, "mb1"),
+            ReqObj.UserDetail["mb1"]
+          );
+    ReqObj.UserDetail["uv"] =
+      isSet(where) && where == "changeflag"
+        ? ""
+        : ReturnCorrectVal(
+            usercookie.getParameterValue(imeshcookie, "uv"),
+            ReqObj.UserDetail["uv"]
+          );
+  }
+  
+  SetUserDetails();
+
+  $(document).ready(function () {
+    var window_width1 = $(window).width();
+    ReqObj[windowctrlscroll] = window_width1;
+  });
+
 // Misc
