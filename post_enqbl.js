@@ -9977,4 +9977,66 @@ function moveDownImage(event) {
 function returnUpdatedData(index, event) {
   return event.data.receivingData.mediakey.key[index];
 }
+
+function ChatBlMsgs(QuestionText, type) {
+  if (isSet(QuestionText)) {
+    var defaultmsg = "What is your preferred";
+    if (isSet(type) && type.toLowerCase() === "radio") {
+      defaultmsg = "Please select";
+    }
+    var QuestionTextMatch = trimVal(QuestionText.toLowerCase());
+    if (QuestionTextMatch in ChatBlStaticMsg) {
+      return ChatBlStaticMsg[QuestionTextMatch];
+    } else {
+      var splitting = defaultmsg.split(" ");
+      var last_word = splitting[splitting.length - 1];
+      splitting = QuestionText.split(" ");
+      var first_word = splitting[0];
+      if (QuestionText.toLowerCase().includes("sample order"))
+        return "Is this a sample order" + QuestionEnding;
+      if (first_word.toLocaleLowerCase() === last_word.toLocaleLowerCase()) {
+        defaultmsg = defaultmsg.substr(0, defaultmsg.lastIndexOf(" ") + 1);
+      }
+      defaultmsg += " ";
+      if (isSet(type) && type.toLowerCase() === "radio") {
+        return defaultmsg + "<strong>" + QuestionText + "</strong>";
+      }
+      return (
+        defaultmsg + "<strong>" + QuestionText + "</strong>" + QuestionEnding
+      );
+    }
+  }
+}
+function appendChatLoader(tmpId, type, loaderclass) {
+  if (isSet(type) && type.toLowerCase() === "left") {
+    var ParentdivClass = IsChatbl(tmpId) ? "cbl_ques cbl_type " : "";
+    var loaderColorClass = loaderclass;
+  } else {
+    var ParentdivClass = IsChatbl(tmpId)
+      ? "txt-cnt bemb10 cbl_ques cbl_type"
+      : "txt-cnt bemb10 ";
+    var loaderColorClass = loaderclass;
+  }
+  if (IsChatbl(tmpId))
+    return (
+      "<div id='t" +
+      tmpId +
+      "_typing' class='" +
+      ParentdivClass +
+      "'><div class='" +
+      loaderColorClass +
+      "'><span></span><span></span><span></span></div></div>"
+    );
+
+  return (
+    "<div id='t" +
+    tmpId +
+    "_typing' class='" +
+    ParentdivClass +
+    "'><div class='typtext'><span class='spinme-left'><div class='" +
+    loaderColorClass +
+    "'><div class='bounce1'></div><div class='bounce2'></div><div class='bounce3'></div></div></span></div></div>"
+  );
+}
+
   // MISC

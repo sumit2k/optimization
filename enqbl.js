@@ -4658,53 +4658,7 @@
     if (isSet(ReqObj.Form[tmpId].isBlQtutShown)) {
       ReqObj.Form[tmpId].isBlQtutShown = false;
     }
-  }
-  
-  function removeBLLoader(tmpId, type) {
-    var NewTempId = isSet(tmpId) ? tmpId : "";
-    if (NewTempId !== "" && IsChatbl(NewTempId)) {
-      if (isSet(type) && type.toLowerCase() === "left")
-        var ClassName = IsChatbl(tmpId) ? "cbl_ques" : "";
-      else var ClassName = "txt-cnt";
-      var element = $("#t" + NewTempId + "_typing");
-      if (element.hasClass(ClassName)) element.remove();
-    } else {
-      // if (isSet(ReqObj.Form[tmpId].FormSequence) && ReqObj.Form[tmpId].FormSequence.StepCounter > 0) {
-      //   var templateId = tmpId.substring(0, 2);
-      //   NewTempId = tmpId.replace(templateId, "09");
-      // }
-  
-      var el = $("#t" + NewTempId + "_belodr");
-      if (!el.hasClass("bedsnone")) {
-        el.addClass("bedsnone");
-      }
-    }
-  }
-  
-  //test work done
-  function addBlLoader(tmpId, type) {
-    var NewTempId = tmpId;
-    if (NewTempId !== "" && IsChatbl(NewTempId)) {
-      if (!($("#t" + tmpId + "_typing").length > 0)) {
-        if (IsChatbl(tmpId)) {
-          // $("#t" + NewTempId + "_bl_form").append(appendChatLoader(tmpId, type, "blchat-lodr2"));
-          $("#t" + NewTempId + "_new_chatbl").append(
-            appendChatLoader(tmpId, type, "txt_area  cbl_bg1")
-          );
-        }
-      }
-      //$("#t" + NewTempId + "_bl_form").append(appendChatLoader(tmpId, type));
-    } else {
-      // if (isSet(ReqObj.Form[tmpId].FormSequence) && ReqObj.Form[tmpId].FormSequence.StepCounter > 0) {
-      //   var templateId = tmpId.substring(0, 2);
-      //   var NewTempId = tmpId.replace(templateId, "09");
-      // }
-      var el = $("#t" + NewTempId + "_belodr");
-      if (el.hasClass("bedsnone")) {
-        el.removeClass("bedsnone");
-      }
-    }
-  }
+  } 
   
   function addYTLoader(tmpId, type) {
     var el = $("#t" + tmpId + "_belodrYT");
@@ -4742,37 +4696,6 @@
     }
   }
   
-  function appendChatLoader(tmpId, type, loaderclass) {
-    if (isSet(type) && type.toLowerCase() === "left") {
-      var ParentdivClass = IsChatbl(tmpId) ? "cbl_ques cbl_type " : "";
-      var loaderColorClass = loaderclass;
-    } else {
-      var ParentdivClass = IsChatbl(tmpId)
-        ? "txt-cnt bemb10 cbl_ques cbl_type"
-        : "txt-cnt bemb10 ";
-      var loaderColorClass = loaderclass;
-    }
-    if (IsChatbl(tmpId))
-      return (
-        "<div id='t" +
-        tmpId +
-        "_typing' class='" +
-        ParentdivClass +
-        "'><div class='" +
-        loaderColorClass +
-        "'><span></span><span></span><span></span></div></div>"
-      );
-  
-    return (
-      "<div id='t" +
-      tmpId +
-      "_typing' class='" +
-      ParentdivClass +
-      "'><div class='typtext'><span class='spinme-left'><div class='" +
-      loaderColorClass +
-      "'><div class='bounce1'></div><div class='bounce2'></div><div class='bounce3'></div></div></span></div></div>"
-    );
-  }
   
   function WrapperObj(outerHtml, closingHtml, suffix) {
     var wrapObj = {
@@ -4798,35 +4721,6 @@
         );
     }
     return false;
-  }
-  function ChatBlMsgs(QuestionText, type) {
-    if (isSet(QuestionText)) {
-      var defaultmsg = "What is your preferred";
-      if (isSet(type) && type.toLowerCase() === "radio") {
-        defaultmsg = "Please select";
-      }
-      var QuestionTextMatch = trimVal(QuestionText.toLowerCase());
-      if (QuestionTextMatch in ChatBlStaticMsg) {
-        return ChatBlStaticMsg[QuestionTextMatch];
-      } else {
-        var splitting = defaultmsg.split(" ");
-        var last_word = splitting[splitting.length - 1];
-        splitting = QuestionText.split(" ");
-        var first_word = splitting[0];
-        if (QuestionText.toLowerCase().includes("sample order"))
-          return "Is this a sample order" + QuestionEnding;
-        if (first_word.toLocaleLowerCase() === last_word.toLocaleLowerCase()) {
-          defaultmsg = defaultmsg.substr(0, defaultmsg.lastIndexOf(" ") + 1);
-        }
-        defaultmsg += " ";
-        if (isSet(type) && type.toLowerCase() === "radio") {
-          return defaultmsg + "<strong>" + QuestionText + "</strong>";
-        }
-        return (
-          defaultmsg + "<strong>" + QuestionText + "</strong>" + QuestionEnding
-        );
-      }
-    }
   }
   
   function ConversationRightWrapper(tmpId, message, classObj) {

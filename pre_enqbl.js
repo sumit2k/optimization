@@ -14323,7 +14323,54 @@ function typeQuantity(event) {
 
 // type radio, select quantity etc
 
+// loaders
 
+function removeBLLoader(tmpId, type) {
+  var NewTempId = isSet(tmpId) ? tmpId : "";
+  if (NewTempId !== "" && IsChatbl(NewTempId)) {
+    if (isSet(type) && type.toLowerCase() === "left")
+      var ClassName = IsChatbl(tmpId) ? "cbl_ques" : "";
+    else var ClassName = "txt-cnt";
+    var element = $("#t" + NewTempId + "_typing");
+    if (element.hasClass(ClassName)) element.remove();
+  } else {
+    // if (isSet(ReqObj.Form[tmpId].FormSequence) && ReqObj.Form[tmpId].FormSequence.StepCounter > 0) {
+    //   var templateId = tmpId.substring(0, 2);
+    //   NewTempId = tmpId.replace(templateId, "09");
+    // }
+
+    var el = $("#t" + NewTempId + "_belodr");
+    if (!el.hasClass("bedsnone")) {
+      el.addClass("bedsnone");
+    }
+  }
+}
+
+function addBlLoader(tmpId, type) {
+  var NewTempId = tmpId;
+  if (NewTempId !== "" && IsChatbl(NewTempId)) {
+    if (!($("#t" + tmpId + "_typing").length > 0)) {
+      if (IsChatbl(tmpId)) {
+        // $("#t" + NewTempId + "_bl_form").append(appendChatLoader(tmpId, type, "blchat-lodr2"));
+        $("#t" + NewTempId + "_new_chatbl").append(
+          appendChatLoader(tmpId, type, "txt_area  cbl_bg1")
+        );
+      }
+    }
+    //$("#t" + NewTempId + "_bl_form").append(appendChatLoader(tmpId, type));
+  } else {
+    // if (isSet(ReqObj.Form[tmpId].FormSequence) && ReqObj.Form[tmpId].FormSequence.StepCounter > 0) {
+    //   var templateId = tmpId.substring(0, 2);
+    //   var NewTempId = tmpId.replace(templateId, "09");
+    // }
+    var el = $("#t" + NewTempId + "_belodr");
+    if (el.hasClass("bedsnone")) {
+      el.removeClass("bedsnone");
+    }
+  }
+}
+
+// loaders
 // Misc
 function notempty(id) {
   return isSet($(id).length) && $(id).val() != "";
