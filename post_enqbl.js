@@ -10210,6 +10210,39 @@ function detachFlag2(tmpId) {
   var ele = $("#t" + tmpId + "country_dropd").detach();
   $("#t" + tmpId + "flagdiv2").append(ele);
 }
+
+
+function callfunc(foundArray, ObjectToFind) {
+  for (var y = 0; y < foundArray.length; y++) {
+    if (
+      ObjectToFind.toLowerCase() ===
+      ConstructorName(foundArray[y].Obj).toLowerCase()
+    ) {
+      foundArray.splice(y, 1)[0];
+    }
+  }
+}  
+
+function RemoveService(arr, ObjectToFind) {
+  if (isSet(arr)) {
+    for (var i = 0; i < arr.length; i++) {
+      if ( isSet(arr[i].fn) && ConstructorName(arr[i].fn).toLowerCase() === ObjectToFind.toLowerCase()) {
+        arr.splice(i, 1);
+        // delete arr[i];
+        i -= 1;
+        // arr[i].cb.push(PushObject);
+        return true;
+      } else {
+        if (RemoveService(arr[i].cb, ObjectToFind) === true) {
+          // arr[i].cb = [];
+          return true;
+        }
+      }
+      // }
+    }
+  }
+}
+ 
 // function SuggestorHit() {
   //   var submit_url = "https://dev-suggest.imimg.com/suggest/suggest.php?q=jammu&tag=suggestions&limit=40&type=city&fields=state%2Cid%2Cstateid%2Cflname%2Calias&display_fields=value%2C%3Dstate&display_separator=%2C+&match=fuzzy&catid=101&showloc=1&p=42";
   //   $.ajax({

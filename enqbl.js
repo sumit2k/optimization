@@ -4094,39 +4094,7 @@
     // $(".be-sugg").css("display")
   }
   
-  
-  function callfunc(foundArray, ObjectToFind) {
-    for (var y = 0; y < foundArray.length; y++) {
-      if (
-        ObjectToFind.toLowerCase() ===
-        ConstructorName(foundArray[y].Obj).toLowerCase()
-      ) {
-        foundArray.splice(y, 1)[0];
-      }
-    }
-  }  
- 
-  function RemoveService(arr, ObjectToFind) {
-    if (isSet(arr)) {
-      for (var i = 0; i < arr.length; i++) {
-        if ( isSet(arr[i].fn) && ConstructorName(arr[i].fn).toLowerCase() === ObjectToFind.toLowerCase()) {
-          arr.splice(i, 1);
-          // delete arr[i];
-          i -= 1;
-          // arr[i].cb.push(PushObject);
-          return true;
-        } else {
-          if (RemoveService(arr[i].cb, ObjectToFind) === true) {
-            // arr[i].cb = [];
-            return true;
-          }
-        }
-        // }
-      }
-    }
-  }
-   
-  function callFlagSuggestor(tmpId, fromwhere) {
+    function callFlagSuggestor(tmpId, fromwhere) {
     if (
       $("#t" + tmpId + "flagdiv2").length == 0 ||
       $("#t" + tmpId + "country_dropd").html() === "" ||
