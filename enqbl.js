@@ -1,21 +1,4 @@
-  function returnPostBlEnqObject(tmpId, array, hooks, that, ns) {
-    return {
-      object: {
-        obj: new PostBlEnqUpdate(tmpId),
-        toReplace: false,
-        isService: true,
-        array: array,
-        hooks: hooks,
-      },
-      tmpId: tmpId,
-      that: that,
-      AfterService: [],
-      hasFallback: false,
-      FallbackObj: null,
-      nextStep: ns,
-    };
-  }
-  
+ 
   function returnGenObject(tmpId, array, hooks, that, type) {
     return {
       object: {
@@ -2273,11 +2256,8 @@
    * Usage :
    *
    *
-   */
+   */ 
   
-  function PostBlEnqUpdate() {
-    this.className = "PostBlEnqUpdate";
-  }
   PostBlEnqUpdate.prototype.onSubmit = function (tmpId) {
     if (isSet(tmpId)) {
       var postblenq = PreAjax("PostBlEnqUpdate", tmpId);

@@ -15143,5 +15143,24 @@ function Validation() {
   };
   this.usercountry = currentISO();
 }
-
+function returnPostBlEnqObject(tmpId, array, hooks, that, ns) {
+  return {
+    object: {
+      obj: new PostBlEnqUpdate(tmpId),
+      toReplace: false,
+      isService: true,
+      array: array,
+      hooks: hooks,
+    },
+    tmpId: tmpId,
+    that: that,
+    AfterService: [],
+    hasFallback: false,
+    FallbackObj: null,
+    nextStep: ns,
+  };
+}
+function PostBlEnqUpdate() {
+  this.className = "PostBlEnqUpdate";
+}
 // Misc
