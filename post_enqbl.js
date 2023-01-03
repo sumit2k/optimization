@@ -8561,4 +8561,11 @@ function ThankYou(tmpId) {
     }
     return true;
   }
+  function ShowStaticQuestionForeign(tmpId) {
+    // if (isSet(tmpId) && tmpId.substring(0, 2) === "09") {
+    //   if (parseInt(ReqObj.Form[tmpId].disableIsq) !== 1 && currentISO() !== "IN") return true;
+    //   return false;
+    // }
+    return false;
+  }
   // MISC
