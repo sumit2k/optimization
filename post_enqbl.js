@@ -10127,5 +10127,20 @@ function appendChatLoader(tmpId, type, loaderclass) {
     "'><div class='bounce1'></div><div class='bounce2'></div><div class='bounce3'></div></div></span></div></div>"
   );
 }
+/*
+   * @description this method is used to check if localstorage exists
+   *
+   *
+   * @returns true if localStorage exists else false
+   */
+function CheckLocalStorage() {
+  try {
+    localStorage.setItem("__checklocalstorage", "exists");
+    localStorage.removeItem("__checklocalstorage");
+    return true;
+  } catch (exception) {
+    return false;
+  }
+}
 
   // MISC

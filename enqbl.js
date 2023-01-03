@@ -3572,23 +3572,7 @@
       if (object[key] !== "") trimmedObject[key] = object[key];
     }
     return trimmedObject;
-  }
-  
-  /*
-   * @description this method is used to check if localstorage exists
-   *
-   *
-   * @returns true if localStorage exists else false
-   */
-  function CheckLocalStorage() {
-    try {
-      localStorage.setItem("__checklocalstorage", "exists");
-      localStorage.removeItem("__checklocalstorage");
-      return true;
-    } catch (exception) {
-      return false;
-    }
-  }
+  } 
   
   /*
    * maybe class not required
