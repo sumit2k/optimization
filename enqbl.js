@@ -2246,8 +2246,7 @@
       "slider",
       "#t" + event.data.receivingData.initialdata.tmpId + "_slider" + index
     );
-  }
-  
+  }  
   function returnUpdatedData(index, event) {
     return event.data.receivingData.mediakey.key[index];
   }
@@ -2256,8 +2255,7 @@
    * Usage :
    *
    *
-   */ 
-  
+   */   
   PostBlEnqUpdate.prototype.onSubmit = function (tmpId) {
     if (isSet(tmpId)) {
       var postblenq = PreAjax("PostBlEnqUpdate", tmpId);
@@ -2353,31 +2351,7 @@
     else PostAjax(postblenq, tmpId);
   };
   
-  function makeObj(Obj, hooks) {
-    if (ConstructorName(Obj) !== "") {
-      var returnObj = {};
-      var KeysArray = GetObjectKeys(hooks);
-      if (isSet(Obj)) returnObj["fn"] = Obj;
-      for (var i in KeysArray) {
-        if (isSet(hooks[KeysArray[i]]))
-          returnObj[KeysArray[i]] = hooks[KeysArray[i]];
-        else returnObj[KeysArray[i]] = [];
-      }
-      returnObj["cb"] = [];
-      return returnObj;
-    } else {
-      return {};
-      // debugger;
-    }
-  }
   
-  function ReplaceObject(Objconfig, tmpId, that) {
-    if (!Objconfig.isService) {
-      if ( Objconfig.toReplace && !(that.GetExistingObject(ConstructorName(Objconfig.obj), tmpId) === false)) {
-        Objconfig.obj = Objconfig.arrays.UiArray[i][j].Obj;
-      }
-    }
-  }
   function FindObject(arr, name, obj) {
     if (isSet(arr) && isSet(name)) {
       for (var i = 0; i < arr.length; i++) {
