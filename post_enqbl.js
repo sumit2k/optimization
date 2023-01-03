@@ -8684,4 +8684,50 @@ function ThankYou(tmpId) {
     backButtonNameUI(tmpId);
     return btnObj;
   }
+  function returnA(tmpId, element, href, target, aclass) {
+    /* add attributes at end  */
+    return (
+      '<a href="' + href + '" target="' + target + '" class="' + aclass + '">'
+    );
+  }
+  
+  function returnImg(tmpId, element, src, imgclass) {
+    /* add attributes at end  */
+    return (
+      '<img id="' +
+      tmpId +
+      element +
+      '"src="' +
+      src +
+      '" class="' +
+      imgclass +
+      '">'
+    );
+  }
+  //Scroll Bottom
+  function scrollSmoothToBottom(id) {
+    var scrollDiv = document.getElementById(id);
+    if (isSet(scrollDiv)) {
+      $("#" + id).animate(
+        {
+          scrollTop: scrollDiv.scrollHeight - scrollDiv.clientHeight,
+        },
+        500
+      );
+    }
+  }
+  
+  function newchatblScroll(id, tmpId) {
+    $("#t" + tmpId + "_scroll").animate(
+      {
+        scrollTop: $("#t" + tmpId + "_scroll").prop("scrollHeight"),
+      },
+      1000
+    );
+    $("#t" + tmpId + "_scroll").on("mousewheel", function (e) {
+      $("#t" + tmpId + "_scroll").stop(true, true);
+      return true;
+    });
+  }
+  
   // MISC

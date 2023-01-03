@@ -6679,32 +6679,6 @@ function MoreDetailService(tmpId, which) {
     if (type === "disable") return isnewSSB(tmpId) ? "nb-inpDisb" : "mb-inpDisb";
   }
   
-  //Scroll Bottom
-  function scrollSmoothToBottom(id) {
-    var scrollDiv = document.getElementById(id);
-    if (isSet(scrollDiv)) {
-      $("#" + id).animate(
-        {
-          scrollTop: scrollDiv.scrollHeight - scrollDiv.clientHeight,
-        },
-        500
-      );
-    }
-  }
-  
-  function newchatblScroll(id, tmpId) {
-    $("#t" + tmpId + "_scroll").animate(
-      {
-        scrollTop: $("#t" + tmpId + "_scroll").prop("scrollHeight"),
-      },
-      1000
-    );
-    $("#t" + tmpId + "_scroll").on("mousewheel", function (e) {
-      $("#t" + tmpId + "_scroll").stop(true, true);
-      return true;
-    });
-  }
-  
   function IsFormBL(tmpId) {
     var BLFormNames = ["bl", "chatbl", "chatbl-inline"];
   
