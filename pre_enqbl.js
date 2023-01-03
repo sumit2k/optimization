@@ -15198,4 +15198,21 @@ function SetAutoCompleteClass(tmpId, suffix) {
 
   return autocompleteClass;
 }
+
+function returnGenObject(tmpId, array, hooks, that, type) {
+  return {
+    object: {
+      obj: new Generation(type),
+      toReplace: true,
+      isService: true,
+      array: array,
+      hooks: hooks,
+    },
+    tmpId: tmpId,
+    that: that,
+    AfterService: [],
+    hasFallback: false,
+    FallbackObj: null,
+  };
+}
 // Misc

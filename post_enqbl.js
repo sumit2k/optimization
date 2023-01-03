@@ -9784,4 +9784,28 @@ Validation.prototype.isURLValid = function (website, tmpId) {
     $(".gl-wrapper").css("width", ReqObj[windowctrlscroll] + "px");
     $("html").addClass("scroll_layout");
   }  
+  
+function IsFormBL(tmpId) {
+  var BLFormNames = ["bl", "chatbl", "chatbl-inline"];
+
+  if (isSet(tmpId) && isSet(ReqObj.Form[tmpId])) {
+    if (isSet(ReqObj.Form[tmpId].formType))
+      var indexOfBl = $.inArray(
+        ReqObj.Form[tmpId].formType.toLowerCase(),
+        BLFormNames
+      );
+    if (indexOfBl !== -1) return true;
+    else return false;
+  }
+}
+function ConversationCenterWrapper(tmpId, message) {
+  /* add attributes at end  */
+  if (isSet(message) && message !== "")
+    if (!IsChatbl(tmpId))
+      return '<div class="chat-mblV chat-blH">' + message + "</div>";
+    else return '<div class ="cbl_verfy">' + message + "</div>";
+}
+
+
+
   // MISC

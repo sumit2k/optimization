@@ -1,21 +1,4 @@
- 
-  function returnGenObject(tmpId, array, hooks, that, type) {
-    return {
-      object: {
-        obj: new Generation(type),
-        toReplace: true,
-        isService: true,
-        array: array,
-        hooks: hooks,
-      },
-      tmpId: tmpId,
-      that: that,
-      AfterService: [],
-      hasFallback: false,
-      FallbackObj: null,
-    };
-  }
-  
+
   function returnmdtlObject(array, hooks, tmpId, that, countlastUpdated, md) {
     var Obj = {
       object: {
@@ -5238,36 +5221,14 @@
             messagetoshow +
             "</div></div>";
     }
-  }
-  
-  function ConversationCenterWrapper(tmpId, message) {
-    /* add attributes at end  */
-    if (isSet(message) && message !== "")
-      if (!IsChatbl(tmpId))
-        return '<div class="chat-mblV chat-blH">' + message + "</div>";
-      else return '<div class ="cbl_verfy">' + message + "</div>";
-  }
-  
+  }  
+
   function getTimeStamp() {
     var date = new Date();
     var time = date.getHours() * 60 * 60 + date.getMinutes() * 60 + date.getSeconds();
     return time % 10 === 0 ? true : false;
   }
-  
-  function IsFormBL(tmpId) {
-    var BLFormNames = ["bl", "chatbl", "chatbl-inline"];
-  
-    if (isSet(tmpId) && isSet(ReqObj.Form[tmpId])) {
-      if (isSet(ReqObj.Form[tmpId].formType))
-        var indexOfBl = $.inArray(
-          ReqObj.Form[tmpId].formType.toLowerCase(),
-          BLFormNames
-        );
-      if (indexOfBl !== -1) return true;
-      else return false;
-    }
-  }
-  
+
   function CallGeneration(tmpId) {
     if (isSet(tmpId)) {
       if (
