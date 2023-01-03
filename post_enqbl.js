@@ -10227,5 +10227,52 @@ function DirectSubmitWithoutBlur(tmpId) {
   // }
   // SuggestorHit();
   //
+  /*
+  function showBanner(tmpId) {
+    if (isSet(ReqObj.Form[tmpId].formType) && ReqObj.Form[tmpId].formType === "Enq") {
+      var utyp = ReturnCorrectVal(usercookie.getParameterValue(usercookie.getCookie('ImeshVisitor'), "utyp"), "");
+      if (custTypeCheck(tmpId) === 'P') {
+        return true;
+      }
+      else {
+        return false;
+      }
+    }
+    else {
+      return true;
+    }
+   
+  }
+   
+   
+  function custTypeCheck(tmpId) {
+    if (isSet(ReqObj.Form[tmpId].rcvCustType) && ReqObj.Form[tmpId].rcvCustType !== "" && parseInt(ReqObj.Form[tmpId].rcvCustType, 10) < 700) {
+      return 'P';
+    }
+    else {
+      return 'F';
+    }
+  }
+  */
+ // //both keyName and value should be string
+  // function SetKeyInLocalStorage(keyName, value) {
+  //   if (CheckLocalStorage()) {
+  //     if (isSet(keyName) && typeof keyName === "string" && keyName !== "" && isSet(value) && value !== "") {
+  //       localStorage.setItem(keyName, value);
+  //     }
+  //   }
   
+  // }
+  
+  // function GetFromLocalStorage(keyName) {
+  //   if (CheckLocalStorage()) {
+  //     if (isSet(keyName) && keyName !== "") {
+  //       var value = localStorage.getItem(keyName);
+  //       return value;
+  //     }
+  //     return null;
+  //   }
+  //   return null;
+  
+  // }
   // MISC
