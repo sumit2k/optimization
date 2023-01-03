@@ -15966,6 +15966,91 @@ function loadOverlay() {
     if (ReqObj.Form[tmpId].flags.isDescDivShown === true) return false;
     else return true;
   }
+  function toShowBuyerInfo(tmpId, screen_name) {
+    if (
+      imeshExist() !== "" &&
+      !isMoglixUi(tmpId) &&
+      !pdpInactiveBL(tmpId) &&
+      !pdpenqImage(tmpId) &&
+      screen_name.toLowerCase() !== "userverification" &&
+      screen_name.toLowerCase() !== "thankyou"
+    ) {
+      $("#t" + tmpId + "_byrinfo")
+        .html(get_buyer_info(tmpId))
+        .removeClass("bedsnone");
+    } else {
+      $("#t" + tmpId + "_byrinfo")
+        .html(get_buyer_info(tmpId))
+        .addClass("bedsnone");
+    }
+    // Not found BL
+    if (Bl04(tmpId) && imeshExist() !== "")
+      $("#t" + tmpId + "_byrinfoIn")
+        .html(get_buyer_info(tmpId))
+        .removeClass("bedsnone");
+  }
+  
+  function get_buyer_info(tmpId) {
+    var details = "";
+    var imeshcookie = imeshExist();
+    if (imeshcookie === "") return "";
+    var sections = {};
+    sections["main"] = "Your Contact Information :";
+    sections["buyername"] =
+      isSet(ReqObj.UserDetail["fn"]) && ReqObj.UserDetail["fn"] !== ""
+        ? ReqObj.UserDetail["fn"]
+        : "";
+    sections["buyermobile"] =
+      isSet(ReqObj.UserDetail["mb1"]) && ReqObj.UserDetail["mb1"] !== ""
+        ? "+" +
+          usercookie.getParameterValue(imeshcookie, "phcc") +
+          "-" +
+          ReqObj.UserDetail["mb1"]
+        : "";
+    sections["buyeremail"] =
+      isSet(ReqObj.UserDetail["em"]) && ReqObj.UserDetail["em"] !== ""
+        ? ReqObj.UserDetail["em"]
+        : "";
+    var cls = isImageVidEnq(tmpId) ? "epUstxt" : "";
+    var details = "<b class='" + cls + "'>" + sections["main"] + "</b><br/>";
+    if (sections["buyername"] !== "") {
+      details += sections["buyername"];
+      details += pdpenqImage(tmpId)
+        ? returnSpan("", "", "   |   ", "befwt", "")
+        : "</br>";
+    }
+    if (isOtherEnq(tmpId)) {
+      if (sections["buyermobile"] !== "" && sections["buyeremail"] !== "") {
+        details +=
+          sections["buyermobile"] +
+          returnSpan("", "", "   |   ", "befwt", "") +
+          sections["buyeremail"];
+      } else if (sections["buyermobile"] !== "") {
+        details += sections["buyermobile"];
+      } else if (sections["buyeremail"] !== "") {
+        details += sections["buyeremail"];
+      }
+    } else {
+      if (sections["buyermobile"] !== "") {
+        details += sections["buyermobile"] + "</br>";
+      }
+      if (sections["buyeremail"] !== "") {
+        details += sections["buyeremail"] + "</br>";
+      }
+    }
+  
+    if (
+      sections["buyername"] === "" &&
+      sections["buyermobile"] === "" &&
+      sections["buyeremail"] === ""
+    )
+      return "";
+  
+    if (details !== "" && !pdpInactiveBL(tmpId)) {
+      $("#t" + tmpId + "_leftR").addClass("btPd");
+    }
+    return details;
+  }
   
 
 // Misc
