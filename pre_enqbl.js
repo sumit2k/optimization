@@ -16051,6 +16051,14 @@ function loadOverlay() {
     }
     return details;
   }
+
+  function isProdNamePresent(tmpId) {
+    return ReqObj.Form[tmpId].modrefType.toLowerCase() === "product" &&
+      ReqObj.Form[tmpId].prodName !== ""
+      ? true
+      : false;
+  }
+  
   // Misc
 
   //Heading
