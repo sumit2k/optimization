@@ -458,6 +458,21 @@ function blkerr(templateId) {
   //   $('#' + templateId + 'enrich_city1').removeClass("highlight-err");
   // }
 }
+
+function initGeolocationenq(tmpId) {
+  if (navigator && navigator.geolocation) {
+    var x_navigator = navigator.geolocation.getCurrentPosition(
+      successCallbackenq,
+      function () {
+        console.log("error");
+      },
+      {
+        timeout: 10000,
+      }
+    );
+  }
+}
+
 function successCallbackenq(position) {
   lt = position.coords.latitude;
   lt = lt.toFixed(5);
@@ -562,20 +577,6 @@ function isAllCharacters(str) {
 function isAllSpecialChars(str) {
   var exp = /^[^a-zA-Z0-9]+$/;
   return exp.test(str);
-}
-
-function initGeolocationenq(tmpId) {
-  if (navigator && navigator.geolocation) {
-    var x_navigator = navigator.geolocation.getCurrentPosition(
-      successCallbackenq,
-      function () {
-        console.log("error");
-      },
-      {
-        timeout: 10000,
-      }
-    );
-  }
 }
 
 /*
