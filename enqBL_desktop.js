@@ -33179,28 +33179,38 @@ ThankYou.prototype.fireTracking = function (tmpId) {
 };
 
 ThankYou.prototype.fireServices = function (tmpId) {
-  var form_type =
-    ReqObj.Form[tmpId].formType === "Enq" ? "Send Enquiry" : "Post Buy Leads";
-  var StepNumber = isSet(ReqObj.Form[tmpId].FormSequence)
-    ? ReqObj.Form[tmpId].FormSequence.StepCounter +
-      1 +
-      ReqObj.Form[tmpId].FormSequence.OnCloseCounter +
-      1
+  var form_type = ReqObj.Form[tmpId].formType === "Enq" ? "Send Enquiry" : "Post Buy Leads";
+  var StepNumber = isSet(ReqObj.Form[tmpId].FormSequence) ? ReqObj.Form[tmpId].FormSequence.StepCounter + 1 + ReqObj.Form[tmpId].FormSequence.OnCloseCounter + 1
     : 1 + 1;
   var iso = currentISO();
   if (ReqObj.Form[tmpId].formType.toLowerCase() === "enq") {
-    ValidGenId(ReqObj.Form[tmpId].generationId) &&
-    ReqObj.Form[tmpId].waitFinServ === 0
-      ? FinishEnquiryService(tmpId)
-      : "";
+  //   ValidGenId(ReqObj.Form[tmpId].generationId) &&
+  //     ReqObj.Form[tmpId].waitFinServ === 0 ? FinishEnquiryService(tmpId) : "";
+      // savenr/finish changes
+      if(ValidGenId(ReqObj.Form[tmpId].generationId) &&  ReqObj.Form[tmpId].waitFinServ === 0){
+        if(getMorePh(tmpId)){
+          if(savenrflag){
+            FinishEnquiryService(tmpId);
+            savenrflag = 0;
+          }
+          else{
+            setTimeout(() => {
+              // console.log("finishenq called after 3 second.");
+              FinishEnquiryService(tmpId);
+            }, "3000");
+          }
+          
+        }
+        else{
+          FinishEnquiryService(tmpId);
+        }
+      }
+      else{
+        "";
+      }
+      // ends here
   }
   if (iso === "IN" && !IsChatbl(tmpId) && !isSSB(tmpId)) {
-    blenqGATracking(
-      form_type,
-      "Displayed_PayX|" + StepNumber + "|Thank You",
-      getEventLabel(),
-      0,
-      tmpId
-    );
+    blenqGATracking(form_type, "Displayed_PayX|" + StepNumber + "|Thank You", getEventLabel(), 0, tmpId);
   }
 };
