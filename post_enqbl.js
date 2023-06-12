@@ -1,3 +1,7 @@
+function DataSeparator(array) {
+  return array.join(IsqSeperator);
+}
+
 //functions
 
 function FinishEnquiryService(tmpId, data_arr) {

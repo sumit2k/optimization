@@ -326,9 +326,7 @@ var HitMcatIsq = {};
 var isBLFormOpen = false;
 var IsqSeperator = "##";
 
-function DataSeparator(array) {
-  return array.join(IsqSeperator);
-}
+
 var DefaultIsqAns = { "sample order": "yes" };
 var QuestionEnding = "?";
 var ChatBlStaticMsg = {
