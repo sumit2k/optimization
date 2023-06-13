@@ -2904,3 +2904,415 @@ function detachFlag2(tmpId) {
 // function isMoglixUi(tmpId) {
 //   return isSet(ReqObj.Form[tmpId].New_UI) && ReqObj.Form[tmpId].New_UI === "1";
 // }
+
+function get_message() {
+  return {
+    msg: "Become a verified free seller in 2 min & <br>Connect with 100+ Buyers from your city",
+    cta_msg: "Start Selling for Free",
+  };
+}
+// view mob ab test track
+function pnsSubmitTrack(tmpId){
+  var that = ReqObj.Form[tmpId].FormSequence || {};
+  var sampling = ReqObj.Form[tmpId].noSampling;
+  ReqObj.Form[tmpId].noSampling = true;
+  if(isSet(ReqObj.Form[tmpId].ctaName) && (ReqObj.Form[tmpId].ctaName.toLowerCase() == "view mob e")){
+    if(that.StepCounter == 0)
+    blenqGATracking("Send Enquiry", "Sc 1 Submit Clicked", getEventLabel(), 0, tmpId);
+    if(that.StepCounter == 1)
+    blenqGATracking("Send Enquiry", "Sc 2 Submit Clicked", getEventLabel(), 0, tmpId);
+}
+ReqObj.Form[tmpId].noSampling = sampling;
+}
+function inactiveblSubmitTrack(tmpId){    //inactive changes
+var that = ReqObj.Form[tmpId].FormSequence || {};
+var sampling = ReqObj.Form[tmpId].noSampling;
+ReqObj.Form[tmpId].noSampling = true;
+var ec= isLightbox(tmpId) ? "Inactive BL New Seller" : "Inactive BL New";
+if(that.StepCounter == 0)
+    blenqGATracking(ec, "Submit Clicked sc-1", getEventLabel(), 0, tmpId);
+if(that.StepCounter == 1)
+    blenqGATracking(ec, "Submit Clicked sc-2", getEventLabel(), 0, tmpId);        
+  ReqObj.Form[tmpId].noSampling = sampling;
+} 
+
+function pnsCloseTrack(tmpId){
+  var that = ReqObj.Form[tmpId].FormSequence || {};
+  var sampling = ReqObj.Form[tmpId].noSampling;
+  ReqObj.Form[tmpId].noSampling = true;
+  if(isSet(ReqObj.Form[tmpId].ctaName) && (ReqObj.Form[tmpId].ctaName.toLowerCase() == "view mob e")){
+      if(that.StepCounter == 0)
+      blenqGATracking("Send Enquiry", "Sc 1 Close Clicked", getEventLabel(), 0, tmpId);
+      if(that.StepCounter == 1)
+      blenqGATracking("Send Enquiry", "Sc 2 Close Clicked", getEventLabel(), 0, tmpId);
+    }
+    ReqObj.Form[tmpId].noSampling = sampling;
+  }
+
+function inactiveblCloseTrack(tmpId){    //inactive changes
+    var that = ReqObj.Form[tmpId].FormSequence || {};
+    var sampling = ReqObj.Form[tmpId].noSampling;
+    ReqObj.Form[tmpId].noSampling = true;
+    var ec= isLightbox(tmpId) ? "Inactive BL New Seller" : "Inactive BL New";
+    if(that.StepCounter == 0)
+        blenqGATracking(ec, "Cross Clicked sc-1", getEventLabel(), 0, tmpId);
+    if(that.StepCounter == 1)
+        blenqGATracking(ec, "Cross Clicked sc-2", getEventLabel(), 0, tmpId);        
+      ReqObj.Form[tmpId].noSampling = sampling;
+} 
+
+function mobEnteredTrack(tmpId,el){   //mob track
+  var sampling = ReqObj.Form[tmpId].noSampling;
+  ReqObj.Form[tmpId].noSampling = true;
+  var ec= (ReqObj.Form[tmpId].formType === "Enq") ? "Send Enquiry" : "Post Buy Leads";  
+  var ea="Mobile Number Entered";
+  blenqGATracking(ec, ea, el, 0, tmpId);     
+  ReqObj.Form[tmpId].noSampling = sampling;
+  ReqObj.Form[tmpId].mobEntered=0;         
+} 
+function emailEnteredTrack(tmpId,el){   
+    var sampling = ReqObj.Form[tmpId].noSampling;
+    ReqObj.Form[tmpId].noSampling = true;
+    var ec= (ReqObj.Form[tmpId].formType === "Enq") ? "Send Enquiry" : "Post Buy Leads";  
+    var ea="Email Entered";
+    blenqGATracking(ec, ea, el, 0, tmpId);     
+    ReqObj.Form[tmpId].noSampling = sampling;
+    ReqObj.Form[tmpId].emailEntered=0;         
+} 
+
+
+//next->submit
+function hideClickMsg(tmpId) {
+  if (EnqPopupDIR(tmpId) && $("#yajaca").css("display") == "block") {
+    $("#yajaca").hide();
+    if (
+      $(
+        "#t" + tmpId + "submit_wrapper #t" + tmpId + "_submitdiv input"
+      ).hasClass("toConv")
+    ) {
+      $(
+        "#t" + tmpId + "submit_wrapper #t" + tmpId + "_submitdiv input"
+      ).removeClass("toConv");
+      $(
+        "#t" + tmpId + "submit_wrapper #t" + tmpId + "_submitdiv input"
+      ).removeClass("subLeft");
+    }
+    $("#noOtp").removeClass("mrtCh");
+    $("#yajaca").removeClass("yaLeft");
+    ReqObj.Form[tmpId].msgFromOtp = 0;
+  }
+}
+FormSeq.prototype.OnCloseSeq = function (tmpId) {
+  var LastScreen = ""; //PBRENQFORM - 3621
+  this.OnCloseServiceArray = [];
+  ReqObj.Form[tmpId]["OnCloseArray"] = [];
+  ReqObj.Form[tmpId].OnCloseStep = true;
+  this.OnCloseCounter = -1;
+  this.NumberofClassCalled = 4;
+  var that = this;
+  ReqObj.Form[tmpId].flags["IsFirstStep"] = false;
+
+  if (isSet(ReqObj.Form[tmpId].UiArray[that.StepCounter])) {
+    for (
+      var j = 0;
+      j < ReqObj.Form[tmpId].UiArray[that.StepCounter].length;
+      j++
+    ) {
+      LastScreen =
+        LastScreen +
+        ConstructorName(ReqObj.Form[tmpId].UiArray[that.StepCounter][j].Obj);
+    }
+  }
+  sectionInitialisationStepWise(tmpId, 1);
+  new LeftSide(tmpId, ReqObj.Form[tmpId].typeofform, 1);
+  var hooks = {
+    pre: [],
+    post: [],
+    current: [],
+  };
+  var array = {
+    UiArray: [],
+    ServiceArray: [],
+  };
+  if (ShowOtp() && !ReqObj.Form[tmpId].flags.isOtpShown) {
+    hooks["pre"] = [];
+    hooks["post"] = [this.OnClosegetStep];
+    var UserVerificationObj = {
+      object: {
+        obj: new UserVerification(tmpId),
+        toReplace: false,
+        isService: false,
+        array: array,
+        hooks: hooks,
+      },
+      tmpId: tmpId,
+      that: that,
+      AfterService: [],
+      hasFallback: false,
+      FallbackObj: null,
+    };
+    this.MakeSeq(UserVerificationObj);
+    this.OnCloseServiceArray.push(array.ServiceArray);
+    ReqObj.Form[tmpId].OnCloseArray.push(array.UiArray);
+  }
+  //   if (NEC() && LastScreen !== "ContactDetail" && currentISO() === "IN")
+  var md = urlConditions(tmpId);
+  if ((NEC() && LastScreen !== "ContactDetail") || md.ask === true) {
+    //PBRENQFORM - 3621
+    if (md.ask === true)
+      that.NumberofClassCalled = that.NumberofClassCalled + 1;
+    var array = {
+      UiArray: [],
+      ServiceArray: [],
+    };
+    hooks["pre"] = [this.OnClosegetStep];
+    hooks["post"] = [];
+    var NECObj = {
+      object: {
+        obj: new ContactDetail(1, 1, 1),
+        toReplace: false,
+        isService: false,
+        array: array,
+        hooks: hooks,
+      },
+      tmpId: tmpId,
+      that: that,
+      AfterService: [],
+      hasFallback: false,
+      FallbackObj: null,
+    };
+    this.MakeSeq(NECObj);
+    if (md.ask === true) {
+      var chpre =
+        md.ask === true && NEC() === false ? [this.OnClosegetStep] : "";
+      var mdObj = returnmdtlObject(
+        array,
+        { pre: chpre, post: "" },
+        tmpId,
+        that,
+        false,
+        md
+      );
+      this.MakeSeq(mdObj);
+    }
+    hooks["pre"] = [];
+    hooks["post"] = [];
+    var PostBlEnqUpdateObj = returnPostBlEnqObject(
+      tmpId,
+      array,
+      hooks,
+      that,
+      ""
+    );
+    this.MakeSeq(PostBlEnqUpdateObj);
+    this.OnCloseServiceArray.push(array.ServiceArray);
+    ReqObj.Form[tmpId].OnCloseArray.push(array.UiArray);
+  }
+  var array = {
+    UiArray: [],
+    ServiceArray: [],
+  };
+  hooks["pre"] = [];
+  hooks["post"] = [];
+  var ThankYouObj = {
+    object: {
+      obj: new ThankYou(tmpId),
+      toReplace: false,
+      objHtmlId: tmpId + "_thankDiv",
+      isService: false,
+      array: array,
+      hooks: hooks,
+    },
+    tmpId: tmpId,
+    that: that,
+    AfterService: [],
+    hasFallback: false,
+    FallbackObj: null,
+  };
+  this.MakeSeq(ThankYouObj);
+  this.OnCloseServiceArray.push(array.ServiceArray);
+  ReqObj.Form[tmpId].OnCloseArray.push(array.UiArray);
+  this.OnClosegetStep(tmpId);
+};
+
+FormSeq.prototype.OnClosegetStep = function (tmpId) {
+  this.getStep(tmpId, true);
+};
+
+/*
+Currently there are only  two sections left and right. More sections can be added ! Follow the same pattern.
+*/
+function sectionInitialisationStepWise(tmpId, step) {
+  leftSideInitialise(tmpId, step);
+  rightSideInitialise(tmpId, step);
+  if (isInactiveBL(tmpId)) {
+    let relatedProdHtml = downSideInitialise(tmpId);
+    if (!document.getElementById("recommendProd")) {
+      $("#t" + tmpId + "_mcont").append(relatedProdHtml);
+    }
+
+    if (relatedProdHtml != '') {
+      $("#recommendProd").css({
+        display: "block",
+      });
+    }
+  }
+}
+
+function downSideInitialise(tmpId) {    //inactive changes  //recoms
+  let brd_mcat_id = ReqObj.Form[tmpId].mcatId;
+  let forms_data=null;
+  let feat_data = null;
+  try{
+  forms_data = (ispdp(tmpId) || modIdf === "PDFIM") ? $.parseJSON(sessionStorage.getItem("formsPla" + brd_mcat_id)) : isLightbox(tmpId) ?  $.parseJSON(
+    sessionStorage.getItem("poiCatData - " + brd_mcat_id)
+  )  : $.parseJSON(
+    sessionStorage.getItem("relCatData - " + brd_mcat_id));
+  }
+  catch(err){
+    forms_data = null;
+  }
+  try{
+    feat_data = (!ispdp(tmpId) && modIdf !== "PDFIM" && !isLightbox(tmpId)) ? $.parseJSON(
+      sessionStorage.getItem("featCats")
+    ) : null;
+  }
+  catch(err){
+        feat_data = null;
+  }
+  return (isSet(forms_data) && forms_data.length > 1) ? recomendedProds(forms_data, tmpId) : (isSet(feat_data) && feat_data.length > 1) ? showFeaturedRecom(feat_data, tmpId) :'';
+}
+
+function recomendedProds(forms_data, tmpId) {  //inactive changes
+  if (isSet(forms_data)) {
+    var ec= isLightbox(tmpId) ? "Inactive BL New Seller" : "Inactive BL New";
+    if(!ispdp(tmpId) && modIdf.toLowerCase() != "pdfim"){
+      blenqGATracking(ec, "Related Categories Shown-"+forms_data.length, getEventLabel(), 1, "0901");  //not sampled
+    }
+    let text= (ispdp(tmpId) || modIdf === "PDFIM") ? "View Similar products" : "View More Products";     //inactive changes
+    $('#recommendProd').remove();  
+    let html = `<!-- Similar Section -->
+            <div id="recommendProd" class="VSP-SEC">
+            <div class="vsp-heading">
+                <h3>`+text+`</h3>
+            </div>
+            <ul id="prodList" class="ProBoxUL">`;
+    let count = 0;
+    var proclass= ispdp(tmpId) ? "procontent" : "proInact";
+    var param= (modIdf === "PDFIM") ? 'pdfblform=1' : 'blform=1';
+    forms_data.forEach((item) => {
+      count += 1; 
+      if(ispdp(tmpId) || modIdf === "PDFIM"){
+        item.ProdUrl = item.ProdUrl.endsWith(".html") ? item.ProdUrl + '?' + param  : item.ProdUrl + '&' + param;
+
+      html += `<li class="berds10 ibgc" id='recomProd${count}' onclick="bltrack(${count},${tmpId})">
+                          <a target="_blank" href=${item.ProdUrl} class="ProBox-Item disp-inl">
+                              <div class="Proimg">
+                                  <img src=${item.ProdImage} />
+                              </div>
+                              <p class="${proclass} color3 atxu cbl_fs16 befwt">${item.ProdName}</p>
+                              <p class="proPrice">${item.Price}</p>
+                          </a>
+                    </li>`;
+      }
+      else if(isLightbox(tmpId)){
+        item= isSet(item[0]) ? item[0] : item;
+        item.poiCatUrl = item.poiCatUrl.endsWith(".html") ? item.poiCatUrl + '?sllrblform=1' : item.poiCatUrl + '&sllrblform=1' ;
+        html += `<li class="berds10 ibgc" id='recomProd${count}' onclick="bltrack(${count},${tmpId})">
+                          <a target="_blank" href=${item.poiCatUrl} class="ProBox-Item disp-inl">
+                              <div class="Proimg">
+                                  <img src=${item.poiCatImg} />
+                              </div>
+                              <p class="${proclass} color3 atxu cbl_fs16 befwt" style='height:26px'>${item.poiCatName}</p>
+                          </a>
+                    </li>`;
+
+      }
+      else{
+        item= isSet(item[0]) ? item[0] : item;
+        item.relCatUrl = item.relCatUrl.endsWith(".html") ? 'https://dir.indiamart.com' + item.relCatUrl + '?blform=1' : 'https://dir.indiamart.com' + item.relCatUrl + '&blform=1' ;
+        html += `<li class="berds10 ibgc" id='recomProd${count}' onclick="bltrack(${count},${tmpId})">
+                          <a target="_blank" href=${item.relCatUrl} class="ProBox-Item disp-inl">
+                              <div class="Proimg">
+                                  <img src=${item.relCatImg} />
+                              </div>
+                              <p class="${proclass} color3 atxu cbl_fs16 befwt">${item.relCatName}</p>
+                          </a>
+                    </li>`;
+      }      
+    });
+
+    html += `</ul></div>`;
+    return html;
+  }
+}
+
+function showFeaturedRecom(feat_data, tmpId){   //recoms
+  // console.log("successfully shown");
+  if (isSet(feat_data)) {
+    var ec="Inactive BL New";
+    blenqGATracking(ec, "Featured Categories Shown-"+feat_data.length, getEventLabel(), 1, "0901");  //not sampled    
+    let text= "View More Products";     
+    $('#recommendProd').remove();  
+    let html = `<!-- Similar Section -->
+            <div id="recommendProd" class="VSP-SEC">
+            <div class="vsp-heading">
+                <h3>`+text+`</h3>
+            </div>
+            <ul id="prodList" class="ProBoxUL">`;
+    let count = 0;
+    var proclass= "proInact";
+    var param= 'blform=1';
+    feat_data.forEach((item) => {
+      count += 1; 
+      item= isSet(item[0]) ? item[0] : item;
+      item.catUrl = item.catUrl.endsWith(".html") ? item.catUrl + '?blform=1' :  item.catUrl + '&blform=1' ;
+      html += `<li class="berds10 ibgc" id='recomProd${count}' onclick="bltrack(${count},${tmpId})">
+                          <a target="_blank" href=${item.catUrl} class="ProBox-Item disp-inl">
+                              <div class="Proimg">
+                                  <img src=${item.catImg} />
+                              </div>
+                              <p class="${proclass} color3 atxu cbl_fs16 befwt">${item.catName}</p>
+                          </a>
+                    </li>`;
+            
+    });
+
+    html += `</ul></div>`;
+    return html;
+  }
+
+}
+
+function bltrack(count, tmpId) {      //inactive changes  //Product Click tracking
+  ReqObj.Form['0' + tmpId].inactiveBL = true;    //not sampled
+  var ec= ispdp('0' + tmpId) ? "Inactive BL" : isLightbox('0' + tmpId) ? "Inactive BL New Seller" : "Inactive BL New";
+  blenqGATracking(ec, "Prod" + count, getEventLabel(), 0, "0901");   
+  ReqObj.Form['0' + tmpId].inactiveBL = false; 
+}
+function leftSideInitialise(tmpId, step) {
+  // this will create inner contaniers for left section acc to type of form
+  new LeftSide(tmpId, ReqObj.Form[tmpId].typeofform, step);
+}
+
+function rightSideInitialise(tmpId, step) {
+  // this will create inner contaniers for right section acc to type of form
+  if (step === 0) new RightSide(tmpId, ReqObj.Form[tmpId].typeofform, step);
+}
+
+function initialiseOuterSection(tmpId) {
+  // this will create outer containers for left and right sections
+  $("#t" + tmpId + "_leftsection").html("");
+  $("#t" + tmpId + "_rightsection").html("");
+  $("#t" + tmpId + "_leftsection").html(sectionInitialise(getSections(tmpId, ReqObj.Form[tmpId].typeofform)["left"]));
+  $("#t" + tmpId + "_rightsection").html(sectionInitialise(getSections(tmpId, ReqObj.Form[tmpId].typeofform)["right"]));
+}
+
+function sectionInitialise(section_obj) {
+  var len = section_obj.length;
+  var html = "";
+  for (var i = 0; i < len; i++) {
+    html += returnContainer( section_obj[i].section_id, section_obj[i].section_element, section_obj[i].section_class, "", "", "" ) + "</div>";
+  }
+  return html;
+}

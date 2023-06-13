@@ -6514,3 +6514,155 @@ function pdpenqImage(tmpId) {
 function direnqImage(tmpId) {
   return isImageEnqDIR(tmpId) && (modIdf === "DIR");
 }
+
+function closeFormCond(tmpId) {
+  return (isEnq(tmpId) || isBl(tmpId)) &&
+    (!ReqObj.Form[tmpId].generationCalled ||
+      !$("#t" + tmpId + "_thankDiv").hasClass("bedsnone"))
+    ? true
+    : false;
+}
+
+function setCountryName(tmpId) {
+  if (isSet(ReqObj["CountryName"]) && $("#t" + tmpId + "country").length) {
+    var ele = $("#t" + tmpId + "country_dropd").detach();
+    if (ReqObj["CountryName"].includes("Lao People"))
+      $("#t" + tmpId + "country").text("Lao People's Democratic Republic");
+    else $("#t" + tmpId + "country").text(ReqObj["CountryName"]);
+    $("#t" + tmpId + "country").append(ele);
+    if ($("#t" + tmpId + "country").height() > 18) {
+      $("#t" + tmpId + "country").addClass("eHcnty");
+    } else {
+      $("#t" + tmpId + "country").removeClass("eHcnty");
+    }
+  }
+}
+
+function FormCloseEnqBL(tmpId, event) {
+  var form_type = ReqObj.Form[tmpId].formType === "Enq" ? "Send Enquiry" : (isInactiveBL(tmpId) && ispdp(tmpId)) ? "Post Buy Leads New" : "Post Buy Leads";   
+       //inactive changes
+  var that = ReqObj.Form[tmpId].FormSequence || {};
+  var ClassesforTracking = "CloseStep:";
+  ClassesforTracking += that.StepCounter + 1 + ":";
+  var constructor = "";
+  if (isSet(ReqObj.Form[tmpId].UiArray[that.StepCounter])) {
+    for (var i = 0;i < ReqObj.Form[tmpId].UiArray[that.StepCounter].length;i++) {
+      constructor += ConstructorName(ReqObj.Form[tmpId].UiArray[that.StepCounter][i].Obj);
+      if (i < ReqObj.Form[tmpId].UiArray[that.StepCounter].length && i > 0)
+        ClassesforTracking += "-";
+      ClassesforTracking += ConstructorName( ReqObj.Form[tmpId].UiArray[that.StepCounter][i].Obj );
+    }
+  }
+  pnsCloseTrack(tmpId); 
+  //inactive changes
+  if(isInactiveBL(tmpId) && !ispdp(tmpId) && modIdf.toLowerCase() != "pdfim" ){
+    inactiveblCloseTrack(tmpId);
+  }
+  
+  if(isImageVidEnq(tmpId) && (that.StepCounter == 0 || that.StepCounter == 1)){   //image track
+    var sampling = ReqObj.Form[tmpId].noSampling;
+    ReqObj.Form[tmpId].noSampling=true;
+    blenqGATracking(form_type, ClassesforTracking, getEventLabel(), 0, tmpId);
+    ReqObj.Form[tmpId].noSampling=sampling;
+  }
+  else
+  blenqGATracking(form_type, ClassesforTracking, getEventLabel(), 0, tmpId);
+  
+  if (constructor.toLowerCase() === "userverification" && Enq09(tmpId))
+    blenqGATracking(form_type, "OTP1NotFilled", getEventLabel(), 1, tmpId);
+  CloseForm(tmpId); // check !
+}
+
+function FormCloseStep(tmpId, event) {
+  var form_type = ReqObj.Form[tmpId].formType === "Enq" ? "Send Enquiry" : (isInactiveBL(tmpId) && ispdp(tmpId)) ? "Post Buy Leads New" : "Post Buy Leads";     //inactive changes
+  var that = ReqObj.Form[tmpId].FormSequence || {};
+  var hasBedsnone = $("#t" + tmpId + "_thankDiv").hasClass("bedsnone");
+  var ClassesforTracking = "CloseStep:";
+  ReqObj.Form[tmpId].IsthroughClosebtn = true;
+  if (ReqObj.Form[tmpId].IsbackClicked === true) {
+    ReqObj.Form[tmpId].IsbackClicked = false;
+    that.StepCounter += 1;
+  }
+  pnsCloseTrack(tmpId);
+  if (!ReqObj.Form[tmpId].generationCalled || !hasBedsnone) {
+    if (!ReqObj.Form[tmpId].generationCalled) {
+      if (that.StepCounter > -1) {
+        ClassesforTracking += that.StepCounter + 1 + ":";
+        if (isSet(ReqObj.Form[tmpId].UiArray[that.StepCounter])) {
+          for (var i = 0; i < ReqObj.Form[tmpId].UiArray[that.StepCounter].length; i++) {
+            if (i < ReqObj.Form[tmpId].UiArray[that.StepCounter].length && i > 0)
+              ClassesforTracking += "-";
+            ClassesforTracking += ConstructorName(ReqObj.Form[tmpId].UiArray[that.StepCounter][i].Obj);
+          }
+        }
+        blenqGATracking(form_type, ClassesforTracking, getEventLabel(), 0, tmpId);
+        CloseForm(tmpId);
+      } else {
+        CloseForm(tmpId);
+      }
+    } else if (!hasBedsnone) {
+      that.OnCloseCounter = parseInt(that.OnCloseCounter, 10);
+      that.StepCounter = parseInt(that.StepCounter, 10);
+      if (that.OnCloseCounter > -1) {
+        ClassesforTracking += that.StepCounter + 1 + (that.OnCloseCounter + 1) + ":";
+        if (isSet(ReqObj.Form[tmpId].OnCloseArray) && isSet(ReqObj.Form[tmpId].OnCloseArray[that.OnCloseCounter])) {
+          for (var i = 0; i < ReqObj.Form[tmpId].OnCloseArray[that.OnCloseCounter].length; i++) {
+            if (i < ReqObj.Form[tmpId].OnCloseArray[that.OnCloseCounter].length && i > 0)
+              ClassesforTracking += "-";
+            ClassesforTracking += ConstructorName(ReqObj.Form[tmpId].OnCloseArray[that.OnCloseCounter][i].Obj);
+          }
+        }
+        blenqGATracking(form_type, ClassesforTracking, getEventLabel(), 0, tmpId);
+        CloseForm(tmpId);
+      } else {
+        ClassesforTracking += that.StepCounter + 1 + 1 + ":ThankYou";
+        CloseForm(tmpId);
+      }
+    }
+  } else {
+    var constructor = "";
+    if (isSet(ReqObj.Form[tmpId].OnCloseStep) && !ReqObj.Form[tmpId].OnCloseStep) {
+      ClassesforTracking += that.StepCounter + 1 + ":";
+      if (isSet(ReqObj.Form[tmpId].UiArray[that.StepCounter])) {
+        for (var i = 0; i < ReqObj.Form[tmpId].UiArray[that.StepCounter].length; i++) {
+          if (i < ReqObj.Form[tmpId].UiArray[that.StepCounter].length && i > 0)
+            ClassesforTracking += "-";
+          constructor += ConstructorName(ReqObj.Form[tmpId].UiArray[that.StepCounter][i].Obj);
+          ClassesforTracking += ConstructorName(ReqObj.Form[tmpId].UiArray[that.StepCounter][i].Obj);
+        }
+      }
+      blenqGATracking(form_type, ClassesforTracking, getEventLabel(), 0, tmpId);
+      if (isBl(tmpId) || isEnq(tmpId)) {
+
+        // Get More Photos //new gmp
+        if(ReqObj.Form[tmpId].formType.toLowerCase() === "enq") {
+          if(ValidGenId(ReqObj.Form[tmpId].generationId)){
+            if(getMorePh(tmpId) && (new RegExp("userverification").test(ReqObj.Form[tmpId].currentScreen.toLowerCase()) || new RegExp("requirementdtl").test(ReqObj.Form[tmpId].currentScreen.toLowerCase()) || new RegExp("isq").test(ReqObj.Form[tmpId].currentScreen.toLowerCase()) || (currentISO() !== "IN" && ReqObj.UserDetail.mb1 == "" && ( ReqObj.Form[tmpId].currentScreen.toLowerCase() == "contactdetail"|| new RegExp("requirementdtl").test(ReqObj.Form[tmpId].currentScreen.toLowerCase()))))){
+              saveEnr(tmpId);
+          }
+        }          
+        
+      }
+
+
+        // Get More Photos
+
+
+        ReqObj.Form[tmpId].FormSequence._screen7(tmpId);
+      } else ReqObj.Form[tmpId].FormSequence.OnCloseSeq(tmpId);
+    } else {
+      ClassesforTracking += that.StepCounter + 1 + (that.OnCloseCounter + 1) + ":";
+      if (isSet(ReqObj.Form[tmpId].OnCloseArray) && isSet(ReqObj.Form[tmpId].OnCloseArray[that.OnCloseCounter])) {
+        if (isSet(ReqObj.Form[tmpId].OnCloseArray[that.OnCloseCounter])) {
+          for (var i = 0; i < ReqObj.Form[tmpId].OnCloseArray[that.OnCloseCounter].length; i++) {
+            if (i < ReqObj.Form[tmpId].OnCloseArray[that.OnCloseCounter].length && i > 0)
+              ClassesforTracking += "-";
+            ClassesforTracking += ConstructorName(ReqObj.Form[tmpId].OnCloseArray[that.OnCloseCounter][i].Obj);
+          }
+        }
+      }
+      blenqGATracking(form_type, ClassesforTracking, getEventLabel(), 0, tmpId);
+      ReqObj.Form[tmpId].FormSequence.OnClosegetStep(tmpId);
+    }
+  }
+}
