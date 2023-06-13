@@ -1910,4 +1910,950 @@ function ShowButton(array, tmpId) {
   }
   return true;
 }
+function modificationOnBack(tmpId) {
+  if (
+    isSet($("#t" + tmpId + "_cname_ocbx").val()) &&
+    $("#t" + tmpId + "_cname_ocbx").val() !== ""
+  ) {
+    $("#t" + tmpId + "ncbx").addClass("bedsnone");
+    $("#t" + tmpId + "ocbx").removeClass("bedsnone");
+  } else if (
+    isSet($("#t" + tmpId + "_cname_ncbx").val()) &&
+    $("#t" + tmpId + "_cname_ncbx").val() !== ""
+  ) {
+    $("#t" + tmpId + "ocbx").addClass("bedsnone");
+    $("#t" + tmpId + "ncbx").removeClass("bedsnone");
+  } else if (
+    isSet($("#t" + tmpId + "_cname_ocbx").val()) &&
+    $("#t" + tmpId + "_cname_ocbx").val() === "" &&
+    isSet($("#t" + tmpId + "_cname_ncbx").val()) &&
+    $("#t" + tmpId + "_cname_ncbx").val() === ""
+  ) {
+    $("#t" + tmpId + "ocbx").removeClass("bedsnone");
+    $("#t" + tmpId + "ncbx").removeClass("bedsnone");
+  }
+  //   if(isSet($($('input[type=text].oldui')[0]).val()) && $($('input[type=text].oldui')[0]).val() !== ""){
+  //     $($('input[type=text].newui')[0]).parent().addClass('bedsnone')
+  //     $($('input[type=text].newui')[0]).parent().parent().addClass("bedsnone")
+  //     $($('input[type=text].oldui')[0]).parent().removeClass('bedsnone')
+  //   }
+  //   else if (isSet($($('input[type=text].newui')[0]).val()) && $($('input[type=text].newui')[0]).val() !== ""){
+  //     $($('input[type=text].oldui')[0]).parent().addClass('bedsnone')
+  //     $($('input[type=text].newui')[0]).parent().removeClass('bedsnone')
+  //     $($('input[type=text].newui')[0]).parent().parent().removeClass("bedsnone")
+  //   }
+  //   else if(isSet($($('input[type=text].oldui')[0]).val()) && $($('input[type=text].oldui')[0]).val() === "" && $($('input[type=text].newui')[0]).val() === "") {
+  //     $($('input[type=text].oldui')[0]).parent().removeClass('bedsnone')
+  //     $($('input[type=text].newui')[0]).parent().removeClass('bedsnone')
+  //     $($('input[type=text].newui')[0]).parent().parent().removeClass("bedsnone")
+  //   }
+}
+
+
+function stepNextButton(typeofform, tmpId, currentScreen) {
+  var btnObj = restScreensButton(typeofform, tmpId, currentScreen); //rest screens
+  backButtonNameUI(tmpId);
+  return btnObj;
+}
+
+function restScreensButton(typeofform, tmpId, currentScreen) {
+  var btnObj = "";
+  var imeshCookie = imeshExist();
+  var iso = currentISO();
+  if (
+    checkblockedUser() &&
+    new RegExp("userverification").test(currentScreen)
+  ) {
+    btnObj =
+      typeofform === "bl"
+        ? {
+          buttonText: "Submit",
+          buttonCls: "blotpbtn hovsub",
+          parentCls: "befstgo3",
+        }
+        : { buttonText: "Submit", buttonCls: "befstgo3 hovsub", parentCls: "" };
+  } else if (imeshCookie === "") {
+    var btncls = isGDPRCountry() ? "befstbtn2 hovsub" : "befstgo2 hovsub";
+    var bfstgo = isInactiveBL(tmpId) ? (iso == "IN") ? "befstgobl" : "bfstgobl" : (iso == "IN") ? "befstgo" : "befstgo1";
+    var bfsbtnbl = isInactiveBL(tmpId) ? "bfsbtnbl hovsub" : "befstbtn hovsub";
+    var valuebtn = isInactiveBL(tmpId) ? "Continue" : "Go";
+    var gobtn = isInactiveBL(tmpId) ? " gobtn" : "";
+    btnObj =
+      typeofform === "bl"
+        ? iso === "IN"
+          ? {
+            buttonText: "Go",
+            buttonCls: "befstbtn hovsub" + gobtn,
+            parentCls: bfstgo,
+          }
+          : {
+            buttonText: valuebtn,
+            buttonCls: bfsbtnbl,
+            parentCls: bfstgo,
+          }
+        : {
+          buttonText: "Submit",
+          buttonCls: btncls + " hovsub",
+          parentCls: "",
+        }; //login
+  } else {
+    if (
+      new RegExp("contactdetail").test(currentScreen) ||
+      new RegExp("productname").test(currentScreen) ||
+      currentScreen === "moredetails" ||
+      new RegExp("moredetails").test(currentScreen)
+    ) {
+      var mt0 = isInactiveBL(tmpId) ? (new RegExp("moredetails").test(currentScreen) || (new RegExp("contactdetail").test(currentScreen) && ReqObj.Form[tmpId].FormSequence._screenCounter > 0)) ? " mt20" : " bemt0" : "";
+      var btn_cls = isInactiveBL(tmpId) && currentISO() == "IN" ? " blbtn" : "";
+      btnObj =
+        typeofform === "bl"
+          ? {
+            buttonText: "Submit",
+            buttonCls: "form-btn hovsub" + btn_cls,
+            parentCls: "befstgo2" + mt0,
+          }
+          : {
+            buttonText: "Submit",
+            buttonCls: " befstgo2 hovsub",
+            parentCls: "",
+          }; // contact
+    }
+
+    if (new RegExp("userverification").test(currentScreen)) {
+      btnObj =
+        typeofform === "bl"
+          ? {
+            buttonText: "Submit",
+            buttonCls: "blotpbtn hovsub",
+            parentCls: "befstgo3",
+          }
+          : {
+            buttonText: "Submit",
+            buttonCls: "befstgo3 hovsub ",
+            parentCls: "",
+          }; // otp
+    }
+    if (
+      new RegExp("isq").test(currentScreen) ||
+      currentScreen === "isq" ||
+      currentScreen === "isqrequirementdtl" ||
+      currentScreen === "requirementdtl" ||
+      currentScreen === "staticques" ||
+      currentScreen === "requirementdtlblstaticques" ||
+      currentScreen === "blstaticques" ||
+      currentScreen === "moredetailsblstaticques" ||
+      currentScreen === "requirementdtlmoredetails" ||
+      currentScreen === "isqrequirementdtlmoredetails" ||
+      currentScreen === "moredetailsblstaticques" ||
+      currentScreen === "requirementdtlmoredetailsblstaticques" ||
+      currentScreen === "isqmoredetails"
+    ) {
+      var mt0 = isInactiveBL(tmpId) ? (new RegExp("blstaticques").test(currentScreen)) ? "mt20" : "mt2" : "";
+      var btn_cls = isInactiveBL(tmpId) && currentISO() == "IN" ? " blbtn" : "";
+      btnObj =
+        typeofform === "bl"
+          ? {
+            buttonText: "Next",
+            buttonCls:
+              isGlIdEven(tmpId) && tmpId.substr(0, 2) === "01"
+                ? "form-btn hovsub mbl15_0"
+                : "form-btn hovsub" + btn_cls,
+            parentCls: "befstgo2 " + mt0,
+          }
+          : { buttonText: "Next", buttonCls: "befstgo2 hovsub", parentCls: "" }; // isq/enrich
+    }
+  }
+  if (isImageVidEnq(tmpId)) btnObj.buttonCls += direnqImage(tmpId) ? " btmarg befwt" : " befwt";
+  return btnObj;
+}
+
+function MoreDetailService(tmpId, which) {
+  var data = ContactDetail.prototype.getData(tmpId, which);
+  if (
+    (isEnq(tmpId) || isBl(tmpId)) &&
+    currentISO() === "IN" &&
+    which.toLowerCase() !== "gst"
+  ) {
+    if (ReqObj.Form[tmpId].gst.number) {
+      var _data = ContactDetail.prototype.multipleHitCases(
+        data,
+        "again",
+        "notgst"
+      );
+    } else var _data = ContactDetail.prototype.multipleHitCases(data);
+    data = _data.data;
+  } else if (
+    (isEnq(tmpId) || isBl(tmpId)) &&
+    currentISO() === "IN" &&
+    which.toLowerCase() === "gst"
+  ) {
+    var _data = ContactDetail.prototype.multipleHitCases(data);
+    data = _data.data;
+  } else if (
+    (isEnq(tmpId) || isBl(tmpId)) &&
+    currentISO() !== "IN" &&
+    which.toLowerCase() !== "url"
+  ) {
+    if (ReqObj.Form[tmpId].url.name) {
+      which = which + "URL";
+      var _data = ContactDetail.prototype.multipleHitCases(
+        data,
+        "noturl",
+        "no"
+      );
+    } else var _data = ContactDetail.prototype.multipleHitCases(data);
+    data = _data.data;
+  } else if (
+    (isEnq(tmpId) || isBl(tmpId)) &&
+    currentISO() !== "IN" &&
+    which.toLowerCase() === "url"
+  ) {
+    var _data = ContactDetail.prototype.multipleHitCases(data, "url", "no");
+    data = _data.data;
+  } else data = data;
+
+  data["replica"] = "";
+  data["scrnNm"] =
+    currentISO() === "IN"
+      ? which + "Desktop Enquiry/BL Forms"
+      : which + "Desktop Enquiry/BL Forms Foreign";
+  data = ObjectTrim(data);
+  fireAjaxRequest({
+    data: {
+      ga: {
+        s: true,
+        f: true,
+        gatype: which + "Service",
+        source: "",
+      },
+      tmpId: tmpId,
+      ajaxObj: {
+        obj: "",
+        s: {
+          ss: 0,
+          sf: {
+            af: 0,
+            pa: 0,
+          },
+          f: 0,
+        },
+        f: {
+          f: 0,
+        },
+      },
+      ajaxtimeout: 0,
+      ajaxdata: data,
+      hitfinserv: "",
+      type: 6,
+      typename: which,
+    },
+  });
+  if (
+    (isEnq(tmpId) || isBl(tmpId)) &&
+    currentISO() === "IN" &&
+    _data.hitagain === true
+  ) {
+    MoreDetailService(tmpId, "GST");
+  } else if (
+    (isEnq(tmpId) || isBl(tmpId)) &&
+    currentISO() !== "IN" &&
+    _data.hitagain === true
+  ) {
+    MoreDetailService(tmpId, "URL");
+  }
+}
+
+
+function onURLName(tmpId) {
+  var url =
+    urlConditions(tmpId).ask === false &&
+      typeof ReqObj.UserDetail.isurl === "undefined"
+      ? true
+      : urlConditions(tmpId).ask;
+  if (
+    imeshExist() !== "" &&
+    url &&
+    (ReqObj.miniDetailHit.ping === false ||
+      ReqObj.miniDetailHit.reply.success === true)
+  ) {
+    $("#t" + tmpId + "_cdiv").append(
+      mdtlHtml(tmpId, 0, { ask: true, what: "URL", key: 2 })
+    );
+    ReqObj.Form[tmpId].url.html = true;
+  }
+}
+
+function onCName(tmpId, callFromEvent) {
+  if (
+    ((tmpId.substring(0, 2) === "09" &&
+      ReqObj.Form[tmpId].formType.toLowerCase() === "enq") ||
+      isSSB(tmpId)) &&
+    $("#t" + tmpId + "_cbx").length === 0
+  ) {
+    if (cNameConditions(tmpId)) {
+      if ($("#t" + tmpId + "_cdiv").length !== 0) {
+        if (
+          (isSSB(tmpId) &&
+            (ReqObj.miniDetailHit.ping === false ||
+              ReqObj.miniDetailHit.reply.success === true)) ||
+          !isSSB(tmpId)
+        )
+          $("#t" + tmpId + "_cdiv").html(
+            mdtlHtml(tmpId, 0, { ask: true, what: "Company Name", key: 0 })
+          );
+        (isSSB(tmpId) && isnewSSB(tmpId)) || isEnq(tmpId)
+          ? ""
+          : manipulateWidth(tmpId, ReqObj.Form[tmpId].cName.cnameId);
+        if (
+          isEnq(tmpId) &&
+          $("#t" + tmpId + "_reqbox").length > 0 &&
+          currentISO() !== "IN"
+        )
+          manipulateWidth(tmpId, ReqObj.Form[tmpId].cName.cnameId);
+        ReqObj.Form[tmpId].cName.fs = true;
+        ReqObj.Form[tmpId].cName.cdiv = true;
+      }
+    } else {
+      if (
+        callFromEvent === true &&
+        ReqObj.UserDetail.cName === "" &&
+        (ReqObj.Form[tmpId].cName.tov1 === true ||
+          ReqObj.Form[tmpId].cName.rb === true)
+      ) {
+      } else {
+        $("#t" + tmpId + "_cdiv").html("");
+        ReqObj.Form[tmpId].cName.fs = false;
+        ReqObj.Form[tmpId].cName.cdiv = false;
+      }
+    }
+  } else if (
+    tmpId.substring(0, 2) === "09" &&
+    ReqObj.Form[tmpId].formType.toLowerCase() === "enq"
+  ) {
+    if (
+      $("#t" + tmpId + "_cbx").length === 1 &&
+      !cNameConditions(tmpId) &&
+      !cNameIsq(tmpId)
+    ) {
+      ReqObj.Form[tmpId].cName.isShown = false;
+      $("#t" + tmpId + "_cbx").addClass("bedsnone");
+    } else {
+      ReqObj.Form[tmpId].cName.isShown = true;
+      $("#t" + tmpId + "_cbx").removeClass("bedsnone");
+    }
+  }
+}
+function mdtlError(tmpId, id, md) {
+  var html = "";
+  var cls =
+    (isOtherEnq(tmpId) && tmpId.substring(0, 2) === "09") ||
+      (isOtherEnq(tmpId) && ReqObj.Form[tmpId].FormSequence.StepCounter > 0)
+      ? "be-erbx beerrp bedsnone"
+      : isSSB(tmpId)
+        ? "mb-ertxt mb-mt10 bedsnone"
+        : "be-erbx bedsnone";
+  html = returnContainer("t" + tmpId, "_mdtlerror_" + md.suffix, cls, "", "");
+  html += returnContainer("t" + tmpId, id + "_errmsg", "", "content", "");
+  html += "</div >";
+  html =
+    (isOtherEnq(tmpId) && tmpId.substring(0, 2) === "09") ||
+      (isOtherEnq(tmpId) && ReqObj.Form[tmpId].FormSequence.StepCounter > 0) ||
+      isSSB(tmpId)
+      ? html
+      : html + '<a class="be-erarw" data-role="arrow"></a>';
+  html += "</div >";
+  return html;
+}
+
+function cnameTooltip(tmpId, outerid) {
+  var cls = "int-ct3 info_iconeqbl";
+  return (
+    '<div class="' +
+    cls +
+    '"> <div class="blnewform_sprit inft bepr inth inftIcn" style="position: relative!important;"> <div class="inthDtl dn beabult"> <p class>Make sure your company name:</p><ul> <li>is longer than 4 characters</li><li>is not the name of contact person</li><li>is not the name of product you sell</li><li>is not generic e.g. \'textile\',\'SEO services\', \'travel agency\' </li></ul> </div></div></div>'
+  );
+}
+
+function mdtlHtml(tmpId, todo, md) {
+  var oldui = (isEnq(tmpId) || isBl(tmpId)) && md.ui === "old" ? true : false;
+  var ui = mdtlUI(tmpId, md, oldui);
+  var err = md.key === 2 || md.key === 0 ? mdtlError(tmpId, ui.id, md) : "";
+  var cls = IsChatbl(tmpId)
+    ? "cpNm cbl_txt"
+    : isEnq(tmpId) && oldui === false
+      ? "be-slbox inpt_errorbx inPlace mdplc"
+      : "cpNm";
+  if (oldui === true) cls += " oldui";
+  else cls += " newui";
+  if (isInactiveBL(tmpId)) cls += " cbl_br10";
+  ui.placeholder = isEnq(tmpId) && oldui === false ? "" : ui.placeholder;
+  var inp = returnInput(
+    "t" + tmpId,
+    ui.id,
+    "text",
+    ui.id,
+    ui.placeholder,
+    cls,
+    "",
+    ui.insty,
+    ui.maxlength,
+    ""
+  );
+  var htmlobj = {
+    OuterWrapper:
+      "<div id='t" + tmpId + ui.outerid + "' class='" + ui.dvc + "'>",
+    Label:
+      "<label id='t" +
+      tmpId +
+      ui.outerid +
+      "_lbl' style='" +
+      ui.lbls +
+      "' class='" +
+      ui.lblc +
+      "'>" +
+      ui.lbtxt +
+      "</label>",
+    UserInput: isSSB(tmpId)
+      ? isnewSSB(tmpId)
+        ? inp + err
+        : "<div class='mb-InCon'>" + inp + err + "</div>"
+      : isBlInline(tmpId)
+        ? "<div class='pflx1'>" + inp + err + "</div>"
+        : IsChatbl(tmpId)
+          ? inp + skipDiv1(tmpId)
+          : inp + err, //chat bl bug
+    ClosingWrapper: "</div>",
+    Tooltip: cnameTooltip(tmpId, ui.outerid),
+  };
+  if (md.key === 0 && !IsChatbl(tmpId)) {
+    htmlobj.Label =
+      !oldui && isEnq(tmpId)
+        ? htmlobj.Label
+        : "<div class='cbl_df'>" + htmlobj.Label + htmlobj.Tooltip + "</div>";
+    htmlobj.ClosingWrapper += !oldui && isEnq(tmpId) ? htmlobj.Tooltip : "";
+  }
+  var html =
+    htmlobj.OuterWrapper +
+    htmlobj.Label +
+    htmlobj.UserInput +
+    htmlobj.ClosingWrapper;
+  if (md.key === 0) ReqObj.Form[tmpId].cName.chtml = true;
+  if (md.key === 1) ReqObj.Form[tmpId].gst.html = true;
+  return todo === 1 ? htmlobj : html;
+}
+
+function mdtlUI(tmpId, md, oldui) {
+  var lblr =
+    ReqObj.Form[tmpId].formType.toLowerCase() === "enq"
+    ? pdpenqImage(tmpId)
+    ? "color:#05796F"
+    : "color:#111"
+  : "color:#696969";
+  var ins =
+    ReqObj.Form[tmpId].formType.toLowerCase() === "bl"
+      ? ""
+      : "border-radius: 7px;";
+  var mdtext =
+    md.key === 1
+      ? "GST Number"
+      : md.key === 2
+        ? "Website URL"
+        : "Company/ Business Name";
+  if (md.key === 0) ReqObj.Form[tmpId].cName["cnameId"] = "_cname_" + md.suffix;
+  return {
+    id:
+      md.key === 0
+        ? "_cname_" + md.suffix
+        : md.key === 1
+          ? "_gstname"
+          : "_urlname",
+    outerid:
+      md.key === 0 ? "_company_" + md.suffix : md.key === 1 ? "_gst" : "_url",
+    placeholder:
+      md.key === 2
+        ? "Eg: www.johnenterprise.com"
+        : md.key === 0
+          ? IsChatBLInline(tmpId) || pdpenqImage(tmpId)
+            ? "Eg: Suguna Foods Private Limited"
+            : "Eg: John Enterprises, Suguna Foods Private Limited"
+          : IsChatbl(tmpId)
+            ? "Please enter your " + mdtext
+            : (md.key === 2 &&
+              ReqObj.Form[tmpId].formType.toLowerCase() === "bl") ||
+              md.key === 1
+              ? "Please enter " + mdtext + " to reach more sellers"
+              : "Please enter your " + mdtext,
+    lbtxt: IsChatbl(tmpId)
+      ? md.key === 0
+        ? "Please provide your <span class='befwt'>Company/ Business Name</span> to get quick response from the supplier"
+        : "Please enter <span class='befwt'>" +
+        mdtext +
+        "</span> to get quick response from the supplier"
+      : md.key === 0
+        ? "Company/ Business Name"
+        : mdtext,
+    dvc: isSSB(tmpId)
+      ? isnewSSB(tmpId)
+        ? "nb-frm nb-mt25"
+        : "mb-flex mb-fxstrt mb-pdt15"
+      : isBlInline(tmpId)
+        ? "idsf pfstrt mb20"
+        : isEnq(tmpId) && oldui === false
+          ? pdpenqImage(tmpId)
+              ? "eqflot eCwd"
+              : "eqflot beW5"
+          : pdpenqImage(tmpId)
+              ? "bemt10 pr eCnm"
+              : "bemt10",
+    lblc: isSSB(tmpId)
+      ? isnewSSB(tmpId)
+        ? "nb-fmlbl"
+        : "mb-lbl"
+      : isBlInline(tmpId)
+        ? "fs15 cl11"
+        : isEnq(tmpId) && oldui === false
+          ? "be-lbl"
+          : "",
+    lbls:
+      isSSB(tmpId) ||
+        isBlInline(tmpId) ||
+        IsChatbl(tmpId) ||
+        (isEnq(tmpId) && oldui === false)
+        ? ""
+        : "padding: 12px 0px 9px 0px;font-size: 15px;" +
+        lblr +
+        ";pointer-events: none;line-height:14px;display: block;",
+    insty:
+      isSSB(tmpId) || (isEnq(tmpId) && oldui === false)
+        ? ""
+        : IsChatbl(tmpId)
+          ? "width:100%;max-width:100%"
+          : "height:42px;vertical-align:top;padding:0px 0 0 8px;font-size: 15px;border:1px solid #c9c6c6;background-color:#fff;color: #000;box-sizing:border-box;width: 50%" +
+          ins,
+    maxlength: md.key === 1 ? "15" : "",
+  };
+}
+
+function MoreDetails(tmpId) {
+  this.className = "MoreDetails";
+  this.mdhtmlObj = [];
+  this.mdhtml = "";
+  this.mdObj = "";
+}
+MoreDetails.prototype.hasHtml = function (mdObj) {
+  this.mdObj = mdObj;
+  this.mdhtmlObj = mdtlHtml(mdObj.tmpId, 1, mdObj.md);
+  if (this.mdhtmlObj !== "") {
+    if (
+      isSet(mdObj.object.countlastUpdated) &&
+      mdObj.object.countlastUpdated === false
+    )
+      ReqObj.Form[mdObj.tmpId].currentclassCount++;
+    this.ifHtmlPresent(mdObj);
+  } else this.ifHtmlNotPresent(mdObj);
+  return true;
+};
+MoreDetails.prototype.ifHtmlPresent = function (mdObj) {
+  if (mdObj.md.key === 0) ReqObj.Form[mdObj.tmpId].cName.isShown = true;
+  if (mdObj.md.key === 2) ReqObj.Form[mdObj.tmpId].url.html = true;
+  mdObj.that.NumberofClassCalled -= 1;
+  AttachObject(mdObj.object, mdObj.tmpId);
+  if (isSet(mdObj.AfterService)) {
+    for (var i = 0; i < mdObj.AfterService.length; i++) {
+      mdObj.that.MakeSeq(mdObj.AfterService[i], mdObj.tmpId);
+    }
+  }
+  if (mdObj.that.NumberofClassCalled === 0) makeFinalSeq(mdObj, mdObj.tmpId);
+};
+MoreDetails.prototype.ifHtmlNotPresent = function (mdObj) {
+  if (mdObj.hasFallback) {
+    CreateSeq(mdObj.FallbackObj);
+  }
+};
+MoreDetails.prototype.displayHtml = function (tmpId) {
+  if (!IsChatbl(tmpId)) {
+    var odiv =
+      isSSB(tmpId) && this.mdObj.md.key === 2
+        ? "_scbx"
+        : isEnq(tmpId) || isBl(tmpId)
+          ? this.mdObj.md.suffix
+          : "_cbx";
+    var cls = isEnq(tmpId) && this.mdObj.md.ui === "new" ? "cbl_df" : "";
+    var mdhtmlsuffixobj = {
+      SuffixOuterHtml: "<div id='t" + tmpId + odiv + "' class='" + cls + "'>",
+      SuffixClosingHtml: "</div>",
+      suffix: odiv,
+    };
+    this.mdhtml = MakeWrapper([[this.mdhtmlObj]], tmpId, mdhtmlsuffixobj, "");
+  } else {
+    this.mdboxQues = MakeWrapper(
+      [[this.mdhtmlObj]],
+      tmpId,
+      WrapperObj(
+        "<div  id='t" + tmpId + "_cnbox' class='cbl_ques cbl_vh'>",
+        "</div>",
+        "_cnbox"
+      ),
+      "ques"
+    );
+    this.mdboxInput = MakeWrapper(
+      [[this.mdhtmlObj]],
+      tmpId,
+      WrapperObj(
+        "<div  id='t" +
+        tmpId +
+        "_cnboxInput ' class='cbl_dtls cbl_name cbl_df t" +
+        tmpId +
+        "_userInput cbl_br10 dn'>",
+        "</div>",
+        "_cnbox"
+      ),
+      "input"
+    );
+    this.mdhtml = this.mdboxQues + this.mdboxInput;
+    return [this.mdboxQues, this.mdboxInput];
+  }
+  return [this.mdhtml];
+};
+MoreDetails.prototype.defaultEvents = function (tmpId) {
+  var that = this;
+  var id =
+    that.mdObj.md.key === 0
+      ? ReqObj.Form[tmpId].cName.cnameId
+      : that.mdObj.md.key === 1
+        ? "_gstname"
+        : "_urlname";
+  if (
+    document.readyState === "complete" ||
+    document.readyState === "interactive"
+  ) {
+    if (IsChatbl(tmpId)) {
+      ChatblfooterAns(tmpId);
+      setTimeout(function () {
+        $("#t" + tmpId + id).focus();
+      }, 1800);
+    }
+    if (isBl(tmpId)) {
+      $("#t" + tmpId + id)
+        .off("focus keypress")
+        .on("focus keypress", function () {
+          $("#t" + tmpId + id).removeClass("highlight-err");
+          $("#t" + tmpId + id + "_err").addClass("bedsnone");
+          $("#" + $("#t" + tmpId + id).parent()[0].id + "_lbl").removeClass(
+            "redc"
+          );
+          $("#t" + tmpId + "_mdtlerror_" + that.mdObj.md["suffix"]).addClass(
+            "bedsnone"
+          );
+        });
+      // $("#t" + tmpId + id).off("blur").on("blur", function () {
+      //   if($("#t" + tmpId + id).val() === ""){
+      //     $("#t" + tmpId + id).parents().removeClass("eqfcsed");
+      //     $("#t" + tmpId + id).attr("placeholder",placeholder_b);
+      //   }
+      // });
+    }
+    if (isEnq(tmpId)) {
+      if (that.mdObj.md.ui === "old")
+        manipulateWidth(tmpId, ReqObj.Form[tmpId].cName.cnameId);
+      var placeholder_f =
+        that.mdObj.md.key === 0
+          ? pdpenqImage(tmpId)
+            ? "Suguna Foods Private Limited"
+            : "Eg: John Enterprises, Suguna Foods Private Limited"
+          : that.mdObj.md.key === 1
+            ? "Please enter GST Number to reach more sellers"
+            : "Eg: www.johnenterprise.com";
+      var placeholder_b =
+        that.mdObj.md.key === 0 && that.mdObj.md.ui === "old"
+          ? placeholder_f
+          : "";
+      if (id === "_cname" && currentISO() !== "IN") {
+        $("input[type=text].newui")
+          .off("focus keypress")
+          .on("focus keypress", function (e) {
+            $($("input[type=text].newui")[0]).parents().addClass("eqfcsed");
+            $($("input[type=text].newui")[0]).attr(
+              "placeholder",
+              placeholder_f
+            );
+            //$('input[type=text].newui').attr("placeholder", placeholder_f);
+          });
+        $("input[type=text].newui")
+          .off("blur")
+          .on("blur", function () {
+            if ($("input[type=text].newui").val() === "") {
+              $("input[type=text].newui").parents().removeClass("eqfcsed");
+              $("input[type=text].newui").attr("placeholder", placeholder_b);
+            }
+          });
+      } else {
+        $("#t" + tmpId + id)
+          .off("focus keypress")
+          .on("focus keypress", function () {
+            $("#t" + tmpId + id)
+              .parents()
+              .addClass("eqfcsed");
+            var placeholder =
+              that.mdObj.md.key === 0
+                ? pdpenqImage(tmpId)
+                  ? "Suguna Foods Private Limited"
+                  : "Eg: John Enterprises, Suguna Foods Private Limited"
+                : that.mdObj.md.key === 1
+                  ? "Please enter GST Number to reach more sellers"
+                  : "Eg: www.johnenterprise.com";
+            $("#t" + tmpId + id).attr("placeholder", placeholder_f);
+            $("#t" + tmpId + id).removeClass("highlight-err");
+            $("#t" + tmpId + id + "_err").addClass("bedsnone");
+            //   $("#t" + tmpId +'_company_ncbx_lbl').removeClass("redc");
+            $("#" + $("#t" + tmpId + id).parent()[0].id + "_lbl").removeClass(
+              "redc"
+            );
+            $("#t" + tmpId + id + "_errmsg").html("");
+          });
+        $("#t" + tmpId + id)
+          .off("blur")
+          .on("blur", function () {
+            if ($("#t" + tmpId + id).val() === "") {
+              $("#t" + tmpId + id)
+                .parents()
+                .removeClass("eqfcsed");
+              $("#t" + tmpId + id).attr("placeholder", placeholder_b);
+            }
+          });
+      }
+    }
+  }
+  if (
+    !isEnq(tmpId) ||
+    (isEnq(tmpId) &&
+      $("#t" + tmpId + "_reqbox").length > 0 &&
+      that.mdObj.md.ui === "old" &&
+      that.mdObj.md.key === 0 &&
+      currentISO() !== "IN")
+  )
+    manipulateWidth(tmpId, ReqObj.Form[tmpId].cName.cnameId);
+  if (isSSB(tmpId) && ReqObj.gst.toask === false)
+    $("#t" + tmpId + "_gst").addClass("bedsnone");
+};
+MoreDetails.prototype.handleButton = function (tmpId) {
+  ButtonNameUI(ReqObj.Form[tmpId].currentScreen, tmpId);
+};
+MoreDetails.prototype.validate = function (tmpId) {
+  var that = this;
+  var id =
+    that.mdObj.md.key === 0
+      ? "_cname_" + that.mdObj.md.suffix
+      : that.mdObj.md.key === 1
+        ? "_gstname"
+        : "_urlname";
+  var md =
+    typeof $("#t" + tmpId + id).val() !== "undefined" &&
+      $("#t" + tmpId + id).val() !== ""
+      ? $("#t" + tmpId + id).val()
+      : "";
+  if (that.mdObj.md.key === 2 || that.mdObj.md.key === 0) {
+    var validate =
+      that.mdObj.md.key === 0
+        ? validation.isCnameValid(md, tmpId)
+        : validation.isURLValid(md, tmpId);
+    if (validate["error_type"] != "") {
+      if (!$("#t" + tmpId + id + "_err").length && !IsChatbl(tmpId)) {
+        var html = "";
+        var cls =
+          isSSB(tmpId) || isBlInline(tmpId) || IsChatbl(tmpId) || isEnq(tmpId)
+            ? "be-erbx beerrp"
+            : "texterr errpdg";
+        html += returnContainer("t" + tmpId, id + "_err", cls, "", "");
+        html += returnContainer("t" + tmpId, id + "_errmsg", "", "content", "");
+        html += "</div>" + validate["error"] + "</div>";
+        $("#t" + tmpId + id).after(html);
+      }
+      if (IsChatbl(tmpId)) {
+        addChatblError(tmpId, validate["error"]);
+      } else {
+        $("#t" + tmpId + id + "_err").removeClass("bedsnone");
+        var errorcls = isSSB(tmpId)
+          ? isnewSSB(tmpId)
+            ? "nb-erbrd"
+            : "mb-erbrd"
+          : "highlight-err";
+        $("#t" + tmpId + id).addClass(errorcls);
+        if (
+          new RegExp("isq").test(ReqObj.Form[tmpId].currentScreen.toLowerCase())
+        )
+          ReqObj.Form[tmpId].isret++;
+      }
+      return false;
+    }
+    if (validate["type"] === true) return true;
+    else {
+      if (!isSet(ReqObj.Form[tmpId].mdObjErr)) ReqObj.Form[tmpId].mdObjErr = [];
+      ReqObj.Form[tmpId].mdObjErr.push(that.mdObj.md.key);
+      if (that.mdObj.md.key === 0) {
+        this.MoreDetailsTracking(tmpId, "CompanyName:wrongCname");
+      }
+      return true;
+    }
+  } else {
+    var validate = validation.isGstValid(md, tmpId);
+    if (validate["type"] === true) return true;
+    else {
+      if (!$("#t" + tmpId + id + "_err").length && !IsChatbl(tmpId)) {
+        var html = "";
+        var cls =
+          isSSB(tmpId) || isBlInline(tmpId) || IsChatbl(tmpId) || isEnq(tmpId)
+            ? "be-erbx beerrp"
+            : "texterr errpdg";
+        html += returnContainer("t" + tmpId, id + "_err", cls, "", "");
+        html += returnContainer("t" + tmpId, id + "_errmsg", "", "content", "");
+        html += "</div>" + validate["error"] + "</div>";
+        $("#t" + tmpId + id).after(html);
+      }
+      if (IsChatbl(tmpId)) {
+        addChatblError(tmpId, validate["error"]);
+      } else {
+        $("#t" + tmpId + id + "_err").removeClass("bedsnone");
+        var errorcls = isSSB(tmpId)
+          ? isnewSSB(tmpId)
+            ? "nb-erbrd"
+            : "mb-erbrd"
+          : "highlight-err";
+        $("#t" + tmpId + id).addClass(errorcls);
+      }
+      return false;
+    }
+  }
+};
+MoreDetails.prototype.onSubmit = function (tmpId) {
+  var that = this;
+  var mdObject = PreAjax("MoreDetails", tmpId);
+  var screen =
+    that.mdObj.md.key === 0
+      ? "CompanyName"
+      : that.mdObj.md.key === 1
+        ? "GST"
+        : "URL";
+  var compName =
+    isSet(ReqObj.Form[tmpId].companyName) &&
+      ReqObj.Form[tmpId].companyName !== ""
+      ? ReqObj.Form[tmpId].companyName
+      : "";
+  var gst =
+    isSet(ReqObj.Form[tmpId].gst.number) && ReqObj.Form[tmpId].gst.number !== ""
+      ? ReqObj.Form[tmpId].gst.number
+      : "";
+  var url =
+    isSet(ReqObj.Form[tmpId].url.name) && ReqObj.Form[tmpId].url.name !== ""
+      ? ReqObj.Form[tmpId].url.name
+      : "";
+  var called = 0;
+  if ($.inArray(0, ReqObj.Form[tmpId].mdObjErr) !== -1) compName = "";
+  if ($.inArray(2, ReqObj.Form[tmpId].mdObjErr) !== -1) url = "";
+  if (
+    compName !== "" &&
+    (((isEnq(tmpId) || isBl(tmpId)) && called === 0) ||
+      (!(isEnq(tmpId) || isBl(tmpId)) && that.mdObj.md.key === 0))
+  ) {
+    MoreDetailService(tmpId, screen);
+    if (isEnq(tmpId) || isBl(tmpId)) called = 1;
+  }
+  if (
+    gst !== 0 &&
+    gst !== "" &&
+    (((isEnq(tmpId) || isBl(tmpId)) && called === 0) ||
+      (!(isEnq(tmpId) || isBl(tmpId)) && that.mdObj.md.key === 1))
+  ) {
+    MoreDetailService(tmpId, screen);
+    if (isEnq(tmpId) || isBl(tmpId)) called = 1;
+  }
+  if (
+    url !== "" &&
+    (((isEnq(tmpId) || isBl(tmpId)) && called === 0) ||
+      (!(isEnq(tmpId) || isBl(tmpId)) && that.mdObj.md.key === 2))
+  ) {
+    MoreDetailService(tmpId, screen);
+    if (isEnq(tmpId) || isBl(tmpId)) called = 1;
+  }
+  if (isEnq(tmpId)) ReqObj.Form[tmpId].ServiceSequence.pop();
+};
+MoreDetails.prototype.handleHeading = function (tmpId) {
+  var that = this;
+  var append = that.mdObj.md.key === 0 ? "companyname" : that.mdObj.md.key === 1 ? "gst" : "url";
+  var call = ReqObj.Form[tmpId].currentScreen.toLowerCase() === "moredetails" && !isEnq(tmpId) ? ReqObj.Form[tmpId].currentScreen + append : "default";
+  if(isInactiveBL(tmpId) && ReqObj.Form[tmpId].FormSequence._stepCounter === 0){
+    $("#blheading").html(getFormHeading(tmpId, ReqObj.Form[tmpId].currentScreen));
+  }
+  else{
+    $("#t" + tmpId + "_hdg").removeClass("bedsnone").html(getFormHeading(tmpId, ReqObj.Form[tmpId].currentScreen));
+  }
+};
+MoreDetails.prototype.EventIfScreenPresent = function (tmpId) {
+  this.handleHeading(tmpId);
+  ButtonNameUI(ReqObj.Form[tmpId].currentScreen, tmpId);
+};
+MoreDetails.prototype.displayAnswer = function (tmpId) {
+  var classtotest = chatBlClass(tmpId, "right");
+  var leftright = IsChatbl(tmpId) ? "cbl_ansr" : "";
+  var that = this;
+  var md = that.mdObj.md.key === 0 ? returnAnswer(tmpId, "CompanyName") : that.mdObj.md.key === 1 ? returnAnswer(tmpId, "GST") : returnAnswer(tmpId, "URL");
+  md = md !== "" ? md : NotFilled;
+  return [
+    ConversationRightWrapper(tmpId, md, {
+      classtotest: classtotest,
+      leftright: leftright,
+    }),
+  ];
+};
+
+MoreDetails.prototype.SaveDetails = function (tmpId) {
+  var that = this;
+  var id =
+    that.mdObj.md.key === 0
+      ? "_cname_" + that.mdObj.md.suffix
+      : that.mdObj.md.key === 1
+        ? "_gstname"
+        : "_urlname";
+  var md =
+    typeof $("#t" + tmpId + id).val() !== "undefined" &&
+      $("#t" + tmpId + id).val() !== ""
+      ? $("#t" + tmpId + id)
+        .val()
+        .trim()
+      : "";
+  if (
+    isEnq(tmpId) &&
+    currentISO() !== "IN" &&
+    id === "_cname_" + that.mdObj.md.suffix &&
+    md === ""
+  ) {
+    md = $("input[type=text].newui").is(":visible")
+      ? $("input[type=text].newui").val()
+      : md;
+  }
+  if (IsChatbl(tmpId)) {
+    if (that.mdObj.md.key === 0)
+      ReqObj.Form[tmpId].UserInputs["CompanyName"] = md;
+    if (that.mdObj.md.key === 1) ReqObj.Form[tmpId].UserInputs["GST"] = md;
+    if (that.mdObj.md.key === 2) ReqObj.Form[tmpId].UserInputs["URL"] = md;
+  }
+  if (that.mdObj.md.key === 0) {
+    ReqObj.Form[tmpId].companyName = md;
+    if (md === "") this.MoreDetailsTracking(tmpId, "CompanyName:NotFilled");
+  }
+  if (that.mdObj.md.key === 1) ReqObj.Form[tmpId].gst.number = md;
+  if (that.mdObj.md.key === 2) ReqObj.Form[tmpId].url.name = md;
+};
+
+MoreDetails.prototype.MoreDetailsTracking = function (tmpId, toappend) {
+  var ftype = ReqObj.Form[tmpId].formType.toLowerCase();
+  var form_type =
+    ReqObj.Form[tmpId].formType === "Enq" ? "Send Enquiry" : "Post Buy Leads";
+  var tracking = toappend;
+  var sampling = ReqObj.Form[tmpId].noSampling;
+  ReqObj.Form[tmpId].noSampling = true;
+  blenqGATracking(form_type, tracking, getEventLabel(), 0, tmpId);
+  ReqObj.Form[tmpId].noSampling = sampling;
+};
+
 

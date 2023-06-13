@@ -2368,3 +2368,542 @@ function manipulatePrevStepArray(CurrentArray, step, tmpId) {
     return arr;
   } else return [];
 }
+
+function ButtonNameUI(currentScreen, tmpId, data) {
+  var typeofform = ReqObj.Form[tmpId].typeofform.toLowerCase();
+  var currentScreen = currentScreen.toLowerCase();
+  handleSubmitButton(
+    getBtnObject(typeofform, tmpId, currentScreen),
+    tmpId,
+    data
+  );
+}
+
+function getBtnObject(typeofform, tmpId, currentScreen) {
+  var btnObj =
+    ReqObj.Form[tmpId].FormSequence.StepCounter === 0
+      ? stepOneButton(typeofform, tmpId, currentScreen)
+      : stepNextButton(typeofform, tmpId, currentScreen);
+  return btnObj;
+}
+
+function stepOneButton(typeofform, tmpId, currentScreen) {
+  var btnObj = "";
+  var btncls = isGDPRCountry() ? "befstbtn2 hovsub" : "befstgo2 hovsub";
+  var imeshcookie = imeshExist();
+  if (
+    tmpId.substr(0, 2) === "04" &&
+    typeofform === "bl" &&
+    new RegExp("penqbt").test($("#t" + tmpId + "_submit").attr("class")) &&
+    ReqObj.Form[tmpId].FormSequence._stepCounter < 1
+  ) {
+    btnObj = {
+      buttonText: "Submit Requirement",
+      buttonCls: "penqbt",
+      parentCls: "betxtc",
+    };
+  } else if (tmpId.substring(0, 2) === "09") {
+    if (isImageVidEnq(tmpId)) {
+      if (isEcomProduct(tmpId)) {
+        btnObj = {
+          buttonText: "Buy Now",
+          buttonCls: "befstgo2 hovsub befwt",
+          parentCls: "",
+        };
+      } else if (
+        ReqObj.Form[tmpId].FormSequence._stepCounter === 0 &&
+        imeshcookie !== "" &&
+        currentScreen === "enquirenow"
+      ) {
+        btnObj = {
+          buttonText: "Enquire Now",
+          buttonCls: "befstgo2 hovsub befwt",
+          parentCls: pdpenqImage(tmpId) ? "txt-cnt" : (direnqImage(tmpId) ? "sixcen btmarg" : ""),
+        };
+      } else if (imeshcookie === "") {
+        btnObj = {
+          buttonText: "Contact Supplier",
+          buttonCls: "befstgo2 hovsub befwt",
+          parentCls: direnqImage(tmpId) ? "sixcen btmarg" : "eqimgvidmt",
+        };
+      } else {
+        btnObj = {
+          buttonText: "Submit",
+          buttonCls: btncls + " hovsub befwt",
+          parentCls: direnqImage(tmpId) ? "sixcen btmarg" : "",
+        };
+      }
+    } else {
+      btnObj = restScreensButton(typeofform, tmpId, currentScreen); // rest screens
+    }
+  } else if (typeofform === "popupchatbl") {
+    btnObj = {
+      buttonText: "",
+      buttonCls: "cbl_sbmtbt cbl_pa cbl_cp",
+      parentCls: "cbl_sbmt_btn cbl_pr cbl_zi3",
+    };
+  } else if (isSSB(tmpId)) {
+    if (isnewSSB(tmpId)) {
+      btnObj = {
+        buttonText: "Get Quotes from Sellers",
+        buttonCls: "nb-btmm",
+        parentCls: "nb-dib nb-btmim",
+      };
+    } else
+      btnObj = {
+        buttonText: "Get Quotes from Sellers",
+        buttonCls: "mb-btmm",
+        parentCls: "mb-dib mb-btmim",
+      };
+  } else {
+    var sticky = isSticky(tmpId) ? "FM_be_btmm" : "be_btmm";
+    var buttonCls =
+      (isGlIdEven(tmpId) &&
+        tmpId.substr(0, 2) === "01" &&
+        ReqObj.Form[tmpId].screenNumber === 0) ||
+        isBlInline(tmpId)
+        ? isBlInlineFr(tmpId)
+          ? "fAdsb"
+          : "inSbtn crP"
+        : isSet(ReqObj.Form[tmpId].changeUICTA) &&
+          ReqObj.Form[tmpId].changeUICTA !== ""
+          ? sticky + " hovsub pdgbt"
+          : sticky + " hovsub";
+    btnObj = {
+      buttonText: "Submit Requirement",
+      buttonCls: buttonCls,
+      parentCls:
+        (isGlIdEven(tmpId) &&
+          tmpId.substr(0, 2) === "01" &&
+          ReqObj.Form[tmpId].screenNumber === 0) ||
+          isBlInline(tmpId)
+          ? isBlInlineFr(tmpId)
+            ? imeshExist() !== ""
+              ? ReqObj.UserDetail["fn"] == ""
+                ? "ident"
+                : "adwIdn ident"
+              : ""
+            : "idsf iJFnd"
+          : "be-mdl",
+    }; // inline first step
+  }
+  if (
+    !isSSB(tmpId) &&
+    currentISO() !== "IN" &&
+    ("contactdetail" === currentScreen ||
+      ("moredetails" === currentScreen && typeofform === "bl"))
+  ) {
+    btnObj = stepNextButton(typeofform, tmpId, currentScreen);
+  }
+  return btnObj;
+}
+
+
+function identAppend(flagIdent) {
+  if (typeof appendUtmParamPhase1 == "function") {
+    appendUtmParamPhase1(flagIdent);
+  } else {
+    setTimeout(function () {
+      identAppend(flagIdent);
+    }, 500);
+  }
+}
+
+function handleSubmitButton(btnObj, tmpId, data) {
+  if (!IsChatbl(tmpId)) {
+    if (isBlInlineFr(tmpId) && imeshExist() === "" && isGDPRCountry()) {
+      if (
+        $("#t" + tmpId + "_submit")
+          .parent()
+          .hasClass("fpr10")
+      ) {
+        $("#t" + tmpId + "_submit")
+          .prop("value", btnObj.buttonText)
+          .addClass(btnObj.buttonCls)
+          .parent()
+          .addClass(btnObj.parentCls);
+      } else {
+        $("#t" + tmpId + "_submit")
+          .parent()
+          .addClass("w50 fpr10");
+        $("#t" + tmpId + "_submit")
+          .closest(".iJSpb")
+          .removeClass("ngdpr");
+      }
+    } else if (isBlInlineFr(tmpId) && imeshExist() !== "" && isGDPRCountry()) {
+      $("#t" + tmpId + "_submit")
+        .prop("value", btnObj.buttonText)
+        .removeClass()
+        .addClass(btnObj.buttonCls)
+        .parent()
+        .removeClass()
+        .addClass(btnObj.parentCls);
+
+      if (
+        !$("#t" + tmpId + "_submit")
+          .closest(".iJSpb")
+          .hasClass("ngdpr")
+      ) {
+        $("#t" + tmpId + "_submit")
+          .closest(".iJSpb")
+          .addClass("ngdpr");
+      }
+    } else if (isBlInlineFr(tmpId) && imeshExist() === "" && !isGDPRCountry()) {
+      $("#t" + tmpId + "_submit")
+        .prop("value", btnObj.buttonText)
+        .removeClass()
+        .addClass(btnObj.buttonCls)
+        .parent()
+        .removeClass()
+        .addClass(btnObj.parentCls);
+
+      if (
+        !$("#t" + tmpId + "_submit")
+          .closest(".iJSpb")
+          .hasClass("ngdpr")
+      ) {
+        $("#t" + tmpId + "_submit")
+          .closest(".iJSpb")
+          .addClass("ngdpr");
+      }
+    } else {
+      $("#t" + tmpId + "_submit")
+        .prop("value", btnObj.buttonText)
+        .removeClass()
+        .addClass(btnObj.buttonCls)
+        .parent()
+        .removeClass()
+        .addClass(btnObj.parentCls);
+
+      if (EnqPopupDIR(tmpId) && $("#yajaca").css("display") == "block") {
+        //next->submit
+        $(
+          "#t" + tmpId + "submit_wrapper #t" + tmpId + "_submitdiv input"
+        ).addClass("toConv");
+        $("input.toConv").attr("value", "Submit");
+      }
+    }
+
+
+    if (
+      isBlInlineFr(tmpId) &&
+      (btnObj.parentCls === "ident" || btnObj.parentCls === "adwIdn ident")
+    ) {
+      var mcatView = 0;
+      if (
+        typeof ims !== "undefined" &&
+        isSet(ims) &&
+        isSet(ims.mcatid) &&
+        ims.mcatid !== ""
+      ) {
+        mcatView =
+          ims.mcatid == "145350" ||
+            ims.mcatid == "145513" ||
+            ims.mcatid == "113951" ||
+            ims.mcatid == "15607"
+            ? 1
+            : 0;
+      }
+
+      if (mcatView === 1) {
+        var defaultView = "list";
+        if (
+          typeof ims !== "undefined" &&
+          isSet(ims) &&
+          isSet(ims.catGridLabel) &&
+          ims.catGridLabel !== ""
+        ) {
+          defaultView = ims.catGridLabel === "0" ? "list" : "grid";
+        }
+
+        var pageView = defaultView;
+        if (
+          typeof ims !== "undefined" &&
+          isSet(ims) &&
+          isSet(ims.pageViewStatus) &&
+          ims.pageViewStatus !== ""
+        ) {
+          pageView = ims.pageViewStatus === "grid" ? "grid" : "list";
+        }
+
+        //defaultview===list
+        if (defaultView === "list") {
+          if (pageView === "list") {
+            //getting identified on list page
+
+            //update url of switched page
+            var switchUrl = $(".dspVew")[1].getAttribute("href");
+            var identPresent = switchUrl.indexOf("&ident=1") === -1 ? 0 : 1;
+            if (!identPresent) {
+              var part2 = "&grid_view=1";
+              var part1 = switchUrl.substring(0, switchUrl.lastIndexOf(part2));
+              $(".dspVew")[1].setAttribute("href", part1 + "&ident=1" + part2);
+
+            }
+
+            //update url of current page
+            var currentUrl = window.location.href;
+            var identPresent = currentUrl.indexOf("&ident=1") === -1 ? 0 : 1;
+            if (!identPresent) {
+              newUrl = currentUrl + "&ident=1";
+              history.replaceState(null, "", newUrl);
+              var flagIdent = 1;
+              identAppend(flagIdent);
+            }
+          } else {
+            //getting identified on grid page
+
+            //update url of switched page
+            var switchUrl = $(".dspVew")[1].getAttribute("href");
+            var identPresent = switchUrl.indexOf("&ident=1") === -1 ? 0 : 1;
+            if (!identPresent) {
+              $(".dspVew")[1].setAttribute("href", switchUrl + "&ident=1");
+
+            }
+
+            //update url of current page
+            var currentUrl = window.location.href;
+            var identPresent = currentUrl.indexOf("&ident=1") === -1 ? 0 : 1;
+            if (!identPresent) {
+              var part2 = "&grid_view=1";
+              var part1 = currentUrl.substring(
+                0,
+                currentUrl.lastIndexOf(part2)
+              );
+              newUrl = part1 + "&ident=1" + part2;
+              history.replaceState(null, "", newUrl);
+              var flagIdent = 1;
+              identAppend(flagIdent);
+            }
+          }
+        }
+
+        //defaultview===grid
+        else {
+          if (pageView === "grid") {
+            //getting identified on grid page
+
+            //update url of switched page
+            var switchUrl = $(".dspVew")[1].getAttribute("href");
+            var identPresent = switchUrl.indexOf("&ident=1") === -1 ? 0 : 1;
+            if (!identPresent) {
+              var part2 = "&list_view=1";
+              var part1 = switchUrl.substring(0, switchUrl.lastIndexOf(part2));
+              $(".dspVew")[1].setAttribute("href", part1 + "&ident=1" + part2);
+
+            }
+
+            //update url of current page
+            var currentUrl = window.location.href;
+            var identPresent = currentUrl.indexOf("&ident=1") === -1 ? 0 : 1;
+            if (!identPresent) {
+              newUrl = currentUrl + "&ident=1";
+              history.replaceState(null, "", newUrl);
+              var flagIdent = 1;
+              identAppend(flagIdent);
+            }
+          } else {
+            //getting identified on list page
+
+            //update url of switched page
+            var switchUrl = $(".dspVew")[1].getAttribute("href");
+            var identPresent = switchUrl.indexOf("&ident=1") === -1 ? 0 : 1;
+            if (!identPresent) {
+              $(".dspVew")[1].setAttribute("href", switchUrl + "&ident=1");
+
+            }
+
+            //update url of current page
+            var currentUrl = window.location.href;
+            var identPresent = currentUrl.indexOf("&ident=1") === -1 ? 0 : 1;
+            if (!identPresent) {
+              var part2 = "&list_view=1";
+              var part1 = currentUrl.substring(
+                0,
+                currentUrl.lastIndexOf(part2)
+              );
+              newUrl = part1 + "&ident=1" + part2;
+              history.replaceState(null, "", newUrl);
+              var flagIdent = 1;
+              identAppend(flagIdent);
+            }
+          }
+        }
+      }
+    }
+
+    if (
+      !(IsChatbl(tmpId) || isSSB(tmpId) || (isBl(tmpId) && !Bl09(tmpId))) &&
+      currentISO() !== "IN" &&
+      imeshExist() === ""
+    )
+      $("#t" + tmpId + "_submit")
+        .parent()
+        .addClass("txt-cnt");
+    onHovSub(tmpId);
+    backButtonNameUI(tmpId, data);
+  }
+}
+
+function backButtonNameUI(tmpId, data) {
+  var nobackbtn = isSet(data) && isSet(data.showBackBtn) ? data.showBackBtn : 1;
+  if (
+    nobackbtn === 1 &&
+    isOtherEnq(tmpId) &&
+    imeshExist() !== "" &&
+    IsPrevStepAvailable(tmpId)
+  ) {
+    $("#t" + tmpId + "_backdiv").removeClass("bedsnone");
+    $("#t" + tmpId + "_fBtn").addClass("eqBksb");
+    $("#t" + tmpId + "_submitdiv").addClass("eqBsub");
+  } else {
+    $("#t" + tmpId + "_fBtn").removeClass("eqBksb");
+    $("#t" + tmpId + "_submitdiv").removeClass("eqBsub");
+    $("#t" + tmpId + "_backdiv").addClass("bedsnone");
+  }
+}
+
+function miniDetailService(tmpId) {
+  var data = {};
+  var imeshcookie = imeshExist();
+  data["s_glusrid"] =
+    imeshcookie === ""
+      ? ReqObj.glid
+      : usercookie.getParameterValue(imeshcookie, "glid");
+  data["modid"] = modIdf;
+  ReqObj.miniDetailHit.ping = true;
+  fireAjaxRequest({
+    data: {
+      ga: {
+        s: false,
+        f: false,
+        gatype: "MiniDetails",
+        source: "",
+      },
+      tmpId: tmpId,
+      ajaxObj: {
+        obj: "",
+        s: {
+          ss: 0,
+          sf: {
+            af: 0,
+            pa: 0,
+          },
+          f: 0,
+        },
+        f: {
+          f: 0,
+        },
+      },
+      ajaxtimeout: 0,
+      ajaxdata: data,
+      hitfinserv: "",
+      type: 7,
+    },
+  });
+}
+
+function returnPostBlEnqObject(tmpId, array, hooks, that, ns) {
+  return {
+    object: {
+      obj: new PostBlEnqUpdate(tmpId),
+      toReplace: false,
+      isService: true,
+      array: array,
+      hooks: hooks,
+    },
+    tmpId: tmpId,
+    that: that,
+    AfterService: [],
+    hasFallback: false,
+    FallbackObj: null,
+    nextStep: ns,
+  };
+}
+
+function returnGenObject(tmpId, array, hooks, that, type) {
+  return {
+    object: {
+      obj: new Generation(type),
+      toReplace: true,
+      isService: true,
+      array: array,
+      hooks: hooks,
+    },
+    tmpId: tmpId,
+    that: that,
+    AfterService: [],
+    hasFallback: false,
+    FallbackObj: null,
+  };
+}
+
+function returnmdtlObject(array, hooks, tmpId, that, countlastUpdated, md) {
+  var Obj = {
+    object: {
+      obj: new MoreDetails(tmpId),
+      toReplace: false,
+      isService: false,
+      array: array,
+      hooks: hooks,
+      countlastUpdated: countlastUpdated,
+    },
+    tmpId: tmpId,
+    that: that,
+    AfterService: [],
+    hasFallback: false,
+    FallbackObj: null,
+    md: md,
+  };
+  return Obj;
+}
+
+function toAskMoreDetails(tmpId) {
+  var cn = cNameConditions(tmpId);
+  var gst = gstConditions(tmpId);
+  if (cn === true) return { ask: true, what: "Company Name", key: 0 };
+  else if (gst === true) return { ask: true, what: "GST Number", key: 1 };
+  return { ask: false, what: "", key: -1 };
+}
+
+function manipulateWidth(tmpId, id) {
+  var siblingElement =
+    $("#t" + tmpId + "_cdiv").html() !== "" &&
+      $("#t" + tmpId + "_cdiv").html() !== null
+      ? $("#t" + tmpId + "_cdiv")
+      : $("#t" + tmpId + "_cbx");
+  var arr = siblingElement.siblings();
+  var len = arr.length;
+  var widthSet = false;
+  if (len === 0) {
+    $("#t" + tmpId + id).width("60%");
+    widthSet = true;
+  }
+  if (
+    isSet($(".newui")) &&
+    len === 0 &&
+    isSet($(".newui").parent().attr("id")) &&
+    isBl($(".newui").parent().attr("id").substr(1, 4))
+  ) {
+    $(".newui").width("60%");
+    widthSet = true;
+  } else {
+    for (var i = len - 1; i >= 0; i--) {
+      if (
+        $("#" + arr[i].id).html() !== "" &&
+        arr[i].id === "t" + tmpId + "_reqbox"
+      ) {
+        widthSet = true;
+        if ($("#t" + tmpId + "_reqBoxTemplates").outerWidth() <= 100)
+          $("#t" + tmpId + id).width("86%");
+        else
+          $("#t" + tmpId + id).width(
+            $("#t" + tmpId + "_reqBoxTemplates").outerWidth()
+          );
+        break;
+      }
+    }
+  }
+  if (widthSet === false) $("#t" + tmpId + id).width("60%");
+}
+
