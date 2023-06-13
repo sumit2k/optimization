@@ -3954,3 +3954,98 @@ function BlEnqOnError(revent, res) {
       CloseForm(revent.data.tmpId);
     });
 }
+function defaultScreenMsg(ctanamemodid, tmpId, ctaname) {
+  if(isEnq(tmpId)){
+    if(direnqImage(tmpId)){
+      return "";
+    }
+    if(isPnsEnq(tmpId)){
+      let pnsno = isSet(ReqObj.Form[tmpId].pnsNumber) ? ReqObj.Form[tmpId].pnsNumber : "09XXXXXXXX";
+      let pns_extn='';
+      if(isSet(ReqObj.Form[tmpId].pns_extn) && ReqObj.Form[tmpId].pns_extn!='')
+        pns_extn = `<span class="befs13">, Dial Ext. ${ReqObj.Form[tmpId].pns_extn}</span>`;
+      if (ispdp(tmpId) && currentISO() === "IN"){
+        pnsno = pnsno.slice(4);
+        pnsno = '0' + pnsno;
+      }
+      return "Please provide a few details to get quick response from the supplier"; 
+      // + "<div class='mt5 vmngrey'>" + `<span class='cbl_fs17'>You can contact supplier on </span><span class='befwt cbl_fs17'>${pnsno}</span>${pns_extn}` +"</div>";
+    }
+    return "Please provide a few details to get quick response from the supplier";
+  }
+  else{
+    if(imeshExist()==''){
+      return getLoginHeading(ctanamemodid, tmpId, ctaname);
+    }
+    else{
+      return loginDefaultmsg(tmpId, ctaname, "Connect with ");
+    }
+  }
+}
+function getReqHeading(ctanamemodid, tmpId, ctaname) {
+  switch (ctanamemodid) {
+    case "all":
+      return "Send a quick message to the seller for more information.";
+    default:
+      return defaultCaseHeading(ctanamemodid, tmpId, ctaname);
+  }
+}
+
+function getUserVerificationHeading(ctanamemodid, tmpId, ctaname) {
+  switch (ctanamemodid) {
+    case "all":
+      if (direnqImage(tmpId)) {
+        return "";
+      }
+      else {
+        return "Confirm your requirement";
+      }
+    default:
+      return defaultCaseHeading(ctanamemodid, tmpId, ctaname);
+  }
+}
+
+function getBlStaticIsqReqHeading(ctanamemodid, tmpId, ctaname) {
+  switch (ctanamemodid) {
+    case "all":
+      if (direnqImage(tmpId)) {
+        return "";
+      }
+      else {
+        if(isPnsEnq(tmpId)){
+          let pnsno = isSet(ReqObj.Form[tmpId].pnsNumber) ? ReqObj.Form[tmpId].pnsNumber : "09XXXXXXXX";
+          let pns_extn='';
+          if(isSet(ReqObj.Form[tmpId].pns_extn) && ReqObj.Form[tmpId].pns_extn!='')
+            pns_extn = `<span class="befs13">, Dial Ext. ${ReqObj.Form[tmpId].pns_extn}</span>`;
+          if (ispdp(tmpId) && currentISO() === "IN"){
+            pnsno = pnsno.slice(4)
+            pnsno = '0' + pnsno;
+          }
+          return "Almost done!";
+          //  + "<div class='mt5 vmngrey'>" + `<span class='cbl_fs17'>You can contact supplier on </span><span class='befwt cbl_fs17'>${pnsno}</span>${pns_extn}` +"</div>";
+        }
+        return getMorePh(tmpId) ? ReqObj.Form[tmpId].FormSequence.StepCounter === 0 ? "Add a few details of your requirement to <strong>get more photos</strong> and details from the seller quickly" : "Add a few details of your requirement to get more photos and details from the seller quickly" : "Almost done!";
+      }
+    // new gmp
+    default:
+      defaultCaseHeading(ctanamemodid, tmpId, ctaname);
+  }
+}
+
+function getContactDetailOnCloseInHeading(ctanamemodid, tmpId, ctaname) {
+  switch (ctanamemodid) {
+    case "all":
+      return "Looks like you missed a few details!";
+    default:
+      return defaultCaseHeading(ctanamemodid, tmpId, ctaname);
+  }
+}
+
+function getContactDetailOnCloseNotInHeading(ctanamemodid, tmpId, ctaname) {
+  switch (ctanamemodid) {
+    case "all":
+      return "Awesome! You're Done";
+    default:
+      return defaultCaseHeading(ctanamemodid, tmpId, ctaname);
+  }
+}
