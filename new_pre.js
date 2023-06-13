@@ -7047,3 +7047,118 @@ function MiniDetailsOnError(revent, res) {
     ReqObj.UserDetail.cName = "";
   }
 }
+/*-------------------------Communication Headings-------------------------------------------*/
+function getEnqHeading(tmpId, fromscreen) {
+  if (pdpenqImage(tmpId)) return "";
+  var ctanamemodid = ReqObj.Form[tmpId].ctaName.toLowerCase().trim();
+  if ( tmpId.substring(0, 2) !== "09" && ReqObj.Form[tmpId].FormSequence.StepCounter === 0 )
+    return defaultCaseHeading(ctanamemodid, tmpId, ReqObj.Form[tmpId].ctaName);
+  var fromscreen = fromscreen.toLowerCase();
+  switch (fromscreen) {
+    case "userlogin":
+      return getLoginHeading(ctanamemodid, tmpId, ReqObj.Form[tmpId].ctaName);
+    case "userlogincontactdetail":
+      return getLoginHeading(ctanamemodid, tmpId, ReqObj.Form[tmpId].ctaName);
+    case "contactdetail":
+      return getContactHeading("all", tmpId, ReqObj.Form[tmpId].ctaName);
+    case "isq":
+      return getIsqHeading(ctanamemodid, tmpId, ReqObj.Form[tmpId].ctaName);
+    case "isqrequirementdtl":
+      return currentISO() === "IN" ? getBlStaticIsqReqHeading("all", tmpId, ReqObj.Form[tmpId].ctaName) : getIsqHeading(ctanamemodid, tmpId, ReqObj.Form[tmpId].ctaName);
+    case "requirementdtl":
+      return getReqHeading("all", tmpId, ReqObj.Form[tmpId].ctaName);
+    case "blstaticques":
+      return getBlStaticIsqReqHeading("all", tmpId, ReqObj.Form[tmpId].ctaName);
+    case "contactdetailonclosein":
+      return getContactDetailOnCloseInHeading( "all", tmpId, ReqObj.Form[tmpId].ctaName );
+    case "contactdetailonclosenotin":
+      return getContactDetailOnCloseNotInHeading( "all", tmpId, ReqObj.Form[tmpId].ctaName );
+    case "userverification":
+      return getUserVerificationHeading( "all", tmpId, ReqObj.Form[tmpId].ctaName );
+    case "userverificationonclose":
+      return getUserVerificationHeading( "all", tmpId, ReqObj.Form[tmpId].ctaName );
+    case "moredetailscompanyname":
+      return "Provide your company name to get quick response from supplier";
+    case "moredetailsgst":
+      return "Provide your GST number to get quick response from supplier";
+    default:
+      return defaultScreenMsg(ctanamemodid, tmpId, ReqObj.Form[tmpId].ctaName);
+  }
+}
+
+function getBLHeading(tmpId, fromscreen) {
+  var iso = currentISO();
+  if ( ReqObj.Form[tmpId].ctaName.toLowerCase() === "middle" && Bl04(tmpId) && ReqObj.Form[tmpId].FormSequence._screenCounter === 0)
+    return "<div class='beclrW be-bgb cbl_p10 txt-cnt' style='font-size: 18px;'>Tell us what you need</div>";
+
+  if ( tmpId.substr(0, 2) === "01" && isGlIdEven(tmpId) && ReqObj.Form[tmpId].screenNumber < 0) {
+    var heading = "Tell us what you need, and we'll help you get quotes";
+
+    heading = iso != "IN" ? pdpBL(tmpId) ? "Save Time! Get <strong>verified exporters</strong> shipping to " + isoCountries[currentISO()] : "Save Time! Get verified sellers exporting to " + isoCountries[currentISO()] : heading;
+    return heading;
+  }
+
+  var _case = (ReqObj.Form[tmpId].FormSequence._screenCounter === 0 || ReqObj.Form[tmpId].FormSequence._screenCounter === 1) && Bl04(tmpId) ? -1 : 0;
+
+  if (iso === "IN" && _case !== -1) {
+    var mainHeading = "";
+    var subHeading = "";
+    fromscreen = fromscreen.toLowerCase();
+    if (fromscreen.includes("productname")) {
+      mainHeading = "Looking to buy something?";
+      subHeading = "Tell us your requirement and get free quotes from multiple sellers";
+      if(isInactiveBL(tmpId)){
+        mainHeading = "";
+        subHeading = "Tell us your requirement and <strong>get free quotes</strong> from multiple sellers";
+      }
+    } else if (fromscreen === "contactdetail") {
+      mainHeading = "We want to know more about you!";
+      subHeading = "Please provide a few details to get quotes on your mobile";
+    } else if (fromscreen === "isq") {
+      mainHeading = "Share more details about your requirement";
+      subHeading = "Add a few details to connect with relevant suppliers";
+      if (ReqObj.Form[tmpId].prevCount > 3) {
+        mainHeading = "Share more details about your requirement";
+        subHeading = "Add a few more details to submit your requirement";
+      }
+    } else if ( fromscreen.includes("blstaticques") || fromscreen.includes("requirementdtl")) {
+      mainHeading = "Few more details to get your requirement fulfilled";
+      subHeading = "Share a few more information and get best quotes";
+    } else if ( fromscreen.includes("contactdetail_last") || fromscreen.includes("moredetails") || fromscreen === "default") {
+      mainHeading = "Just one step away to connect with verified sellers";
+      subHeading = "Enter your remaining contact details";
+    } else if (fromscreen === "userverification") {
+      var imeshcookie = imeshExist();
+      var phonenumber = "+" + usercookie.getParameterValue(imeshcookie, "phcc") + "-" + usercookie.getParameterValue(imeshcookie, "mb1");
+      mainHeading = "Verify your mobile number to receive quotes";
+      // subHeading = "Enter the 4 digit One Time Password (OTP) sent to your Mobile Number " + phonenumber;
+    }
+    let bemb = isInactiveBL(tmpId) && ReqObj.Form[tmpId].FormSequence._stepCounter === 0 ? "befs16 beclr3 bemb8" : "befs16 blotp bemb20";
+    let otphdg = isInactiveBL(tmpId) && ReqObj.Form[tmpId].FormSequence._stepCounter === 0 ? "pdpotphdg" : "otphdg";
+    return ( "<div class='"+ otphdg + "'>" + mainHeading + `</div><div class='${bemb}'>` + subHeading + "</div>" );
+  } else {
+    var blmsg = "Save Time! Get verified sellers ";
+    blmsg += iso !== "IN" ? "exporting to " + isoCountries[iso] + "<div class='cbl_fs17 eqmb10 bemt10 beclr3'>Requirement for: <span class='befwt'>" + ReqObj.Form[tmpId].prodName + "</span></div>" : "for " + ReqObj.Form[tmpId].prodName;
+
+    if ( tmpId.substring(0, 2) !== "09" && ReqObj.Form[tmpId].FormSequence.StepCounter === 0 && fromscreen !== "ContactDetailonclosenotin")
+      return tmpId.substring(0, 2) === "04" ? "" : isSet(ReqObj.Form[tmpId].prodName) && ReqObj.Form[tmpId].prodName !== "" ? blmsg : "Tell us your requirement";
+    else
+      return currentISO() === "IN" ? tmpId.substr(0, 2) === "01" && isGlIdEven(tmpId) ? "Adding few details can get you a quick response" : "Tell us what you need, and we'll help you get quotes" : pdpBL(tmpId) ? (isInactiveBL(tmpId)) ? '<div class="bemb20">Get free quotes from <strong>verified exporters</strong> shipping to ' + isoCountries[currentISO()] + '</div>' : "Receive quotations from <strong>verified exporters</strong> shipping to " + isoCountries[currentISO()] : (isInactiveBL(tmpId)) ? '<div class="bemb20">Get free quotes from <strong>verified exporters</strong> shipping to ' + isoCountries[currentISO()] + '</div>' : "Receive quotations from verified suppliers exporting to " + isoCountries[currentISO()];
+  }    
+}
+
+function getChatBlHeading(tmpId, fromscreen) {
+  return "Tell us your requirement to Get Best Price";
+}
+
+function getFormHeading(tmpId, fromscreen) {
+  var formType = ReqObj.Form[tmpId].formType.toLowerCase();
+  switch (formType) {
+    case "enq":
+      return getEnqHeading(tmpId, fromscreen);
+    case "bl":
+      return getBLHeading(tmpId, fromscreen);
+    case "chatbl":
+      return getChatBlHeading(tmpId, fromscreen);
+  }
+}
