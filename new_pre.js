@@ -6666,3 +6666,74 @@ function FormCloseStep(tmpId, event) {
     }
   }
 }
+
+function Generation(arg, blIntent) {
+  this.v4iilexCookie = "";
+  this.imeshCookie = "";
+  this.iplocCookie = "";
+  this.imEqGlCookie = "";
+  this.siteEntryPage = "";
+  this.adcampCookie = "";
+  this.emktgCookie = ""; /* */
+  this.geoLocCookie = "";
+  this.iso = "";
+  this.arg = arg;
+  this.className = "Generation";
+  this.blIntent = blIntent;
+}
+function toFireGeneration(tmpId, type) {
+  var toreturn = true;
+  if (isEnq(tmpId)) {
+    toreturn = isSet(ReqObj.UserDetail.fn) && ReqObj.UserDetail.fn !== "" ? true : false;
+    toreturn = isSet(type) && type === "intent" ? false : toreturn;
+    if (toreturn === false && isSet(ReqObj.Form[tmpId].enqintentCalled) && ReqObj.Form[tmpId].enqintentCalled === false)
+      toFireEnqIntent(tmpId);
+    ReqObj.Form[tmpId].toFireIsq = toreturn === true || (toreturn === false && isSet(ReqObj.Form[tmpId].generationId) && parseInt(ReqObj.Form[tmpId].generationId) !== defaultGenerationId) ? true : false;
+  } else if (isBl(tmpId)) {
+    toreturn = Bl01(tmpId) && ReqObj.Form[tmpId].screenNumber < 2 && isSecondBl() && ReqObj.UserDetail["uv"] !== "V" && !ReqObj.Form[tmpId]._NCOnFrstScrn ? false : isSet(ReqObj.UserDetail.fn) && ReqObj.UserDetail.fn !== "" ? true : false;
+    if (Bl09(tmpId) && isSecondBl() && ReqObj.UserDetail["uv"] !== "V" && _mandatDetailsFilled() && !ReqObj.Form[tmpId]._NCOnFrstScrn)
+      toreturn = false;
+    if (Bl04(tmpId) && isSecondBl() && ReqObj.UserDetail["uv"] !== "V") {
+      if (!_mandatDetailsFilled() || (_mandatDetailsFilled() && !ReqObj.Form[tmpId]._NCOnFrstScrn && isSet(ReqObj.Form[tmpId].intentCalled) && ReqObj.Form[tmpId].intentCalled === false))
+        toreturn = false;
+    }
+
+    if (toreturn === false && isSet(ReqObj.Form[tmpId].intentCalled) && ReqObj.Form[tmpId].intentCalled === false)
+      toFireBLIntent(tmpId, "");
+    ReqObj.Form[tmpId].toFireIsq = toreturn === true ? true : false;
+  } else if (ReqObj.Form[tmpId].formType.toLowerCase() === "bl" || IsChatbl(tmpId)) {
+    if (ReqObj.UserDetail["uv"] === "V" || (ReqObj.UserDetail["uv"] !== "V" && !isSecondBl()))
+      toreturn = isSet(ReqObj.UserDetail.fn) && ReqObj.UserDetail.fn !== "" ? true : false;
+    if (ReqObj.UserDetail["uv"] !== "V" && isSecondBl()) toreturn = false;
+    if (toreturn === false && isSet(ReqObj.Form[tmpId].intentCalled) && ReqObj.Form[tmpId].intentCalled === false)
+      toFireBLIntent(tmpId, "");
+    ReqObj.Form[tmpId].toFireIsq = toreturn === true ? true : false;
+  } else toreturn = true;
+
+  ReqObj.Form[tmpId].toFireIsq = isSet(ReqObj.Form[tmpId].generationId) && parseInt(ReqObj.Form[tmpId].generationId) !== defaultGenerationId ? true : ReqObj.Form[tmpId].toFireIsq;
+
+  return toreturn;
+}
+
+function toFireBLIntent(tmpId, src) {
+  var _case = IsChatbl(tmpId) && ReqObj.Form[tmpId].mcatId === "-1" && ReqObj.Form[tmpId].catId === "-1" ? 0 : 1;
+  if (_case === 1 && ((isSet(src) && src === "i") || (isSet(ReqObj.Form[tmpId].FormSequence.StepCounter) && ReqObj.Form[tmpId].FormSequence.StepCounter > -2 && ReqObj.Form[tmpId].FormSequence.StepCounter < 2))) {
+    new Generation(1, 1).onSubmit(tmpId);
+    ReqObj.Form[tmpId].intentCalled = true;
+  }
+  else if (_case === 1 && IsChatBLInline(tmpId)){    // new chat bl unidentified
+    var showIntent = isSet(ReqObj.Form[tmpId].FormSequence.StepCounter) && isSet(ReqObj.Form[tmpId].IsqLength) ? ReqObj.Form[tmpId].FormSequence.StepCounter - ReqObj.Form[tmpId].IsqLength + 1 : 11;
+    if(ReqObj.Form[tmpId].isProdNameShown)
+    showIntent-=1;
+    if(showIntent > -2 && showIntent <2)
+    new Generation(1, 1).onSubmit(tmpId);
+    ReqObj.Form[tmpId].intentCalled = true;
+  } else ReqObj.Form[tmpId].intentCalled = false;
+}
+
+function toFireEnqIntent(tmpId) {
+  if ((Enq09(tmpId) && ReqObj.Form[tmpId].FormSequence._stepCounter === 0) || ((ReqObj.Form[tmpId].FormSequence._stepCounter === 1 || ReqObj.Form[tmpId].FormSequence._stepCounter === 0) && Enq04(tmpId))) {
+    new Generation(1, 1).onSubmit(tmpId);
+    ReqObj.Form[tmpId].enqintentCalled = true;
+  } else ReqObj.Form[tmpId].enqintentCalled = false;
+}
