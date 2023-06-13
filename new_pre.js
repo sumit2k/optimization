@@ -6434,3 +6434,83 @@ function isIntentBlForm(tmpId) {
     ? true
     : false;
 }
+
+function EnqPopupDIR(tmpId) {    //next->submit
+  return Enq09(tmpId) &&
+    ReqObj.Form[tmpId].typeofform.toLowerCase() == "enquiry" &&
+    (modIdf === "DIR" || modIdf === "STDPRD")
+    ? true
+    : false;
+}
+
+function Enq09(tmpId) {
+  return tmpId.substring(0, 2) === "09" && isEnq(tmpId) ? true : false;
+}
+function Enq04(tmpId) {
+  return tmpId.substring(0, 2) === "04" && isEnq(tmpId) ? true : false;
+}
+
+function ispdp(tmpId) {
+  return modIdf === "PRODDTL";
+}
+function isDIR(tmpId) {      //inactive changes
+  return (modIdf === "DIR" || modIdf === "STDPRD");
+}
+function isSeller(tmpId) {      //inactive changes
+return modIdf === "SELLERS";
+}
+function recomOnInactive(tmpId){
+  if(isDIR(tmpId) || ispdp(tmpId) || modIdf === "PDFIM" || isSeller(tmpId) || modIdf === "IMHOME" || modIdf === "FCP" || modIdf === "MDC" || modIdf === "CWSIM" || modIdf === "TDWIM" ){
+    return true;
+  }
+  return false;
+  }
+
+function featOnInctive(tmpId){
+  if(modIdf === "DIR" || modIdf === "IMHOME" || modIdf === "FCP"){
+    return true;
+  }
+  return false;
+}  
+
+function pdpenq(tmpId) {
+  return isEnq(tmpId) && ispdp(tmpId);
+}
+
+function pdpBL(tmpId) {
+  return isBl(tmpId) && ispdp(tmpId);
+}
+function isLightbox(tmpId){      //lightbox
+  return (                   
+  isBl(tmpId) &&
+ (ReqObj.Form[tmpId].ctaName.toLowerCase() === "lightbox")        
+);
+}
+
+function isInactiveBL(tmpId) {     //lightbox
+  return (                   //inactive changes 
+    isBl(tmpId) &&
+   (ReqObj.Form[tmpId].ctaName.toLowerCase() === "inactive" ||
+   ReqObj.Form[tmpId].ctaName.toLowerCase() === "inactive-bl" || ReqObj.Form[tmpId].ctaName.toLowerCase() === "lightbox")       
+  );
+}
+function getMorePh(tmpId) {     //new gmp
+  return (        
+    isSet(ReqObj.Form[tmpId].ctaName) && 
+    (ReqObj.Form[tmpId].ctaName.toLowerCase() === "get more photos" ||
+   ReqObj.Form[tmpId].ctaName.toLowerCase() === "get more photos_next" ||
+   ReqObj.Form[tmpId].ctaName.toLowerCase() === "get more photos_pre") 
+  );
+}
+function pdpenqImage(tmpId) {
+  var resolution = window.innerWidth;
+  return (
+    resolution > 1024 &&
+    isImageVidEnq(tmpId) &&
+    isSet(ReqObj.Form[tmpId].isNewImage) &&
+    ReqObj.Form[tmpId].isNewImage === "1"
+  );
+}
+function direnqImage(tmpId) {
+  return isImageEnqDIR(tmpId) && (modIdf === "DIR");
+}

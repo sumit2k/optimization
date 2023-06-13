@@ -2901,3 +2901,6 @@ function detachFlag2(tmpId) {
   var ele = $("#t" + tmpId + "country_dropd").detach();
   $("#t" + tmpId + "flagdiv2").append(ele);
 }
+// function isMoglixUi(tmpId) {
+//   return isSet(ReqObj.Form[tmpId].New_UI) && ReqObj.Form[tmpId].New_UI === "1";
+// }
