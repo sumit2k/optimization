@@ -2896,3 +2896,8 @@ ContactDetail.prototype.getChatblCityErrorDiv = function (tmpId) {
   html += "</div></div>";
   return html;
 };
+
+function detachFlag2(tmpId) {
+  var ele = $("#t" + tmpId + "country_dropd").detach();
+  $("#t" + tmpId + "flagdiv2").append(ele);
+}
