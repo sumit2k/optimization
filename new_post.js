@@ -2856,4 +2856,43 @@ MoreDetails.prototype.MoreDetailsTracking = function (tmpId, toappend) {
   ReqObj.Form[tmpId].noSampling = sampling;
 };
 
+ContactDetail.prototype.getChatblNameErrorDiv = function (tmpId) {
+  var html = "";
+  html += returnContainer(
+    "t" + tmpId,
+    "_error_first_name" + this.classCount,
+    "redc bltperor",
+    "",
+    ""
+  );
+  html += returnContainer(
+    "t" + tmpId,
+    "_fname_errmsg" + this.classCount,
+    "",
+    "content",
+    ""
+  );
+  html += "</div >";
+  html += "</div>";
+  return html;
+};
 
+ContactDetail.prototype.getChatblCityErrorDiv = function (tmpId) {
+  var html = "";
+  html += returnContainer(
+    "t" + tmpId,
+    "_error_city" + this.classCount,
+    "redc bltperor",
+    "",
+    ""
+  );
+  html += returnContainer(
+    "t" + tmpId,
+    "_city_errmsg" + this.classCount,
+    "",
+    "content",
+    ""
+  );
+  html += "</div></div>";
+  return html;
+};
