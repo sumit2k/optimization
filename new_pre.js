@@ -3606,26 +3606,7 @@ ContactDetail.prototype.getNameErrorDiv = function (tmpId) {
   return html;
 };
 
-ContactDetail.prototype.getChatblNameErrorDiv = function (tmpId) {
-  var html = "";
-  html += returnContainer(
-    "t" + tmpId,
-    "_error_first_name" + this.classCount,
-    "redc bltperor",
-    "",
-    ""
-  );
-  html += returnContainer(
-    "t" + tmpId,
-    "_fname_errmsg" + this.classCount,
-    "",
-    "content",
-    ""
-  );
-  html += "</div >";
-  html += "</div>";
-  return html;
-};
+
 
 ContactDetail.prototype.showEmailOrMobile = function (tmpId) {
   var that = this;

@@ -8,6 +8,27 @@ function prefilSuggCity(tmpId, classCount, ctid, city) {
   ReqObj.Form[tmpId].cityTracking = 2;
 }
 
+ContactDetail.prototype.getChatblNameErrorDiv = function (tmpId) {
+  var html = "";
+  html += returnContainer(
+    "t" + tmpId,
+    "_error_first_name" + this.classCount,
+    "redc bltperor",
+    "",
+    ""
+  );
+  html += returnContainer(
+    "t" + tmpId,
+    "_fname_errmsg" + this.classCount,
+    "",
+    "content",
+    ""
+  );
+  html += "</div >";
+  html += "</div>";
+  return html;
+};
+
 ContactDetail.prototype.getChatblCityErrorDiv = function (tmpId) {
   var html = "";
   html += returnContainer(
