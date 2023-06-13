@@ -6984,3 +6984,66 @@ function McatDtlOnComplete(revent, res) {
   if (isSet(revent.data.key.left) && revent.data.key.left === 1)
     leftSideTransition(0, revent.data.tmpId, "fromservice");
 }
+/*-------------------------Mini Detail on Success---------------------- */
+function MiniDetailsOnSuccess(revent, res) {
+  ReqObj.miniDetailHit.ping = false;
+  var cname =
+    isSet(res.Response.Data.glusr_usr_companyname) &&
+      res.Response.Data.glusr_usr_companyname !== ""
+      ? false
+      : true;
+  ReqObj.UserDetail.cName =
+    cname === false ? res.Response.Data.glusr_usr_companyname : "";
+  ReqObj.UserDetail.isgst = res.Response.Data.IS_GST_AVAILABLE;
+  ReqObj.UserDetail.isurl = res.Response.Data.IS_URL_AVAILABLE;
+  ReqObj.gst.toask =
+    isSet(res.Response.Data.IS_GST_AVAILABLE) &&
+      parseInt(res.Response.Data.IS_GST_AVAILABLE) === 0
+      ? true
+      : false;
+  ReqObj.url.toask =
+    isSet(res.Response.Data.IS_URL_AVAILABLE) &&
+      parseInt(res.Response.Data.IS_URL_AVAILABLE) === 0
+      ? true
+      : false;
+  if (ReqObj.UserDetail.cName !== "") ReqObj.miniDetailHit.reply.success = true;
+  else ReqObj.miniDetailHit.reply.failure = true;
+  ReqObj.seller_cta = !toAskCname(revent.data.tmpId) && currentISO() == "IN";
+  ReqObj.su_cta++;
+  if (
+    isSSB(revent.data.tmpId) &&
+    ReqObj.UserDetail.cName === "" &&
+    ((currentISO() === "IN" &&
+      ReqObj.Form[revent.data.tmpId].prodName !== "") ||
+      currentISO() !== "IN") &&
+    cNameConditions(revent.data.tmpId) === true
+  ) {
+    onCName(revent.data.tmpId);
+  } else if (!isEnq(revent.data.tmpId) && ReqObj.UserDetail.cName !== "") {
+    $("#t" + revent.data.tmpId + "_cdiv").html("");
+    $("#t" + revent.data.tmpId + "_cbx").addClass("bedsnone");
+  }
+  if (
+    isSSB(revent.data.tmpId) &&
+    ReqObj.url.toask === true &&
+    currentISO() !== "IN" &&
+    urlConditions(revent.data.tmpId).ask === true
+  ) {
+    onURLName(revent.data.tmpId);
+  }
+}
+
+function MiniDetailsOnError(revent, res) {
+  if (
+    isSet(res) &&
+    isSet(res.Response) &&
+    isSet(res.Response.Code) &&
+    parseInt(res.Response.Code) === 204 &&
+    isSet(res.Response.Status) &&
+    res.Response.Status.toLowerCase() === "failure"
+  ) {
+    ReqObj.gst.toask = true;
+    ReqObj.url.toask = true;
+    ReqObj.UserDetail.cName = "";
+  }
+}
