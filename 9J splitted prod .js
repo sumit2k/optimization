@@ -1,64 +1,6 @@
 
-FormSeq.prototype.BlSsbNext = function (tmpId) {
-  NextStepSSB(tmpId, this);
-};
 
-FormSeq.prototype.BLSingleStep = function (tmpId) {
-  var that = this;
-  if (typeof isSSBLoaded === "undefined") {
-    setTimeout(function () {
-      that.BLSingleStep(tmpId);
-    }, 50);
-  } else {
-    InitialStepSSB(tmpId, that);
-  }
-};
 
-function InlineDefault(tmpId) {
-  $("#t" + tmpId + "_allBtn").html("");
-  $("#t" + tmpId + "_thankDiv")
-    .html("")
-    .addClass("bedsnone");
-  if (!recomOnInactive(tmpId)) {   //inactive changes
-    $("#t" + tmpId + "_mcont").css({
-      display: "flex",
-    });
-  }
-}
-
-function ShowSkip(array, tmpId) {
-  var MandatoryClass = ["Isq", "BlStaticQues"];
-  if (isSet(array)) {
-    for (var i = 0; i < array.length; i++) {
-      if ($.inArray(ConstructorName(array[i].Obj), MandatoryClass) !== -1)
-        return false;
-    }
-    return true;
-  }
-  return true;
-}
-
-function ShowButton(array, tmpId) {
-  // MoreDetails
-  var HideButtonClass = [
-    "ThankYou",
-    "UserVerification",
-    "ProductNameQuestion",
-    "UserLogin",
-    "ProductName",
-    "ContactDetail",
-    "TermsConditions",
-    "CountrySugg",
-  ];
-  if (isSet(array)) {
-    for (var i = 0; i < array.length; i++) {
-      if ($.inArray(ConstructorName(array[i].Obj), HideButtonClass) !== -1)
-        return false;
-    }
-    return true;
-  }
-  return true;
-}
 
 function IsPrevStepAvailable(tmpId) {
   if (IsPrevBtnImplemented(tmpId)) {

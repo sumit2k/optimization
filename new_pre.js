@@ -2280,3 +2280,18 @@ function PrePostService(name, tmpId) {
     name.call(ReqObj.Form[tmpId].FormSequence, tmpId);
   }
 }
+
+FormSeq.prototype.BlSsbNext = function (tmpId) {
+  NextStepSSB(tmpId, this);
+};
+
+FormSeq.prototype.BLSingleStep = function (tmpId) {
+  var that = this;
+  if (typeof isSSBLoaded === "undefined") {
+    setTimeout(function () {
+      that.BLSingleStep(tmpId);
+    }, 50);
+  } else {
+    InitialStepSSB(tmpId, that);
+  }
+};
