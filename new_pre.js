@@ -6737,3 +6737,250 @@ function toFireEnqIntent(tmpId) {
     ReqObj.Form[tmpId].enqintentCalled = true;
   } else ReqObj.Form[tmpId].enqintentCalled = false;
 }
+/*----------------------------------------------IntentGeneration------------------------------------------ */
+
+function GenerateIntent(data) {
+  var form_type =
+    !isSet(data["form_type"]) || data["form_type"] === ""
+      ? ""
+      : data["form_type"];
+  if (form_type === "")
+    form_type =
+      !isSet(data["formType"]) || data["formType"] === ""
+        ? ""
+        : data["formType"];
+  data["form_type"] = form_type;
+  var tmpId =
+    parseInt(data["tmpId"]) === 0 || !isSet(data["tmpId"]) ? 0 : data["tmpId"];
+  data["tmpId"] = "";
+  if (
+    data["form_type"].toLowerCase() !== "" &&
+    data["form_type"].toLowerCase() === "bl"
+  ) {
+    var blIntent = data["BLIntent"].toLowerCase();
+    if (isSet(blIntent) && blIntent !== "") {
+      if (blIntent === "yes" && data["ctaName"].toLowerCase() === "mcat video")
+        data["flag"] = 16;
+      if (blIntent === "yes" && data["ctaName"].toLowerCase() !== "mcat video")
+        data["flag"] = 14;
+    }
+  } //
+  data = ObjectTrim(data);
+  if (imeshExist() !== "") {
+    var s = parseInt(data["flag"]) === 12 && tmpId !== 0 ? true : false;
+    var f = tmpId !== 0 ? true : false;
+    fireAjaxRequest({
+      data: {
+        ga: {
+          gatype: "IntentGeneration",
+          s: s,
+          f: f,
+          source: "",
+        },
+        tmpId: tmpId,
+        ajaxObj: {
+          obj: "",
+          s: {
+            ss: 0,
+            sf: {
+              af: 0,
+              pa: 0,
+            },
+            f: 0,
+          },
+          f: {
+            f: 0,
+          },
+        },
+        ajaxtimeout: 0,
+        ajaxdata: data,
+        hitfinserv: "",
+        type: 0,
+      },
+    });
+  }
+}
+
+function fireAjaxRequest(event) {
+  var revent = event;
+  var tmpId = revent.data.tmpId;
+  var ajaxObj = revent.data.ajaxObj;
+  var ajaxtimeout = revent.data.ajaxtimeout;
+  var ajaxdata = revent.data.ajaxdata;
+  var formtype = isSet(ReqObj.Form[tmpId]) ? ReqObj.Form[tmpId].formType : isSet(ajaxdata["formType"]) ? ajaxdata["formType"] : "BL";
+  var form_type = formtype === "Enq" ? "Send Enquiry" : "Post Buy Leads";
+  if ((revent.data.type === 0 && isSet(ReqObj.Form[tmpId]) && isSet(modIdf) && modIdf === "PRODDTL") || (revent.data.type === 8 && pdpenq(tmpId))) {
+    ajaxdata.pdp = true;
+  }
+  $.ajax({
+    cache: false,
+    url: getAjaxURL(revent),
+    type: revent.data.type === 8 ? "POST" : "GET",
+    timeout: ajaxtimeout,
+    dataType: "json",
+    crossOrigin: true,
+    crossDomain: true,
+    data: ajaxdata,
+    success: function (res) {
+      if (isSet(res)) {
+        if ((isSet(res.CODE) && parseInt(res.CODE) === 200) || (isSet(res.Response) && parseInt(res.Response.Code) === 200) || (isSet(res.success) && parseInt(res.success) === 1) || (isSet(res.RESPONSE) && parseInt(res.RESPONSE.Code) === 200) || (isSet(res.RESP) && res.RESP !== "failure") || (isSet(res.queryid) && ValidGenId(res.queryid)) || (isSet(res.ofr) && ValidGenId(res.ofr)) || (isSet(res.msg) && isSet(res.msg.MESSAGE) && parseInt(res.msg.MESSAGE.CODE) === 200)) {
+          OnAjaxSuccess(revent, res);
+          if (revent.data.ga.s === true)
+            blenqGATracking(form_type, "service:" + revent.data.ga.gatype + ":success " + revent.data.ga.source, getEventLabel(), 1, tmpId);
+          if (ajaxObj !== "" && ajaxObj.s.ss === 1) {
+            if (isSSB(tmpId))
+              ReqObj.Form[tmpId].servicecalled.push(ConstructorName(ajaxObj.obj.fn));
+            PostAjax(ajaxObj.obj, tmpId);
+          }
+          finishEnqDependents(tmpId, revent.data.type);
+        } else {
+          OnAjaxError(revent, res);
+          if (revent.data.ga.f === true)
+            blenqGATracking(form_type, "service:" + revent.data.ga.gatype + ":failure", res, 1, tmpId);
+          if (ajaxObj !== "" && ajaxObj.s.sf.af === 1)
+            Ajaxfailure(ajaxObj.obj, tmpId, revent.data.hitfinserv);
+          if (ajaxObj !== "" && ajaxObj.s.sf.pa === 1)
+            PostAjax(ajaxObj.obj, tmpId, revent.data.hitfinserv);
+        }
+      } else {
+        OnAjaxError(revent, res);
+        finishEnqDependents(tmpId, revent.data.type);
+        if (revent.data.ga.f === true)
+          blenqGATracking(form_type, "service:" + revent.data.ga.gatype + ":failure", "response undefined", 1, tmpId);
+        if (ajaxObj !== "" && ajaxObj.s.f === 1)
+          Ajaxfailure(ajaxObj.obj, tmpId, revent.data.hitfinserv);
+        if (isSet(revent.data.key) && isSet(revent.data.key.appendedVal) && revent.data.key.appendedVal !== "")
+          RemoveValFromImEqGl(revent.data.key.appendedVal);
+      }
+    },
+    error: function (res) {
+      if (ajaxObj !== "" && ajaxObj.f.f === 1)
+        Ajaxfailure(ajaxObj.obj, tmpId, revent.data.hitfinserv);
+      res = isSet(res) ? JSON.stringify(res) : "response undefined";
+      if (revent.data.ga.f === true)
+        blenqGATracking(form_type, "service:" + revent.data.ga.gatype + ":failure", res, 1, tmpId);
+      OnAjaxError(revent, res);
+      finishEnqDependents(tmpId, revent.data.type);
+    },
+    complete: function (res) {
+      OnAjaxComplete(revent, res);
+    },
+  });
+}
+
+function getAjaxURL(event) {
+  var webAddressLocation = location.hostname;
+  var appsServerName = webAddressLocation.match(/^dev/)
+    ? "//dev-apps.imimg.com/"
+    : webAddressLocation.match(/^stg/)
+      ? "//stg-apps.imimg.com/"
+      : "//apps.imimg.com/";
+  switch (event.data.type) {
+    case 1:
+      return appsServerName + "index.php?r=Newreqform/saveEnrichment";
+    case 2:
+      return appsServerName + "index.php?r=Newreqform/BLEnqUpdate";
+    case 3:
+      return appsServerName + "index.php?r=postblenq/saveIsqBlEnq";
+    case 4:
+      return appsServerName + "index.php?r=Newreqform/TermNCondition";
+    case 5:
+      return appsServerName + "index.php?r=Newreqform/FinishEnqService";
+    case 6:
+      return appsServerName + "index.php?r=Newreqform/GlusrUpdate";
+    case 7:
+      return appsServerName + "index.php?r=Newreqform/MiniDetails";
+    case 0:
+      return appsServerName + "index.php?r=Newreqform/IntentGeneration";
+    case 8:
+      return appsServerName + "index.php?r=Newreqform/Postreq";
+    case 9:
+      return appsServerName + "index.php?r=postblenq/McatDtl";
+  }
+}
+
+function OnAjaxSuccess(revent, res) {
+  switch (revent.data.type) {
+    case 6:
+      revent.data.ga.gatype === "GlusrUpdate"
+        ? GlusrUpdateOnSuccess(revent, 0, res)
+        : GlusrUpdateOnSuccess(revent, 1, res);
+      break;
+    case 7:
+      MiniDetailsOnSuccess(revent, res);
+      break;
+    case 8:
+      ReqObj.Form[revent.data.tmpId].formType.toLowerCase() === "enq"
+        ? EnqGenOnSuccess(revent, res)
+        : BLGenOnSuccess(revent, res);
+      break;
+    case 9:
+      McatDtlOnSuccess(revent, res);
+      break;
+  }
+}
+
+function OnAjaxError(revent, res) {
+  switch (revent.data.type) {
+    case 6:
+      revent.data.ga.gatype === "GlusrUpdate"
+        ? GlusrUpdateOnError(revent, 0, res)
+        : GlusrUpdateOnError(revent, 1, res);
+      break;
+    case 7:
+      MiniDetailsOnError(revent, res);
+      break;
+    case 8:
+      BlEnqOnError(revent, res);
+      break;
+  }
+}
+
+function OnAjaxComplete(revent, res) {
+  switch (revent.data.type) {
+    case 1:
+      savenrflag = 1;
+      break;
+    case 9:
+      McatDtlOnComplete(revent, res);
+      break;
+  }
+}
+
+/*--------------------------McatDtlOnSuccess----------------------- */
+
+function McatDtlOnSuccess(revent, res) {
+  ReqObj.mcatdtl.response = true;
+  if (
+    isSet(res.Response.Data) &&
+    isSet(res.Response.Data.glcat_mcat_img1_250x250)
+  ) {
+    var img_url = res.Response.Data.glcat_mcat_img1_250x250;
+    img_url = img_url.replace("http:", "");
+    if (isSet(revent.data.key.cbObj) && revent.data.key.cbObj.hasCallback) {
+      ReqObj.Form[revent.data.tmpId].displayImage = img_url;
+    } else {
+      ReqObj.mcatImage = img_url;
+    }
+    pushImage(ReqObj.Form[revent.data.tmpId].mcatId, img_url, "");
+  }
+  if (isSet(res.Response.Data) && isSet(res.Response.Data.glcat_mcat_name)) {
+    var mcat_name = res.Response.Data.glcat_mcat_name;
+    ReqObj.Form[revent.data.tmpId].mcatName = mcat_name;
+    if (isBlInlineFr(revent.data.tmpId))
+      $("#t" + revent.data.tmpId + "_mcatNameAdw").text(
+        ReqObj.Form[revent.data.tmpId].mcatName
+      );
+    MakeRefText(revent.data.tmpId);
+  }
+}
+/*--------------------------McatDtlOnComplete----------------------- */
+
+function McatDtlOnComplete(revent, res) {
+  ReqObj.mcatdtl.response = true;
+  if (isSet(revent.data.key.cbObj) && revent.data.key.cbObj.hasCallback)
+    revent.data.key.cbObj.cbfunc(revent.data.tmpId);
+  $("#t" + revent.data.tmpId + "_imglodr").addClass("bedsnone");
+  if (isSet(revent.data.key.left) && revent.data.key.left === 1)
+    leftSideTransition(0, revent.data.tmpId, "fromservice");
+}

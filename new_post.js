@@ -3805,3 +3805,69 @@ Generation.prototype.blEnqGeneration = function (tmpId) {
     });
   }
 };
+/*--------------------------GlusrupdateonSuccess----------------------- */
+function GlusrUpdateOnSuccess(revent, todo, res) {
+  var userlogin = new UserLogin();
+  var imesh = imeshExist();
+  if (usercookie.getParameterValue(imesh, "usts") === "2")
+    userlogin.reAuthenticate({
+      data: {
+        logObject: "",
+        tmpId: revent.data.tmpId,
+        userlogin: userlogin,
+        blureve: false,
+        todo: "glusrupdate",
+        source: "updateservice",
+      },
+    });
+  else
+    userlogin.sendRequest({
+      data: {
+        logObject: "",
+        tmpId: revent.data.tmpId,
+        userlogin: userlogin,
+        blureve: false,
+        todo: "glusrupdate",
+        source: "updateservice",
+      },
+    });
+  if (todo === 0) callToIdentifiedQ(revent.data.tmpId, "from-Form");
+  if (todo === 1) {
+    if (revent.data.typename === "CompanyName")
+      ReqObj.UserDetail.cName = ReqObj.Form[revent.data.tmpId].companyName;
+    if (
+      revent.data.typename === "GST" &&
+      isSet(res.msg) &&
+      isSet(res.msg.DET_MESSSAGE) &&
+      isSet(res.msg.DET_MESSSAGE.STATUS)
+    ) {
+      if (res.msg.DET_MESSSAGE.STATUS.toLowerCase() === "successful")
+        ReqObj.gst.toask = false;
+      else ReqObj.gst.toask = true;
+    }
+    if (
+      revent.data.typename === "URL" &&
+      isSet(res.msg) &&
+      isSet(res.msg.MESSAGE) &&
+      isSet(res.msg.MESSAGE.STATUS)
+    ) {
+      if (res.msg.MESSAGE.STATUS.toLowerCase() === "successful")
+        ReqObj.url.toask = false;
+      else ReqObj.url.toask = true;
+    }
+    if (
+      isEnq(revent.data.tmpId) ||
+      Bl09(revent.data.tmpId) ||
+      Bl01(revent.data.tmpId) ||
+      Bl04(revent.data.tmpId)
+    )
+      miniDetailService(revent.data.tmpId);
+  }
+}
+function GlusrUpdateOnError(revent, todo, res) {
+  if (todo === 0) UpdateUserDetailKey();
+  if (todo === 1) {
+    if (revent.data.typename === "CompanyName") ReqObj.UserDetail.cName = "";
+    if (revent.data.typename === "GST") ReqObj.gst.toask = true;
+  }
+}
