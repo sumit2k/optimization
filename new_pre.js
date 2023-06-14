@@ -17562,13 +17562,8 @@ function citySugg(tmpId, id) {
     ? "//dev-apps.imimg.com/"
     : webAddressLocation.match(/^stg/)
       ? "//stg-apps.imimg.com/"
-      : "//apps.imimg.com/";
-  
-  function notEmpty(val) {
-    if (isSet(val) && val !== "") {
-      return true;
-    } else return false;
-  }
+      : "//apps.imimg.com/"; 
+
   
   function isFirstImgVidCTA(tmpId) {
     return isImageVidEnq(tmpId) &&

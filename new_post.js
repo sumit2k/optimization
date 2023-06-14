@@ -1174,43 +1174,6 @@ FormSeq.prototype.BLChatIsqSubsequent = function (tmpId) {
     // this.BLChatRd(tmpId);
 };
 
-FormSeq.prototype.BLChatStaticQuestion = function (tmpId) {
-  var that = this;
-  this.NumberofClassCalled = 1;
-
-  var array = {
-    UiArray: [],
-    ServiceArray: [],
-  };
-  var hooks = {
-    pre: [this.BLChatRd],
-    post: [],
-    current: [this.BLChatStaticQuestion],
-  };
-  if (
-    returnIsEnrichShownKeyVal(tmpId) &&
-    ReqObj.Form[tmpId].modrefType === "product"
-  ) {
-    var StaticQues = {
-      object: {
-        obj: new BlStaticQues(tmpId),
-        toReplace: true,
-        isService: false,
-        array: array,
-        hooks: hooks,
-      },
-      tmpId: tmpId,
-      that: that,
-      AfterService: [],
-      hasFallback: false,
-      FallbackObj: null,
-    };
-    CreateSeq(StaticQues);
-  } else {
-    this.BLChatRd(tmpId);
-  }
-};
-
 FormSeq.prototype.BLChatRd = function (tmpId) {
   var that = this;
   this.NumberofClassCalled = 1;
@@ -2350,52 +2313,6 @@ BlStaticQues.prototype.deleteFile = function (event) {
   }
 };
 
-
-function InlineDefault(tmpId) {
-  $("#t" + tmpId + "_allBtn").html("");
-  $("#t" + tmpId + "_thankDiv")
-    .html("")
-    .addClass("bedsnone");
-  if (!recomOnInactive(tmpId)) {   //inactive changes
-    $("#t" + tmpId + "_mcont").css({
-      display: "flex",
-    });
-  }
-}
-
-function ShowSkip(array, tmpId) {
-  var MandatoryClass = ["Isq", "BlStaticQues"];
-  if (isSet(array)) {
-    for (var i = 0; i < array.length; i++) {
-      if ($.inArray(ConstructorName(array[i].Obj), MandatoryClass) !== -1)
-        return false;
-    }
-    return true;
-  }
-  return true;
-}
-
-function ShowButton(array, tmpId) {
-  // MoreDetails
-  var HideButtonClass = [
-    "ThankYou",
-    "UserVerification",
-    "ProductNameQuestion",
-    "UserLogin",
-    "ProductName",
-    "ContactDetail",
-    "TermsConditions",
-    "CountrySugg",
-  ];
-  if (isSet(array)) {
-    for (var i = 0; i < array.length; i++) {
-      if ($.inArray(ConstructorName(array[i].Obj), HideButtonClass) !== -1)
-        return false;
-    }
-    return true;
-  }
-  return true;
-}
 function modificationOnBack(tmpId) {
   if (
     isSet($("#t" + tmpId + "_cname_ocbx").val()) &&
@@ -3341,55 +3258,6 @@ MoreDetails.prototype.MoreDetailsTracking = function (tmpId, toappend) {
   blenqGATracking(form_type, tracking, getEventLabel(), 0, tmpId);
   ReqObj.Form[tmpId].noSampling = sampling;
 };
-
-ContactDetail.prototype.getChatblNameErrorDiv = function (tmpId) {
-  var html = "";
-  html += returnContainer(
-    "t" + tmpId,
-    "_error_first_name" + this.classCount,
-    "redc bltperor",
-    "",
-    ""
-  );
-  html += returnContainer(
-    "t" + tmpId,
-    "_fname_errmsg" + this.classCount,
-    "",
-    "content",
-    ""
-  );
-  html += "</div >";
-  html += "</div>";
-  return html;
-};
-
-ContactDetail.prototype.getChatblCityErrorDiv = function (tmpId) {
-  var html = "";
-  html += returnContainer(
-    "t" + tmpId,
-    "_error_city" + this.classCount,
-    "redc bltperor",
-    "",
-    ""
-  );
-  html += returnContainer(
-    "t" + tmpId,
-    "_city_errmsg" + this.classCount,
-    "",
-    "content",
-    ""
-  );
-  html += "</div></div>";
-  return html;
-};
-
-function detachFlag2(tmpId) {
-  var ele = $("#t" + tmpId + "country_dropd").detach();
-  $("#t" + tmpId + "flagdiv2").append(ele);
-}
-// function isMoglixUi(tmpId) {
-//   return isSet(ReqObj.Form[tmpId].New_UI) && ReqObj.Form[tmpId].New_UI === "1";
-// }
 
 function get_message() {
   return {
@@ -6988,10 +6856,6 @@ RightSide.prototype.getQuestionOuterWrapperHtml = function (tmpId) {
   return html;
 };
 
-function onPlayerStateChange(event) {
-  if (event.data !== 1) blStop = 0;
-  else blStop = 1;
-}
 
 function getYTVideo(VideObj) {
   if (
@@ -8363,15 +8227,7 @@ Validation.prototype.isNumberKey = function (event) {
     return true;
   }
 };
-// Validation.prototype.toShowTick = function (event) {
-//   var pressedKeyLength = (event.which === 8) ? 0 : event.key.length;
-//   if ((pressedKeyLength + event.target.value.length) === 10) {
-//     $("#t" + event.data.tmpId + "chatbltick").removeClass("bedsnone");
-//   }
-//   else
-//     $("#t" + event.data.tmpId + "chatbltick").addClass("bedsnone");
 
-// };
 Validation.prototype.isProductNameValid = function (name) {
   this.result = {
     type: true,
@@ -8543,16 +8399,6 @@ Validation.prototype.isURLValid = function (website, tmpId) {
  * @returns true if localStorage exists else false
  */
 
-function CheckLocalStorage() {
-  try {
-    localStorage.setItem("__checklocalstorage", "exists");
-    localStorage.removeItem("__checklocalstorage");
-    return true;
-  } catch (exception) {
-    return false;
-  }
-}
-
 function getEventLabel(toappend) {
   var imeshcookie = imeshExist();
   var imeshiso = usercookie.getParameterValue(imeshcookie, "iso");
@@ -8571,10 +8417,6 @@ function getEventLabel(toappend) {
     label = toappend + "|" + label;
   }
   return label;
-}
-
-function currentIpCountry() {
-  return usercookie.getParameterValue(usercookie.getCookie("iploc"), "gcnnm");
 }
 
 function stopBgScroll() {
@@ -8601,106 +8443,6 @@ function SanitizeId(id) {
       : defaultGenerationId
     : defaultGenerationId;
 }
-
-// //both keyName and value should be string
-// function SetKeyInLocalStorage(keyName, value) {
-//   if (CheckLocalStorage()) {
-//     if (isSet(keyName) && typeof keyName === "string" && keyName !== "" && isSet(value) && value !== "") {
-//       localStorage.setItem(keyName, value);
-//     }
-//   }
-
-// }
-
-// function GetFromLocalStorage(keyName) {
-//   if (CheckLocalStorage()) {
-//     if (isSet(keyName) && keyName !== "") {
-//       var value = localStorage.getItem(keyName);
-//       return value;
-//     }
-//     return null;
-//   }
-//   return null;
-
-// }
-
-function StaticMessage() {
-  var constantText = "Get verified supplier details instantly on your ";
-  if (currentISO() === "IN") {
-    constantText += "mobile";
-  } else constantText += "email";
-  return constantText;
-}
-
-/*
-function showBanner(tmpId) {
-  if (isSet(ReqObj.Form[tmpId].formType) && ReqObj.Form[tmpId].formType === "Enq") {
-    var utyp = ReturnCorrectVal(usercookie.getParameterValue(usercookie.getCookie('ImeshVisitor'), "utyp"), "");
-    if (custTypeCheck(tmpId) === 'P') {
-      return true;
-    }
-    else {
-      return false;
-    }
-  }
-  else {
-    return true;
-  }
- 
-}
- 
- 
-function custTypeCheck(tmpId) {
-  if (isSet(ReqObj.Form[tmpId].rcvCustType) && ReqObj.Form[tmpId].rcvCustType !== "" && parseInt(ReqObj.Form[tmpId].rcvCustType, 10) < 700) {
-    return 'P';
-  }
-  else {
-    return 'F';
-  }
-}
-*/
-
-function ShowNameField(tmpId) {
-  var ipcookie = iplocExist();
-  if (!usercookie.getParameterValue(imeshExist(), "fn")) {
-    if (
-      currentISO() !== "IN" ||
-      (ReqObj.ipLoc.zoneISO === "OTHER" && ipcookie === "")
-    )
-      return true;
-    else {
-      if (
-        isSet(ReqObj.Form[tmpId].HideNameonFirstStep) &&
-        parseInt(ReqObj.Form[tmpId].HideNameonFirstStep, 10) === 1
-      )
-        return false;
-      return true;
-    }
-  } else {
-    return false;
-  }
-}
-// function SuggestorHit() {
-//   var submit_url = "https://dev-suggest.imimg.com/suggest/suggest.php?q=jammu&tag=suggestions&limit=40&type=city&fields=state%2Cid%2Cstateid%2Cflname%2Calias&display_fields=value%2C%3Dstate&display_separator=%2C+&match=fuzzy&catid=101&showloc=1&p=42";
-//   $.ajax({
-//     cache: false,
-//     url: submit_url,
-//     type: 'GET',
-//     //timeout: 3000,
-//     dataType: 'json',
-//     success: function (data) {
-//       console.log(data);
-//     },
-//     error: function (o, st, e) {
-
-//     },
-//     complete: function (res) {
-
-//     }
-//   });
-// }
-// SuggestorHit();
-//
 
 function callfunc(foundArray, ObjectToFind) {
   for (var y = 0; y < foundArray.length; y++) {
@@ -8894,35 +8636,6 @@ function returnA(tmpId, element, href, target, aclass) {
   );
 }
 
-function returnImg(tmpId, element, src, imgclass) {
-  /* add attributes at end  */
-  return (
-    '<img id="' +
-    tmpId +
-    element +
-    '"src="' +
-    src +
-    '" class="' +
-    imgclass +
-    '">'
-  );
-}
-
-function returnOption(tmpId, element, value, optionid, optiontext) {
-  return (
-    '<option value="' +
-    value +
-    '" optionid="' +
-    optionid +
-    '">' +
-    optiontext +
-    "</option>"
-  );
-}
-function flagwrapper(message) {
-  return '<div class="cbl_flag">' + message + "</div>";
-}
-
 function skipDiv1(tmpId) {
   //chat bl bug
   var skiphtml1 = returnContainer("", "", "cbl_resend cbl_skip", "", "", "");
@@ -9008,13 +8721,6 @@ function ShowTncError(tmpId) {
 function RemoveTncError(tmpId) {
   $("#t" + tmpId + "_error_tCond").addClass("bedsnone");
 }
-function ShowStaticQuestionForeign(tmpId) {
-  // if (isSet(tmpId) && tmpId.substring(0, 2) === "09") {
-  //   if (parseInt(ReqObj.Form[tmpId].disableIsq) !== 1 && currentISO() !== "IN") return true;
-  //   return false;
-  // }
-  return false;
-}
 
 function isOTPBoxHidden(tmpId) {
   return $("#t" + tmpId + "_otpbox").length === 0 ||
@@ -9060,23 +8766,6 @@ function enable_scroll() {
   window.onmousewheel = document.onmousewheel = document.onkeydown = null;
 }
 
-function ResetUserDetails(key) {
-  ReqObj.UserDetail[key] = "";
-}
-
-function returnIsEnrichShownKeyVal(tmpId) {
-  if (
-    (currentISO() === "IN" &&
-      (ReqObj.Form[tmpId].flags.isEnrichShown.isStaticShown === false ||
-        ReqObj.Form[tmpId].flags.isEnrichShown.isAttachmentShown === false)) ||
-    (currentISO() !== "IN" &&
-      ReqObj.Form[tmpId].flags.isEnrichShown.isAttachmentShown === false)
-  ) {
-    return true;
-  }
-  return false;
-}
-
 function chatBlClass(tmpId, todo) {
   // POPUPCHATBL
   if (todo === "left") {
@@ -9090,13 +8779,6 @@ function chatBlClass(tmpId, todo) {
     return "blchat-btn1";
   }
 }
-
-// function chatBlPopupInline(tmpId) {
-//   if ((chatblverlay(tmpid) || IsChatBLInline(tmpId)) && tmpId.substring(0, 2) === "08") { // later change to 08 ---POPUPCHATBL
-//     return "popup";
-//   }else
-//     return "nochat";
-// }
 
 function OpenChatBLPopup(tmpId) {
   isBLFormOpen = true;
@@ -9228,10 +8910,6 @@ function chatblHideTransition(tmpId) {
   $("#t" + tmpId + "_newblchatReply").addClass("cbl_vh");
 }
 
-function foreignUserIsq() {
-  var ShowForeignUserIsq = true;
-  return ShowForeignUserIsq;
-}
 /*
 *
 * YANDEX TRACKING
@@ -9312,11 +8990,6 @@ function fireYandex(tmpId) {
     trackdata.data_arr
   );
 }
-
-function getCurrentCounter(currentpage) {
-  return currentpage.length;
-}
-
 function isHindi(str) {
   var split = str.split("");
   for (i = 0; i < split.length; i++) {
@@ -9836,20 +9509,6 @@ function selecttext_city_enrich(event, ui) {
     //$("#")
     // document.getElementById(cityid).value = ui.item.data.id;
   }
-}
-
-
-function chckval(cityid, val) {
-  // if (val == '') {
-  //   $('#' + cityid).val('');
-  // }
-}
-
-function blkerr(templateId) {
-  // if ($('#' + templateId + 'error_city_locpref').css('display') == 'block') {
-  //   $('#' + templateId + 'error_city_locpref').css('display', 'none');
-  //   $('#' + templateId + 'enrich_city1').removeClass("highlight-err");
-  // }
 }
 
 function thankYouTrack(tmpId, msg, sellerId) {
@@ -10718,27 +10377,6 @@ ThankYou.prototype.grBoxhtml = function (data) {
       : "<div id = 't" + data["tmpId"] + "_thnkemdiv' class = 'cbl_vh'></div>";
 };
 
-// ThankYou.prototype.payxHtml = function (data) {
-
-//   var aclass = (data["formType"] === "bl") ? "" : "be_payXurl";
-//   return returnA("", "", this.payxImgUrl, "_blank", aclass) + returnImg("", "payxbanner", data["manageSname"] + "apps.imimg.com/gifs/paywith-bannerLeft2.jpg", "be-db") + "</a>";
-// };
-
-// ThankYou.prototype.paybannerHtml = function (data) {
-//     if (isSSB(data["tmpId"])) return "";
-//     var br = isMoglixUi(data["tmpId"])?"":"<br>";
-//     var cls = isMoglixUi(data["tmpId"])?"BL_Fm4 txt-cnt br4 ths_mb":"BL_Fm4 txt-cnt br4 ths_mb ew33";
-//     var clss = isMoglixUi(data["tmpId"])?"cbl_df iJSpb id_aic pd":"";
-//     var chcls = isMoglixUi(data["tmpId"])?"BL_Ff3 BL_Fc1 ecl5c befs14 pflx1 txtl":"BL_Ff3 BL_Fc1 ecl5c befs14";
-//     var chcls2 = isMoglixUi(data["tmpId"])?"BL_Ficn1 oef0":"BL_Ficn1";
-//     var bannerhtml =
-//         '<div class="'+cls+'"><a target ="_blank" class="'+clss+'" href="https://paywith.indiamart.com/" onclick = \'return thankYouTrack("' +
-//         data["tmpId"] +
-//         '","ThankYou_PWIM")\'><div class="'+chcls+'">Protect your payments for <span class="BL_Fwb">FREE,</span> Pay '+br+' sellers online via <span class="BL_Fwb">Pay with IndiaMART</span></div><span class="'+chcls2+'"></span></a></div>';
-
-//     return bannerhtml;
-// };
-
 ThankYou.prototype.thankmess = function (data) {
   if (isSSB(data["tmpId"])) {
     return thankmessSSB(data);
@@ -10956,10 +10594,6 @@ ThankYou.prototype.payNumber = function (data) {
 
   return data["formType"] === "bl" ? "" : "";
 };
-
-// ThankYou.prototype.payxBsec = function (data) {
-//   return returnContainer("", "", "be-w237 bevT bedtc", "", data["payxHtml"], "") + "</div >";
-// };
 
 ThankYou.prototype.getHtml = function (data) {
   if (IsChatbl(data["tmpId"])) {
