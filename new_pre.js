@@ -2124,9 +2124,6 @@ function PreAjax(fName, tmpId) {
   }
 }
 
-
-
-
 /**
  *
  *
