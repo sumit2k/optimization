@@ -20583,3 +20583,40 @@ function IsBlEnqProdNameChanged(tmpId) {
     }
   }
 }
+
+function RequirementDtl(tmpId) {
+  this.className = "RequirementDtl";
+  this.RequirementDtlObj = {
+    OuterWrapper: "",
+    UserInput: "",
+    ClosingWrapper: "",
+    Label: "",
+  };
+  this.Rdbox = "";
+  this.setValue = "";
+  this.countclick = 0;
+  this.QuestionArray = [];
+}
+function addBlLoader(tmpId, type) {
+  var NewTempId = tmpId;
+  if (NewTempId !== "" && IsChatbl(NewTempId)) {
+    if (!($("#t" + tmpId + "_typing").length > 0)) {
+      if (IsChatbl(tmpId)) {
+        // $("#t" + NewTempId + "_bl_form").append(appendChatLoader(tmpId, type, "blchat-lodr2"));
+        $("#t" + NewTempId + "_new_chatbl").append(
+          appendChatLoader(tmpId, type, "txt_area  cbl_bg1")
+        );
+      }
+    }
+    //$("#t" + NewTempId + "_bl_form").append(appendChatLoader(tmpId, type));
+  } else {
+    // if (isSet(ReqObj.Form[tmpId].FormSequence) && ReqObj.Form[tmpId].FormSequence.StepCounter > 0) {
+    //   var templateId = tmpId.substring(0, 2);
+    //   var NewTempId = tmpId.replace(templateId, "09");
+    // }
+    var el = $("#t" + NewTempId + "_belodr");
+    if (el.hasClass("bedsnone")) {
+      el.removeClass("bedsnone");
+    }
+  }
+}
