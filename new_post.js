@@ -6611,3 +6611,454 @@ function RemovePost(array) {
     }
   }
 }
+var slotx="";
+var renone;
+function showAdInact(tmpId){
+  imgtm.push({
+    event: "IMEvent-NI",
+    eventCategory: "Post Buy Leads",
+    eventAction: "ad",
+    eventLabel: getEventLabel()
+  });
+  renone=true;
+  $("#t" + tmpId + "_mcont").css({
+    display: "none",
+  });
+  $("#t" + tmpId + "_adinact").remove();
+  $("#t" + tmpId + "_bewrapper").append("<div id=t" + tmpId + "_adinact class='adinactive bedsnone'>");
+  if($("#t" + tmpId + "_clsx").length == 0 )
+  $("#t" + tmpId + "_adinact").append("<div id=t" + tmpId + "_clsx class='be-cls'>");
+  $("#t" + tmpId + "_clsx").html('X');
+  $("#t" + tmpId + "_clsx").off("click").on("click", function (event) {
+    $("#t" + tmpId + "_adinact").remove();
+    $("#t" + tmpId + "_bewrapper").css({
+      display: "none",
+    });
+    resumeBgScroll();
+  });
+  if($("#div-gpt-ad-1683872046457-0").length == 0 )
+  $("#t" + tmpId + "_adinact").append("<div id='div-gpt-ad-1683872046457-0' style='padding: 25px;'>"); // style='min-width: 300px; min-height: 250px;'>");
+  window.googletag = window.googletag || {
+    cmd: [],
+  };
+  if (slotx === "") {
+    slotx = googletag.defineSlot('/3047175/Inactive_BL_Interstitial',  [[320, 480], [400, 300], [480, 320], [580, 400], [750, 300]], 'div-gpt-ad-1683872046457-0');
+  }
+  slotx.addService(googletag.pubads());
+  googletag.pubads().addEventListener("slotRenderEnded", (event) => {
+    const slot = event.slot;
+    var element =  document.getElementById('google_ads_iframe_/3047175/Inactive_BL_Interstitial_0');
+    if(event.advertiserId && renone && typeof(element) != 'undefined' && element != null){
+      $("#t" + tmpId + "_adinact").removeClass("bedsnone").css({
+        display: "flex",
+      });
+      $("#t" + tmpId + "_bewrapper").removeClass("bedsnone").css({
+        display: "block",
+      });
+      stopBgScroll();
+      $(document).on('click', function (e) {
+        if ($(e.target).closest("#t" + tmpId + "_adinact").length === 0) {
+          $("#t" + tmpId + "_clsx").click();
+        }
+    });
+      renone=false;
+    }
+  });
+  googletag.pubads().refresh([slotx]);
+  googletag.pubads().enableSingleRequest();
+  googletag.enableServices();
+  googletag.display("div-gpt-ad-1683872046457-0");    
+}
+function ReqImage(key, index) {
+  //POPUPCHATBL
+  this.displayImage = "";
+  this.zoomImage = "";
+  this.defaultimg = "";
+  this.vidUrl = "";
+  this.ctaType = "";
+  this.funcToCall = "";
+  this.html = "";
+  this.src = "";
+  this.type = "";
+  this.className = "ReqImage";
+}
+ReqImage.prototype.extractValues = function (key, index) {
+  if (isSet(key) && isSet(index)) {
+    this.displayImage =
+      isSet(key[index].displayImage) && key[index].displayImage !== ""
+        ? key[index].displayImage
+        : "";
+    this.zoomImage =
+      isSet(key[index].zoomImage) && key[index].zoomImage !== ""
+        ? key[index].zoomImage
+        : "";
+    this.vidUrl =
+      isSet(key[index].vidUrl) && key[index].vidUrl !== ""
+        ? key[index].vidUrl
+        : "";
+    this.ctaType =
+      isSet(key[index].type) && key[index].type !== "" ? key[index].type : "";
+  }
+};
+ReqImage.prototype.displayHtml = function (
+  tmpId,
+  key,
+  index,
+  zoomImageLoad,
+  imgslider
+) {
+  this.extractValues(key, index, zoomImageLoad);
+  this.defaultimg = getDefaultImage(tmpId);
+  this.funcToCall =
+    typeof ReqObj.Form[tmpId].formType !== "undefined"
+      ? ReqObj.Form[tmpId].formType
+      : "";
+  this.RDatatype =
+    typeof ReqObj.Form[tmpId].modrefType !== "undefined"
+      ? ReqObj.Form[tmpId].modrefType
+      : "";
+
+  if (this.ctaType.toLowerCase() === "video") {
+    /* video */ if (isSet(imgslider) && imgslider === "vidslider") {
+    } else
+      $("#t" + tmpId + "parent_iframe").html(
+        "<div id='t" + tmpId + "_prodVideo' class='belft bepr pdpHg'></div>"
+      );
+
+    if (isIframeApiloaded === 0) loadScript();
+    return this.showVideo(tmpId, zoomImageLoad);
+  } else {
+    return this.showImage(tmpId, zoomImageLoad);
+  }
+};
+ReqImage.prototype.defaultEvents = function () {
+  this.handleUI();
+};
+ReqImage.prototype.showImage = function (tmpId, zoomImageLoad) {
+  if (this.funcToCall.toLowerCase() === "enq") {   //new gmp 
+
+    if(getMorePh(tmpId) && !ispdp(tmpId) && modIdf.toLowerCase()!='fcp' && new RegExp("noimage").test(this.displayImage)){
+      return getDefaultImage(tmpId);
+    }
+
+    else if (this.displayImage !== "") {
+      if (
+        isSet(ReqObj.Form[tmpId].multipleImageVideo) &&
+        ReqObj.Form[tmpId].multipleImageVideo !== ""
+      ) {
+        this.html += this.getImage(
+          "t" + tmpId + "_dispimage",
+          "igTh",
+          this.displayImage
+        );
+      } else {
+        this.html += this.getImage(
+          "t" + tmpId + "_dispimage",
+          "",
+          this.displayImage
+        );
+      }
+      if (isSet(zoomImageLoad) && zoomImageLoad === true) {
+        this.html +=
+          this.zoomImage !== ""
+            ? this.getImage("t" + tmpId + "_zoomimage", "", this.zoomImage)
+            : "";
+      }
+    } else if (this.zoomImage !== "") {
+      this.html += this.getImage(
+        "t" + tmpId + "_zoomimage",
+        "",
+        this.zoomImage
+      );
+    } else {
+      return getDefaultImage(tmpId);
+    }
+
+    //if (isSet(zoomImageLoad) && zoomImageLoad === true) this.html += "<span class='be-blrEnqimg'  style='background-image: url(" + this.src + ");'></span>";
+  }
+  if (this.funcToCall.toLowerCase() === "bl" || IsChatbl(tmpId)) {
+    if (this.displayImage !== "") {
+      this.html += this.getImage(
+        "t" + tmpId + "_dispimage",
+        "",
+        this.displayImage
+      );
+    } else {
+      return getDefaultImage(tmpId);
+    }
+    this.html +=
+      "<span class='be-blrprdimg'  style='background-image: url(" +
+      this.src +
+      ");'></span>";
+  }
+
+  return this.html;
+};
+
+ReqImage.prototype.getImage = function (id, cls, src) {
+  this.src = src;
+  return "<img id='" + id + "' class='" + cls + "'  src='" + src + "'" + "/>";
+};
+ReqImage.prototype.showVideo = function (tmpId) {
+  var that = this;
+  if (
+    isSet(ReqObj.Form[tmpId].multipleImageVideo) &&
+    ReqObj.Form[tmpId].multipleImageVideo !== ""
+  ) {
+    that.html += '<span class="eqytubg"><i class="eqytub eqpsimg"></i></span>';
+    that.html += that.getImage(
+      "t" + tmpId + "_dispimage",
+      "igTh",
+      that.displayImage
+    );
+    return that.html;
+  } else {
+    if (that.vidUrl !== "undefined" && that.vidUrl !== "") {
+      youtubeVideo({
+        data: {
+          tmpId: tmpId,
+          vidUrl: that.vidUrl,
+        },
+      });
+    } else {
+      return that.showImage(tmpId);
+    }
+  }
+};
+function CheckForUpdate() {
+  var imeshcookie = imeshExist();
+  for (var key in ReqObj.UserDetail) {
+    if (
+      ReqObj.UserDetail[key] !== usercookie.getParameterValue(imeshcookie, key)
+    )
+      return true;
+  }
+  return false;
+}
+
+function RightSide(tmpId, typeofform, step) {
+  this.defaultActions(tmpId, typeofform, step);
+}
+
+RightSide.prototype.defaultActions = function (tmpId, typeofform, step) {
+  this.initialiseRightSection(tmpId, typeofform, step + "R");
+  this.handleUI({
+    initialdata: {
+      step: step + "R",
+      tmpId: tmpId,
+      typeofform: typeofform,
+    },
+  });
+  this.handleStructure({
+    initialdata: {
+      tmpId: tmpId,
+      typeofform: typeofform,
+      obj: this,
+      step: step + "R",
+    },
+  });
+  if (isImageVidEnq(tmpId))
+    attachEvents({
+      initialdata: {
+        tmpId: tmpId,
+        step: step + "R",
+      },
+    });
+};
+
+RightSide.prototype.handleStructure = function (event) {
+  event["datavalue"] = prodDetailsData(event);
+  prodDetailsHtmlInsertion(event);
+};
+
+RightSide.prototype.initialiseRightSection = function (
+  tmpId,
+  typeofform,
+  step
+) {
+  var that = this;
+  var sectionnumber = section_number[typeofform]["right"];
+  for (var i = 1; i <= sectionnumber; i++) {
+    var section_name = section_class[typeofform]["right"][i];
+    that.getHtml(tmpId, typeofform, section_name.name, step);
+  }
+};
+
+RightSide.prototype.getHtml = function (tmpId, typeofform, section_name, step) {
+  var that = this;
+  switch (section_name) {
+    case "heading":
+      $("#t" + tmpId + "_hdg").html("");
+      break;
+    case "rightproddetails":
+      $("#t" + tmpId + "_rightproddetails").html(
+        getProdDetailsHtml(tmpId, typeofform, step)
+      );
+      break;
+    case "questionouterwrapper":
+      $("#t" + tmpId + "_questionouterwrapper").html(
+        that.getQuestionOuterWrapperHtml(tmpId)
+      );
+      break;
+  }
+};
+
+RightSide.prototype.handleUI = function (event) {
+  if ( (event.initialdata.typeofform === "image" || event.initialdata.typeofform === "video") && event.initialdata.step === "0R") {
+    if (ReqObj.Form[event.initialdata.tmpId].formType.toLowerCase() !== "bl")
+      $("#t" + event.initialdata.tmpId + "_cls").html("");
+    else $("#t" + event.initialdata.tmpId + "_cls").html("X");
+    $("#t" + event.initialdata.tmpId + "_hdg").addClass("bedsnone");
+    $("#t" + event.initialdata.tmpId + "_rightproddetails").removeClass("bedsnone");
+    $("#t" + event.initialdata.tmpId + "_tCond").addClass("bedsnone");
+    $("#t" + event.initialdata.tmpId + "_byrinfo").addClass("bedsnone");
+  } else {
+    if (ReqObj.Form[event.initialdata.tmpId].formType.toLowerCase() !== "bl")
+      $("#t" + event.initialdata.tmpId + "_cls").html("");
+    else $("#t" + event.initialdata.tmpId + "_cls").html("X");
+    if (imeshExist() !== "" && !isInactiveBL(event.initialdata.tmpId))
+      $("#t" + event.initialdata.tmpId + "_leftR").removeClass("lftMgn");
+    $("#t" + event.initialdata.tmpId + "_hdg").removeClass("bedsnone");
+    $("#t" + event.initialdata.tmpId + "_rightproddetails").addClass("bedsnone");
+
+    $("#t" + event.initialdata.tmpId + "_tCond").addClass("bedsnone");
+    $("#t" + event.initialdata.tmpId + "_byrinfo").addClass("bedsnone");
+  }
+  $("#t" + event.initialdata.tmpId + "_question").removeClass("bedsnone");
+  $("#t" + event.initialdata.tmpId + "_fBtn").removeClass("bedsnone");
+  if (ReqObj.Form[event.initialdata.tmpId].formType.toLowerCase() === "bl")
+    $("#t" + event.initialdata.tmpId + "_byrinfo").addClass("bleqb");
+  else $("#t" + event.initialdata.tmpId + "_byrinfo").removeClass("bleqb");
+  if ( !( pdpenqImage(event.initialdata.tmpId) ) ) {
+    $("#t" + event.initialdata.tmpId + "_questionouterwrapper").removeClass().addClass("bemlsec");
+    if ($("#t" + event.initialdata.tmpId + "_hdg").hasClass("e_hdg")) {
+      // var hd = $("#t"+event.initialdata.tmpId+"_hdg").detach();
+      //     $("#t"+event.initialdata.tmpId+"_rightsection").prepend(hd);
+      //     $("#t"+event.initialdata.tmpId+"_hdg").removeClass().addClass("be-hdg");
+      $("#t" + event.initialdata.tmpId + "_hdg").remove();
+    }
+  }
+  if (isInactiveBL(event.initialdata.tmpId)) {
+    $("#t" + event.initialdata.tmpId + "_hdg").removeClass().addClass("be-hdg be-hdg1");
+    let bemlsec = (isInactiveBL(event.initialdata.tmpId) && ReqObj.Form[event.initialdata.tmpId].currentclassCount === 0) ? "mt0" : "bemlsec";
+    $("#t" + event.initialdata.tmpId + "_questionouterwrapper").removeClass().addClass(bemlsec);
+  }
+};
+
+RightSide.prototype.getQuestionOuterWrapperHtml = function (tmpId) {
+  var html = "";
+  //returnContainer("#t" + tmpId, "_question", containerclass, datarole, divtext, style)
+  var qcls = (isInactiveBL(tmpId) && ReqObj.Form[tmpId].currentclassCount === 0)  ? "" : "bemlsec";
+  html += returnContainer("t" + tmpId, "_question", qcls, "", "", "");
+  html += "<form name='t" + tmpId + "_bl_form' onsubmit='return false' id='t" + tmpId + "_bl_form' method='post' class='bepr bemnh'>";
+  html += "</div>";
+
+  html += returnContainer("t" + tmpId, "_clear", "beclr", "", "", "");
+  html += "</div>";
+
+  html += returnContainer("t" + tmpId, "_tCond", "bedsnone", "", "", ""); //tcond clickable
+  var vabaseline = direnqImage(tmpId) ? ' vabaseline bedblk ' : ' bevT bedblk';
+  html += "<input type='checkbox' class='bemt2' id='t" + tmpId + "_tCondCheckBox'><span class= '" + vabaseline + "'><label class='t" + tmpId + "_test1'>I agree to the</label> <a href='https://www.indiamart.com/terms-of-use.html' target='_blank' class='betrmt'>terms</a> <label class='t" + tmpId + "_test1'>and</label> <a href='https://www.indiamart.com/privacy-policy.html' target='_blank' class='betrmt'>privacy policy</a></span>";
+  html += "</div>";
+
+  html += "<div id='t" + tmpId + "submit_wrapper'>";
+
+  html += returnSubmitInnerHtml(tmpId);
+
+  if (isEcomProduct(tmpId)) {
+    html += "<span class='befs11'>* You will be redirected to 3rd party webstore<span>";
+  }
+  // if (isPnsEnq(tmpId))  // click away message on pns form
+  //   html +=
+  //     "<div id='yajaca' style='margin-top: 3px;font-size: 12px;color: #00a699;font-style: italic'>You are just a click away to get quotes</div>";
+
+  if (EnqPopupDIR(tmpId)) {
+    ReqObj.Form[tmpId].toShowMsg = 1; //next->submit
+    html += "<div id='yajaca' style='display:none;'>You are just a click away to get quotes</div>";
+  }
+  html += "</div>";
+
+  // html += returnContainer("t" + tmpId, "_byrinfo", "befs14 beinfo bedsnone", "", "", "");
+  // html += "</div>";
+
+  html += returnContainer( "t" + tmpId, "_belodr", "belodrbg bedsnone", "", "", "");
+  html += "<div class='blloader'></div>";
+  html += "</div>";
+
+  return html;
+};
+
+function onPlayerStateChange(event) {
+  if (event.data !== 1) blStop = 0;
+  else blStop = 1;
+}
+
+function getYTVideo(VideObj) {
+  if (
+    YT.loading === 1 &&
+    YT.loaded === 1 &&
+    !(
+      isSet($("#t" + VideObj.data.tmpId + "_prodVideo")[0].src) &&
+      $("#t" + VideObj.data.tmpId + "_prodVideo")[0].src !== ""
+    )
+  ) {
+    isIframeApiloaded = 2;
+    new_player = new YT.Player("t" + VideObj.data.tmpId + "_prodVideo", {
+      width: "500",
+      height: "500",
+      playerVars: {
+        rel: 0,
+        autoplay: 1,
+      },
+      videoId: VideObj.data.vidUrl,
+      events: {
+        onReady: function (event) {
+          removeYTLoader(VideObj.data.tmpId);
+          $("#t" + VideObj.data.tmpId + "parent_iframe").removeClass("cbl_vh");
+        },
+        onStateChange: function (event) {
+          $("#t" + VideObj.data.tmpId + "_imglodr").addClass("bedsnone");
+
+          if (
+            isSet(new_player) &&
+            typeof new_player.getPlayerState === "function" &&
+            new_player.getPlayerState() === 0
+          ) {
+            new_player.seekTo(0);
+            new_player.stopVideo();
+          }
+        },
+      },
+    });
+    $("#t" + VideObj.data.tmpId + "parent_iframe")
+      .removeClass("bedsnone")
+      .addClass("cbl_vh");
+    $("#t" + VideObj.data.tmpId + "_prodimg").addClass("bedsnone");
+    // if(!pdpenqImage(VideObj.data.tmpId))ReqObj.Form[VideObj.data.tmpId].videoLoaded = true;
+  }
+}
+
+function youtubeVideo(VideObj) {
+  addYTLoader(VideObj.data["tmpId"], "left");
+
+  if (typeof YT === "undefined" && isIframeApiloaded === 0) {
+    loadScript();
+    window.onYouTubeIframeAPIReady = function () {
+      youtubeVideo(VideObj);
+    };
+  } else if (
+    (typeof YT === "undefined" && isIframeApiloaded === 1) ||
+    (YT.loading === 1 && YT.loaded === 0) ||
+    isIframeApiloaded === 0
+  ) {
+    loadScript();
+    window.onYouTubeIframeAPIReady = function () {
+      youtubeVideo(VideObj);
+    };
+  } else if (YT.loading === 1 && YT.loaded === 1) {
+    isIframeApiloaded = 2;
+    getYTVideo(VideObj);
+  }
+}
+
+/* Class End Here */
