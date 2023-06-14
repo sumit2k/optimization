@@ -329,20 +329,12 @@ ContactDetail.prototype.getChatblCityErrorDiv = function (tmpId) {
 // function isMoglixUi(tmpId) {
 //   return isSet(ReqObj.Form[tmpId].New_UI) && ReqObj.Form[tmpId].New_UI === "1";
 // }
-function chckval(cityid, val) {
-  // if (val == '') {
-  //   $('#' + cityid).val('');
-  // }
-}
-
 function blkerr(templateId) {
   // if ($('#' + templateId + 'error_city_locpref').css('display') == 'block') {
   //   $('#' + templateId + 'error_city_locpref').css('display', 'none');
   //   $('#' + templateId + 'enrich_city1').removeClass("highlight-err");
   // }
 }
-
-
 
 function returnOption(tmpId, element, value, optionid, optiontext) {
   return (

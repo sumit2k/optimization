@@ -9471,6 +9471,11 @@ function enrichCityhtml(id, templateId, type, pfArr) {
   }
   enrichCityMultiple(templateId);
 }
+function chckval(cityid, val) {
+  // if (val == '') {
+  //   $('#' + cityid).val('');
+  // }
+}
 function enrichCityMultiple(templateId) {
   var autosuggcls =
     templateId.substr(1, 2) === "06"
