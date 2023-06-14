@@ -1,0 +1,26 @@
+1: RequirementDtl.prototype.onSubmit
+2: RequirementDtl.prototype.getData 
+3: RequirementDtl.prototype.displayAnswer
+4: RequirementDtl.prototype.SaveDetails
+5: RequirementDtl.prototype.fireTracking
+6: RequirementDtl.prototype.validate
+7: RequirementDtl.prototype.EventIfScreenPresent
+8: RequirementDtl.prototype.resetClass
+9: RequirementDtl.prototype.getPrefilledText
+10: function IsBlEnqProdNameChanged(tmpId)   // DOUBTS
+11: ProductName.prototype.checkMcatID
+12: ProductName.prototype.checkMcatIDJquery
+13: ProductName.prototype.validate
+14: ProductName.prototype.onSubmit
+15: ProductName.prototype.getMcatDetail
+16: ProductName.prototype.getMcatImage
+17: ProductName.prototype.SaveDetails
+18: ProductName.prototype.selectTitle
+19: ProductName.prototype.displayAnswer
+20: function CallGeneration(tmpId)
+21: function ShowIsq(tmpId)
+22: function ChatBlMsgs(QuestionText, type)
+23: function ssbClass(type, tmpId)
+24: function ConversationLeftWrapper(tmpId, message, classObj, name)
+25: function ConversationRightWrapper(tmpId, message, classObj)
+26: function termNcdata(tmpId)

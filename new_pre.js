@@ -6025,7 +6025,7 @@ function pdpenqImage(tmpId) {
   );
 }
 function direnqImage(tmpId) {
-  return isImageEnqDIR(tmpId) && (modIdf === "DIR");
+  return isImageVidEnq(tmpId) && (modIdf === "DIR");
 }
 
 function closeFormCond(tmpId) {
@@ -13769,63 +13769,6 @@ function subsequentKeyUI(tmpId) {
   $("#t" + tmpId + "_hdg").removeClass("bedsnone");
   $("#t" + tmpId + "_login").addClass("bedsnone");
 }
-
-//Term n condition
-
-function termNcdata(tmpId) {
-  var iploc = usercookie.getCookie("iploc");
-  var data = {};
-  data["s_glusrid"] = usercookie.getParameterValue(imeshExist(), "glid");
-  data["modid"] = modIdf;
-  data["s_user_agent"] = navigator.userAgent;
-  data["s_ip"] = usercookie.getParameterValue(iploc, "gip");
-  data["s_ip_country"] = usercookie.getParameterValue(iploc, "gcnnm");
-  data["curr_page_url"] = window.location.href;
-  data["reference_text"] = ReqObj.Form[tmpId].refText;
-  data["s_ip_country_iso"] = usercookie.getParameterValue(iploc, "gcniso");
-  if (
-    isSet(data["s_ip"]) &&
-    data["s_ip"] !== "" &&
-    isSet(data["s_glusrid"]) &&
-    data["s_glusrid"] !== "" &&
-    isSet(data["s_user_agent"]) &&
-    data["s_user_agent"] !== "" &&
-    isSet(data["modid"]) &&
-    data["modid"] !== "" &&
-    isSet(data["s_ip_country_iso"]) &&
-    data["s_ip_country_iso"] !== "IN"
-  )
-    fireAjaxRequest({
-      data: {
-        ga: {
-          s: true,
-          f: true,
-          gatype: "TermNCondition",
-          source: "",
-        },
-        tmpId: tmpId,
-        ajaxObj: {
-          obj: "",
-          s: {
-            ss: 0,
-            sf: {
-              af: 0,
-              pa: 0,
-            },
-            f: 0,
-          },
-          f: {
-            f: 0,
-          },
-        },
-        ajaxdata: data,
-        ajaxtimeout: 0,
-        type: 4,
-        hitfinserv: "",
-      },
-    });
-}
-
 if (typeof blpage === "undefined" || blpage === null) {
   var blpage = {};
   blpage.toIdentifiedQ = new Array();
@@ -18762,80 +18705,7 @@ function WrapperObj(outerHtml, closingHtml, suffix) {
         );
     }
     return false;
-  }
-  function ChatBlMsgs(QuestionText, type) {
-    if (isSet(QuestionText)) {
-      var defaultmsg = "What is your preferred";
-      if (isSet(type) && type.toLowerCase() === "radio") {
-        defaultmsg = "Please select";
-      }
-      var QuestionTextMatch = trimVal(QuestionText.toLowerCase());
-      if (QuestionTextMatch in ChatBlStaticMsg) {
-        return ChatBlStaticMsg[QuestionTextMatch];
-      } else {
-        var splitting = defaultmsg.split(" ");
-        var last_word = splitting[splitting.length - 1];
-        splitting = QuestionText.split(" ");
-        var first_word = splitting[0];
-        if (QuestionText.toLowerCase().includes("sample order"))
-          return "Is this a sample order" + QuestionEnding;
-        if (first_word.toLocaleLowerCase() === last_word.toLocaleLowerCase()) {
-          defaultmsg = defaultmsg.substr(0, defaultmsg.lastIndexOf(" ") + 1);
-        }
-        defaultmsg += " ";
-        if (isSet(type) && type.toLowerCase() === "radio") {
-          return defaultmsg + "<strong>" + QuestionText + "</strong>";
-        }
-        return (
-          defaultmsg + "<strong>" + QuestionText + "</strong>" + QuestionEnding
-        );
-      }
-    }
-  }
-
-function ConversationLeftWrapper(tmpId, message, classObj, name) {
-    /* add attributes at end  */
-    if (isSet(message) && message !== "") {
-      if (IsChatbl(tmpId) && !isSet(name)) {
-        return classObj.leftright + message + "</div>";
-      }
-      return (
-        '<div class="' +
-        classObj.leftright +
-        '"><div class="' +
-        classObj.classtotest +
-        '">' +
-        message +
-        "</div></div>"
-      );
-    }
-  }
-  
-  function ConversationRightWrapper(tmpId, message, classObj) {
-    /* add attributes at end  */
-    if (
-      IsChatbl(tmpId) &&
-      isSet(message) &&
-      (message.toLowerCase() === "not answered" || message === "")
-    ) {
-      return "";
-    }
-    if (isSet(message) && message !== "") {
-      var messagetoshow = IsChatbl(tmpId)
-        ? "<div class='txt_area'>" + message + "</div>"
-        : "";
-  
-      return IsChatbl(tmpId)
-        ? '<div class="' + classObj.leftright + '">' + messagetoshow + "</div>"
-        : '<div class="' +
-        classObj.leftright +
-        '"><div class="' +
-        classObj.classtotest +
-        '">' +
-        messagetoshow +
-        "</div></div>";
-    }
-  }
+  } 
 
 function getTimeStamp() {
     var date = new Date();
@@ -19014,47 +18884,8 @@ function returnCustomElement(
 function addLine() {
     return '<div class="cbl_line"></div>';
   }
-  
-function ssbClass(type, tmpId) {
-    if (type === "label") return isnewSSB(tmpId) ? "nb-fmlbl" : "mb-lbl";
-    if (type === "reqBxLbl")
-      return isnewSSB(tmpId) ? "nb-fmlbl" : "mb-lbl mb-mt10";
-    if (type === "wrprClass")
-      return isnewSSB(tmpId) ? "nb-frm nb-mt25" : "mb-flex mb-pdt15 mb-fxstrt";
-    if (type === "radin") return isnewSSB(tmpId) ? "nb-radin" : "mb-radin";
-    if (type === "radio")
-      return isnewSSB(tmpId) ? "nb-rad radioClick" : "mb-rad radioClick";
-    if (type === "radlbl") return isnewSSB(tmpId) ? "nb-radlbl" : "mb-radlbl";
-    if (type === "otp")
-      return isnewSSB(tmpId)
-        ? "nb-flex nb-otpm "
-        : "mb-wdIn mb-flex mb-otpm mb-otpHt";
-    if (type === "skipotp") return isnewSSB(tmpId) ? "nb-crPnt" : "mb-crPnt";
-    if (type === "resendotp")
-      return isnewSSB(tmpId) ? "nb-rsd nb-crPnt" : "mb-rsd mb-crPnt";
-    if (type === "errorotp")
-      return isnewSSB(tmpId)
-        ? "nb-ertxt nb-dib bedsnone"
-        : "mb-ertxt mb-dib bedsnone";
-    if (type === "verifyotp")
-      return isnewSSB(tmpId) ? "nb-mbuTxt nb-lh18" : "mb-mbuTxt mb-lh18";
-    if (type === "otplabel")
-      return isnewSSB(tmpId) ? "nb-lbl nb-pdt10 nb-pdr10" : "mb-lbl";
-    if (type === "otpwrap")
-      return isnewSSB(tmpId)
-        ? "nb-flex nb-pdt15 nb-fxstrt"
-        : "mb-flex mb-pdt15 mb-fxstrt";
-    if (type === "speccity")
-      return isnewSSB(tmpId) ? "nb-w160 nb-Mr15" : "mb-w222 mb-Mr15";
-    if (type === "html")
-      return isnewSSB(tmpId)
-        ? "nb-SbHd nb-hp nb-pr nb-pdt15 nb-crPnt"
-        : "mb-SbHd mb-hp mb-pr mb-pdt15 mb-crPnt";
-    if (type === "htmli") return isnewSSB(tmpId) ? "nb-SbHd" : "mb-SbHd";
-    if (type === "disable") return isnewSSB(tmpId) ? "nb-inpDisb" : "mb-inpDisb";
-  }
-  
-  function returnIsqHtmlObj(RecurOfQues, tmpId) {
+
+function returnIsqHtmlObj(RecurOfQues, tmpId) {
     var imeshcookie = imeshExist();
   
     if (isSSB(tmpId)) return returnSSBIsqHtml(RecurOfQues, tmpId);
@@ -19110,18 +18941,7 @@ function ssbClass(type, tmpId) {
       );
     }
   }
-function CallGeneration(tmpId) {
-    if (isSet(tmpId)) {
-      if (
-        parseInt(ReqObj.Form[tmpId].generationId, 10) <= 1 &&
-        ExistsInArray(ReqObj.Form[tmpId].HitArray, "Generation") !== true &&
-        ExistsInArray(ReqObj.Form[tmpId].ServiceSequence, "Generation") !== true
-      )
-        return true;
-      else return false;
-    } else {
-    }
-  }
+
   
   function SetAutoCompleteClass(tmpId, suffix) {
     var autocompleteClass = "be-sugg t" + tmpId + suffix;
@@ -19130,25 +18950,8 @@ function CallGeneration(tmpId) {
     } else if (isSSB(tmpId)) autocompleteClass += " mb-prod-sugg" + " suggz";
   
     return autocompleteClass;
-  }
-  
-function ShowIsq(tmpId) {
-    //|| (tmpId.substring(0, 2) === "09" && currentISO() !== "IN")
-    if (
-      parseInt(ReqObj.Form[tmpId].disableIsq) === 1 ||
-      (currentISO() !== "IN" && ReqObj.Form[tmpId].Isq.HasHtmlCalled === true)
-    )
-      return false;
-    else if (pdpenq(tmpId) && !ShowReqBox(tmpId)) {
-      return false;
-    }
-    else if (
-      ReqObj.Form[tmpId].IsqArray === "" ||
-      ReqObj.Form[tmpId].prevCount < ReqObj.Form[tmpId].IsqLength
-    )
-      return true;
-    else return false;
-  }
+  } 
+
   
   function showQuantityUnit(tmpId, arr, type) {
     var isq = arr;
@@ -19468,16 +19271,7 @@ function isOtherEnq(tmpId) {
     return ReqObj.Form[tmpId].formType.toLowerCase() === "enq" ? true : false;
   }
   
-  function isImageEnqDIR(tmpId) {
-    return ReqObj.Form[tmpId].formType.toLowerCase() === "enq" &&
-      isSet(ReqObj.Form[tmpId].typeofform) &&
-      (ReqObj.Form[tmpId].typeofform.toLowerCase() === "image" ||
-        ReqObj.Form[tmpId].typeofform.toLowerCase() === "video")
-      ? true
-      : false;
-  }
-  
-  function isImageVidEnq(tmpId) {
+function isImageVidEnq(tmpId) {
     return ReqObj.Form[tmpId].formType.toLowerCase() === "enq" &&
       isSet(ReqObj.Form[tmpId].typeofform) &&
       (ReqObj.Form[tmpId].typeofform.toLowerCase() === "image" ||
@@ -19798,16 +19592,6 @@ ProductName.prototype.addHtmlObjToArray = function (htmlObj) {
   this.ProductNameHtmlObjArray.push(htmlObj);
 };
 
-ProductName.prototype.displayAnswer = function (tmpId) {
-  var classtotest = chatBlClass(tmpId, "right");
-  var leftright = IsChatbl(tmpId) ? "cbl_ansr" : "";
-  return [
-    ConversationRightWrapper(tmpId, returnAnswer(tmpId, "ProductName"), {
-      classtotest: classtotest,
-      leftright: leftright,
-    }),
-  ];
-};
 
 ProductName.prototype.hasHtml = function (ProductNameObj) {
   if (isSet(ProductNameObj)) {
@@ -20009,26 +19793,6 @@ ProductName.prototype.handleButton = function (tmpId) {
   if (Bl04(tmpId)) ButtonNameUI(ReqObj.Form[tmpId].currentScreen, tmpId);
 };
 
-function Callblur(event) {
-  var keycode = event.keyCode ? event.keyCode : event.which;
-  if (
-    keycode === 13 &&
-    event.target.id === "t" + event.data.param1 + "prodtitle"
-  ) {
-    if (isSet($("#t" + event.data.param1 + "prodtitle")[0])) {
-      var EventArray = $._data(
-        $("#t" + event.data.param1 + "prodtitle")[0],
-        "events"
-      );
-      var BLurEvent = isSet(EventArray.blur) ? EventArray.blur : [];
-      for (var b = 0; b < BLurEvent.length; b++) {
-        BLurEvent[b].handler(BLurEvent[b]);
-      }
-      HideSuggester();
-    }
-  }
-}
-
 ProductName.prototype.AddBlur = function (tmpId) {
   var that = this;
   $("#t" + tmpId + "prodtitle")
@@ -20190,92 +19954,7 @@ ProductName.prototype.setTitleSuggester = function (tmpId) {
   }, 1000);
 };
 
-ProductName.prototype.selectTitle = function (event, ui) {
-  var that = ReqObj.Form[$(this).attr("templateId")].productObject;
-  if (isSet(that)) {
-    if (isSSB(that.tmpId) && IsBlEnqProdNameChanged(that.tmpId))
-      ReqObj.Form[that.tmpId].url.html = false;
-    if (
-      // $("#t" + that.tmpId + "prodtitle").length &&
-      ReqObj.Form[that.tmpId].prodName !==
-      $("#t" + that.tmpId + "prodtitle").val()
-    ) {
-      if (isSet(ui) && isSet(ui.item)) {
-        if (ui.item.value) {
-          $("#t" + that.tmpId + "prodtitle").val(ui.item.value);
-          if (IsChatbl(that.tmpId))
-            ReqObj.Form[that.tmpId].UserInputs["ProductName"] = ui.item.value;
-          ReqObj.Form[that.tmpId].prodName = ui.item.value;
-          ReqObj.Form[that.tmpId].prodDispName = "";
-          ReqObj.Form[that.tmpId].mcatName = "";
-        }
-        if (
-          isSet(ui.item.mcat_id) &&
-          isSet(ui.item.mcat_id[0]) &&
-          isSet(ui.item.cat_id) &&
-          isSet(ui.item.cat_id[0])
-        ) {
-          ReqObj.Form[that.tmpId].mcatId = ui.item.mcat_id[0];
-          ReqObj.Form[that.tmpId].catId = ui.item.cat_id[0];
-          ReqObj.Form[that.tmpId].callLeftSide = false;
-          that.getMcatImage(that.tmpId, "select");
-          if (isSet(that.tmpId) && that.tmpId.substring(0, 2) === "09")
-            AfterFormDefaults(that.tmpId);
-          $("#t" + that.tmpId + "prodtitle").focus();
-        } else {
-          ReqObj.Form[that.tmpId].IsProdNameChanged = true;
-          that.getMcatDetail(
-            $("#t" + that.tmpId + "prodtitle").val(),
-            that.tmpId,
-            "select"
-          );
-        }
-      } else {
-        ReqObj.Form[that.tmpId].IsProdNameChanged = true;
-        that.getMcatDetail(
-          $("#t" + that.tmpId + "prodtitle").val(),
-          that.tmpId,
-          "select"
-        );
-      }
-    }
-  }
-};
 
-ProductName.prototype.SaveDetails = function (tmpId, event) {
-  if (IsChatbl(tmpId)) {
-    ReqObj.Form[tmpId].UserInputs["ProductName"] = $(
-      "#t" + tmpId + "prodtitle"
-    ).val(); /* for chat bl*/
-  }
-  //
-};
-
-ProductName.prototype.getMcatImage = function (tmpId) {
-  if (
-    isSet(tmpId) &&
-    isSet(ReqObj.Form[tmpId]) &&
-    isSet(ReqObj.Form[tmpId].formType)
-  ) {
-    //POPUPCHATBL
-    var form_type =
-      ReqObj.Form[tmpId].formType === "Enq" ? "Send Enquiry" : "Post Buy Leads";
-    $("#t" + tmpId + "_imglodr").removeClass("bedsnone");
-    ReqObj.Form[tmpId].mcatImage = "";
-    if (
-      !isSSB(tmpId) &&
-      isSet(ReqObj.Form[tmpId].mcatId) &&
-      parseInt(ReqObj.Form[tmpId].mcatId) !== -1
-    ) {
-      getMcatImage(tmpId, "", 1);
-    } else if (parseInt(ReqObj.Form[tmpId].mcatId, 10) === -1) {
-      ReqObj.Form[tmpId].displayImage = "";
-      ReqObj.Form[tmpId].zoomImage = "";
-      $("#t" + tmpId + "_imglodr").addClass("bedsnone");
-      leftSideTransition(0, tmpId);
-    }
-  }
-};
 /***
  * Function ID - 2
  *
@@ -20283,152 +19962,6 @@ ProductName.prototype.getMcatImage = function (tmpId) {
  *
  * Output: It will set Mcat-ID, Cat-ID, Type in global object
  ***/
-ProductName.prototype.getMcatDetail = function (
-  mcatMatch,
-  tmpId,
-  eventName,
-  prdnmObj,
-  from
-) {
-  var that = this;
-  // /var submit_url = appsServerName + 'models/mcatid-suggestion.php?search_param=' + encodeURIComponent(mcatMatch);
-  if (isSet(ReqObj.Form[tmpId].isBlQtutShown)) {
-    ReqObj.Form[tmpId].isBlQtutShown = false;
-  }
-  if (isSet(mcatMatch) && mcatMatch !== "") {
-    var submit_url =
-      "//apps.imimg.com/models/mcatid-suggestion.php?search_param=" +
-      encodeURIComponent(mcatMatch);
-    addBlLoader(tmpId, "center");
-    ReqObj.Form[tmpId].mcatId = -2;
-    if (IsChatbl(tmpId)) {
-      $("#t" + tmpId + "prodtitle")
-        .prop("disabled", true)
-        .addClass("chatblur");
-      $("#t" + tmpId + "_submit")
-        .prop("disabled", true)
-        .addClass("chatblur");
-    }
-    $.ajax({
-      cache: false,
-      url: submit_url,
-      type: "GET",
-      //timeout: 3000,
-      dataType: "json",
-      success: function (data) {
-        if (isSet(data) && data !== "") {
-          ReqObj.Form[tmpId].mcatId = isSet(data["mcatid"])
-            ? data["mcatid"]
-            : -1;
-          ReqObj.Form[tmpId].catId = isSet(data["catid"]) ? data["catid"] : -1;
-          ReqObj.Form[tmpId].mcatType = isSet(data["type"]) ? data["type"] : "";
-          ReqObj.Form[tmpId].prodDispName = "";
-          ReqObj.Form[tmpId].mcatName = "";
-        } else {
-          ReqObj.Form[tmpId].mcatId = -1;
-          ReqObj.Form[tmpId].catId = -1;
-          ReqObj.Form[tmpId].mcatType = "";
-        }
-      },
-      error: function (o, st, e) {
-        ReqObj.Form[tmpId].mcatId = -1;
-        ReqObj.Form[tmpId].catId = -1;
-        ReqObj.Form[tmpId].mcatType = "";
-        return;
-      },
-      complete: function (res) {
-        //this is the case for enter functionality of the form
-        ReqObj.Form[tmpId].isProdNameChanged = true;
-        addDetachedFlag(tmpId);
-        //detachFlag2(tmpId);
-        ReqObj.Form[tmpId].cName.prodServ = ReqObj.Form[tmpId].mcatType;
-        if (IsChatbl(tmpId)) {
-          $("#t" + tmpId + "prodtitle")
-            .prop("disabled", false)
-            .removeClass("chatblur");
-          $("#t" + tmpId + "_submit")
-            .prop("disabled", false)
-            .removeClass("chatblur");
-        }
-        if (StaticQuesForeignUser(tmpId)) {
-          if (ReqObj.Form[tmpId].mcatType.toLowerCase() === "p")
-            ReqObj.Form[tmpId].modrefType = "product";
-          else ReqObj.Form[tmpId].modrefType = "company";
-        }
-        removeBLLoader(tmpId, "center");
-        if (isBl(tmpId) || isSSB(tmpId)) {
-          savenem(tmpId);
-          if (isSet(ReqObj.Form[tmpId].ReqDtlBox))
-            ReqObj.Form[tmpId].ReqDtlBox = "";
-          if (
-            isSet(ReqObj.Form[tmpId].userFilledIsq) &&
-            ReqObj.Form[tmpId].userFilledIsq.length
-          )
-            ReqObj.Form[tmpId].userFilledIsq = [];
-          if (isSSB(tmpId) && currentISO() == "IN") savemc(tmpId);
-        }
-        if (that.isProdNameChanged) {
-          DirectSubmitWithoutBlur(tmpId);
-        }
-        ReqObj.Form[tmpId].prodName = mcatMatch;
-        ReqObj.Form[tmpId].callLeftSide = false;
-        if (IsChatbl(tmpId)) {
-          "" !== ReqObj.Form[tmpId].mcatName
-            ? updateChatBlProdName(tmpId)
-            : $(".productname").text(ReqObj.Form[tmpId].prodName); //
-        }
-
-        that.getMcatImage(tmpId);
-        if(IsChatBLInline(tmpId)){     // new chat bl
-        var chatblInterval = setInterval(function(){
-          if(isSet(ReqObj.Form[tmpId].IsqComplete) && ReqObj.Form[tmpId].IsqComplete){
-            clearInterval(chatblInterval);
-            if (isSet(prdnmObj)) PostAjax(prdnmObj, tmpId);
-          }
-        },100);
-      }
-      else{
-        if (isSet(prdnmObj)) PostAjax(prdnmObj, tmpId);
-      }
-
-        if (
-          isSet(eventName) &&
-          (eventName === "blur" || eventName === "select")
-        ) {
-          ReqObj.Form[tmpId].flags.autofocusPName = true;
-          if (
-            $("#t" + tmpId + "prodtitle").length > 0 &&
-            $("#t" + tmpId + "prodtitle").val() === mcatMatch
-          ) {
-            if (!IsChatbl(tmpId)) {
-              if (isBl(tmpId) && NEC()) {
-                ReqObj.Form[tmpId].flags.isNECShown = false;
-              }
-              AfterFormDefaults(tmpId);
-              // if (tmpId.substring(0, 2) === "09")
-
-              // // OpenForm(ReqObj.Form[tmpId]);
-              // else InlineForm(ReqObj.Form[tmpId]);
-            } else {
-              GetIsqFromService(tmpId);
-            }
-          }
-
-          // if (!IsChatbl(tmpId)) $('#t' + that.tmpId + 'prodtitle').focus();
-          // $('#t' + that.tmpId + 'prodtitle').focus();
-
-          if (IsChatbl(tmpId)) {
-            // $('#t' + that.tmpId + 'prodtitle').off("focus");
-            // $('#t' + that.tmpId + 'prodtitle').focus();
-            // that.setTitleSuggester(that.tmpId);
-          }
-        }
-
-        //}
-      },
-    });
-  }
-};
 
 ProductName.prototype.showMcatFilled = function (tmpId) {
   var name = "";
@@ -20453,136 +19986,6 @@ ProductName.prototype.showMcatFilled = function (tmpId) {
       $('#t' + tmpId + 'prodtitle').parent().addClass("focused");*/
     }
 };
-
-ProductName.prototype.onSubmit = function (tmpId) {
-  var that = this;
-  var prdnmObj = PreAjax("ProductName", tmpId);
-  if (IsBlEnqProdNameChanged(tmpId)) {
-    this.isProdNameChanged = true;
-  }
-  if (isInactiveBL(tmpId)) {
-    $("#recommendProd").css({
-      display: "none",
-    });
-    $("#t" + tmpId + "_helpQuest").css({
-      display: "block",
-    });
-    $("#blheading").css({
-      display: "none",
-    });
-  }
-
-  this.checkMcatID(
-    {
-      param1: tmpId,
-      param2: "submit",
-    },
-    prdnmObj
-  );
-};
-
-ProductName.prototype.validate = function (tmpId, event) {
-  var form_type =
-    ReqObj.Form[tmpId].formType === "Enq" ? "Send Enquiry" : "Post Buy Leads";
-  var productName = $("#t" + tmpId + "prodtitle").val();
-  if (!isSet(validation)) createGlobalObject();
-  var isProductNameValid = validation.isProductNameValid(productName);
-  var StepNumber = ReqObj.Form[tmpId].FormSequence.StepCounter + 1;
-  if (isProductNameValid["type"] === false) {
-    blenqGATracking(form_type, "Validation_Error_Prd_Title|" + StepNumber + "|ProductName", getEventLabel(), 1, tmpId);
-    if (IsChatbl(tmpId)) {
-      addChatblError(tmpId, isProductNameValid.error);
-    } else {
-      var errorcls = isSSB(tmpId)
-        ? isnewSSB(tmpId)
-          ? "nb-erbrd"
-          : "mb-erbrd"
-        : "highlight-err";
-      $("#t" + tmpId + "_error_title")
-        .removeClass("bedsnone")
-        .focus();
-      var prderrm = isProductNameValid["specialcase"]
-        ? "Enter valid product/service name"
-        : "Enter product/service name";
-      $("#t" + tmpId + "_error_title")
-        .children("div")
-        .first()
-        .text(prderrm);
-      $("#t" + tmpId + "prodtitle").addClass(errorcls);
-      isSSB(tmpId) ? $("#t" + tmpId + "prodtitle").focus() : "";
-    }
-    if (!isSSB(tmpId) && !IsChatbl(tmpId))
-      $("#t" + tmpId + "_name-l").addClass("redc");
-    ReqObj.Form[tmpId].validateArray.push("t" + tmpId + "prodtitle");
-    return false;
-  } else {
-    // var isMandatory = true;
-    // return IsTNCChecked(tmpId, isMandatory, usercookie.getParameterValue(imeshExist(), "fn"));
-    return true;
-  }
-};
-
-ProductName.prototype.checkMcatIDJquery = function (event) {
-  event.data.pnObject.checkMcatID(event.data);
-};
-
-ProductName.prototype.checkMcatID = function (eventData, prdnmObj) {
-  var tmpId = eventData.param1;
-  var eventName = eventData.param2;
-  if (isScriptTag($("#t" + tmpId + "prodtitle").val())) {
-    if (IsChatbl(tmpId)) {
-      addChatblError(tmpId, isProductNameValid.error);
-    } else {
-      var errorcls = isSSB(tmpId)
-        ? isnewSSB(tmpId)
-          ? "nb-erbrd"
-          : "mb-erbrd"
-        : "highlight-err";
-      $("#t" + tmpId + "_error_title")
-        .removeClass("bedsnone")
-        .focus();
-      var prderrm = "Enter valid product/service name";
-      $("#t" + tmpId + "_error_title")
-        .children("div")
-        .first()
-        .text(prderrm);
-      $("#t" + tmpId + "prodtitle").addClass(errorcls);
-      isSSB(tmpId) ? $("#t" + tmpId + "prodtitle").focus() : "";
-    }
-    if (!isSSB(tmpId) && !IsChatbl(tmpId))
-      $("#t" + tmpId + "_name-l").addClass("redc");
-
-    return;
-  }
-
-  if (IsBlEnqProdNameChanged(tmpId)) {
-    this.getMcatDetail(
-      $("#t" + tmpId + "prodtitle").val(),
-      tmpId,
-      eventName,
-      prdnmObj
-    );
-  } else {
-    if (isSet(prdnmObj)) PostAjax(prdnmObj, tmpId);
-  }
-};
-
-function IsBlEnqProdNameChanged(tmpId) {
-  if (isSet(tmpId)) {
-    if (
-      $("#t" + tmpId + "prodtitle").length &&
-      $("#t" + tmpId + "prodtitle").val() !== "" &&
-      $("#t" + tmpId + "prodtitle").val() !== "Enter product/service name" &&
-      ReqObj.Form[tmpId].prodName !== $("#t" + tmpId + "prodtitle").val()
-    ) {
-      ReqObj.Form[tmpId].populate = false;
-      return true;
-    } else {
-      ReqObj.Form[tmpId].populate = true;
-      return false;
-    }
-  }
-}
 
 function RequirementDtl(tmpId) {
   this.className = "RequirementDtl";
@@ -20711,19 +20114,6 @@ RequirementDtl.prototype.getHtml = function (tmpId) {
   this.getLabel(tmpId);
 };
 
-RequirementDtl.prototype.getPrefilledText = function (tmpId) {
-  var text = "Hi," + "\n";
-  if (ReqObj.Form[tmpId].modrefType.toLowerCase() === "product") {
-    text += "I am interested in buying " + ReqObj.Form[tmpId].prodName;
-  } else {
-    text +=
-      "I am looking for service provider for " + ReqObj.Form[tmpId].prodName;
-  }
-  text += "\n" + "Kindly send me quotations.";
-
-  return text;
-};
-
 RequirementDtl.prototype.getInput = function (tmpId) {
   //fghdjhggg
   var input = "";
@@ -20843,15 +20233,6 @@ RequirementDtl.prototype.getLabel = function (tmpId) {
     : MakeLabel(LabelObj, "", tmpId);
 };
 
-RequirementDtl.prototype.resetClass = function (tmpId) {
-  ReqObj.Form[tmpId].flags.isDescDivShown = false;
-  if (ReqObj.Form[tmpId].flags.isDescDivShown) {
-    ReqObj.Form[tmpId].prevCount -= ReqObj.Form[tmpId].IsqStepN; //isqstepn
-  } else {
-    ReqObj.Form[tmpId].prevCount -= ReqObj.Form[tmpId].IsqStep1; //isqstep1
-  }
-};
-
 RequirementDtl.prototype.defaultEvents = function (tmpId) {
   if (isSet(tmpId)) {
     //next->submit
@@ -20952,14 +20333,6 @@ RequirementDtl.prototype.defaultEvents = function (tmpId) {
     $("#t" + tmpId + "_leftR").removeClass("lftMgn");
 };
 
-RequirementDtl.prototype.EventIfScreenPresent = function (tmpId) {
-  if (isOtherEnq(tmpId)) {
-    this.handleHeading(tmpId);
-    ButtonNameUI("isq", tmpId);
-  }
-  //onCName(tmpId);
-};
-
 RequirementDtl.prototype.handleHeading = function (tmpId) {
   ReqObj.Form[tmpId].ctaheadingappend = false;
   if (ReqObj.Form[tmpId].formType.toLowerCase() !== "enq"){
@@ -21016,204 +20389,6 @@ RequirementDtl.prototype.handleUI = function (event) {
   }
 };
 
-RequirementDtl.prototype.validate = function (tmpId) {
-  if (isSet(tmpId) && isSet(ReqObj.Form[tmpId])) {
-    var sel = $("#t" + tmpId + "_reqBoxTemplates");
-    if (!isSet(validation)) createGlobalObject();
-    var description = validation.isDescriptionFilled(sel.val());
-    if (description["type"] === false) {
-      // this.fireTracking({
-      //   data: {
-      //     tmpId: tmpId,
-      //     todo: "default",
-      //   },
-      // });
-      if (
-        !$("#t" + tmpId + "_reqBoxTemplates_err").length &&
-        !IsChatbl(tmpId)
-      ) {
-        var html = "";
-        var cls = "texterr errpdg";
-        html += returnContainer(
-          "t" + tmpId,
-          "_reqBoxTemplates_err",
-          cls,
-          "",
-          ""
-        );
-        html += returnContainer(
-          "t" + tmpId,
-          "_reqBoxTemplates_errmsg",
-          "",
-          "content",
-          ""
-        );
-        html += "</div>" + description["error"] + "</div>";
-        sel.after(html);
-      }
-      if (IsChatbl(tmpId)) {
-        addChatblError(tmpId, description["error"]);
-      } else {
-        $("#t" + tmpId + "_reqBoxTemplates_err").removeClass("bedsnone");
-        var errorcls = isSSB(tmpId)
-          ? isnewSSB(tmpId)
-            ? "nb-erbrd"
-            : "mb-erbrd"
-          : "highlight-err";
-        sel.addClass(errorcls);
-        if (
-          new RegExp("isq").test(ReqObj.Form[tmpId].currentScreen.toLowerCase())
-        )
-          ReqObj.Form[tmpId].isret++;
-        //(isSSB(tmpId)) ? sel.focus() : "";
-      }
-      return false;
-    } else return true;
-  }
-
-  return true;
-};
-
-RequirementDtl.prototype.fireTracking = function (event) {
-  var todo = event.data.todo;
-  var tmpId = event.data.tmpId;
-
-  var form_type =
-    ReqObj.Form[tmpId].formType === "Enq" ? "Send Enquiry" : "Post Buy Leads";
-  if (todo === "default") {
-    var StepNumber = ReqObj.Form[tmpId].FormSequence.StepCounter + 1;
-    blenqGATracking(form_type, "Validation_Error_Desc|" + StepNumber + "|RequirementDetail", getEventLabel(), 0, tmpId);
-  }
-  if (todo === "onsuggselect") {
-    var text = event.data.text;
-    var prodName =
-      ReqObj.Form[tmpId].modrefType.toLowerCase() === "product"
-        ? ReqObj.Form[tmpId].prodName
-        : ReqObj.Form[tmpId].mcatName;
-    blenqGATracking(form_type, "|Suggselected-" + text + "|mcat-" + prodName, getEventLabel(), 0, tmpId);
-  }
-};
-
-RequirementDtl.prototype.SaveDetails = function (tmpId) {
-  if (isSet(tmpId)) {
-    ReqObj.Form[tmpId].ReqDtlBox = $("#t" + tmpId + "_reqBoxTemplates").val();
-    if (isSet(ReqObj.Form[tmpId].ReqDtlBox) && ReqObj.Form[tmpId].ReqDtlBox)
-      ReqObj.Form[tmpId].ReqDtlBox = ReqObj.Form[tmpId].ReqDtlBox.trim();
-    var type = isSet(ReqObj.UserDetail.fn) && ReqObj.UserDetail.fn !== "" && ReqObj.UserDetail.uv !== "V" && isSecondEnq(tmpId) ? "intent" : "";
-    if (Enq04(tmpId) && ReqObj.Form[tmpId].intentCalled === false && imeshExist() !== "")
-      toFireGeneration(tmpId, type);
-  }
-};
-
-RequirementDtl.prototype.displayAnswer = function (tmpId) {
-  var ReqBoxAns = NotFilled;
-  if (isSet(ReqObj.Form[tmpId].ReqDtlBox) && ReqObj.Form[tmpId].ReqDtlBox)
-    ReqBoxAns = ReqObj.Form[tmpId].ReqDtlBox;
-  var classtotest = chatBlClass(tmpId, "right");
-  var leftright = IsChatbl(tmpId) ? "cbl_ansr" : "";
-  return [
-    ConversationRightWrapper(tmpId, ReqBoxAns, {
-      classtotest: classtotest,
-      leftright: leftright,
-    }),
-  ];
-};
-
-RequirementDtl.prototype.getData = function (tmpId) {
-  var data = {
-    offer_id: ReqObj.Form[tmpId].generationId,
-    s_glusrid: usercookie.getParameterValue(imeshExist(), "glid"),
-    modid: modIdf,
-    blEnqFlag: IsChatbl(tmpId) ? "BL" : ReqObj.Form[tmpId].formType,
-  };
-  var Comma =
-    trimVal(ReqObj.Form[tmpId].ReqDtlBox) !== "" &&
-      trimVal(ReqObj.Form[tmpId].EnrichmentVal) !== ""
-      ? ", "
-      : "";
-
-  // get more photos form changes //new gmp
-
-  var pdname = typeof ReqObj.Form[tmpId].prodDispName !== "undefined" &&
-                 ReqObj.Form[tmpId].prodDispName !== "" &&
-                 ReqObj.Form[tmpId].prodDispName !== null &&
-                 ReqObj.Form[tmpId].prodDispName !== "null"
-                 ? ReqObj.Form[tmpId].prodDispName
-                 : isSet(ReqObj.Form[tmpId].prodName)? ReqObj.Form[tmpId].prodName : "";
-  RD_prefilled = "Please share the latest Photos of " + pdname ;
-
-  if(getMorePh(tmpId) && ReqObj.Form[tmpId].ReqDtlBox === ""){
-      data["enrichDesc"] =
-      RD_prefilled + Comma + ReqObj.Form[tmpId].EnrichmentVal;
-      // data["enrichDesc"] = RD_prefilled;
-  }
-      
-  
-  else{
-      data["enrichDesc"] =
-      ReqObj.Form[tmpId].ReqDtlBox + Comma + ReqObj.Form[tmpId].EnrichmentVal;
-  }
-
-  // ends here 
-
-  if (
-    isSet(ReqObj.Form[tmpId].formType) &&
-    ReqObj.Form[tmpId].formType.toLowerCase() === "enq"
-  ) {
-    data["r_glusrid"] = ReqObj.Form[tmpId].rcvGlid;
-    data["q_dest"] = ReqObj.Form[tmpId].query_destination;
-  }
-  return ObjectTrim(data);
-};
-
-RequirementDtl.prototype.onSubmit = function (tmpId, after) {
-  if (isSet(tmpId)) {
-    var data = this.getData(tmpId);
-    var PreRdObj =
-      isSet(after) && after === true ? "" : PreAjax("RequirementDtl", tmpId);
-    var hitfinserv = "";
-
-    // $("#yajaca").hide(); // click away message on pns form
-
-    if (
-      ReqObj.Form[tmpId].ReqDtlBox &&
-      ValidGenId(ReqObj.Form[tmpId].generationId)
-    ) {
-      if (isBl(tmpId) && ReqObj.Form[tmpId].flags.isEnrichCalled) return;
-      ReqObj.Form[tmpId].waitFinServ += 1;
-      ReqObj.Form[tmpId].flags.isEnrichCalled = true;
-      fireAjaxRequest({
-        data: {
-          ga: {
-            s: true,
-            f: true,
-            gatype: "saveEnrichment",
-            source: "",
-          },
-          tmpId: tmpId,
-          ajaxObj: {
-            obj: PreRdObj,
-            s: {
-              ss: 1,
-              sf: {
-                af: 1,
-                pa: 0,
-              },
-              f: 1,
-            },
-            f: {
-              f: 1,
-            },
-          },
-          ajaxtimeout: 0,
-          ajaxdata: data,
-          hitfinserv: hitfinserv,
-          type: 1,
-        },
-      });
-    } else PostAjax(PreRdObj, tmpId);
-  }
-};
 function addBlLoader(tmpId, type) {
   var NewTempId = tmpId;
   if (NewTempId !== "" && IsChatbl(NewTempId)) {

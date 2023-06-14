@@ -347,3 +347,22 @@ function returnOption(tmpId, element, value, optionid, optiontext) {
     "</option>"
   );
 }
+function Callblur(event) {
+  var keycode = event.keyCode ? event.keyCode : event.which;
+  if (
+    keycode === 13 &&
+    event.target.id === "t" + event.data.param1 + "prodtitle"
+  ) {
+    if (isSet($("#t" + event.data.param1 + "prodtitle")[0])) {
+      var EventArray = $._data(
+        $("#t" + event.data.param1 + "prodtitle")[0],
+        "events"
+      );
+      var BLurEvent = isSet(EventArray.blur) ? EventArray.blur : [];
+      for (var b = 0; b < BLurEvent.length; b++) {
+        BLurEvent[b].handler(BLurEvent[b]);
+      }
+      HideSuggester();
+    }
+  }
+}
