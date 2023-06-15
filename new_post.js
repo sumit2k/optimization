@@ -6816,6 +6816,479 @@ function getContactDetailOnCloseNotInHeading(ctanamemodid, tmpId, ctaname) {
       return defaultCaseHeading(ctanamemodid, tmpId, ctaname);
   }
 }
+function getProdDetailsHtml(tmpId, typeofform, step) {
+  var html = pdpenqImage(tmpId) ? "<div class='epLf30'>" : "";
+
+  html += returnContainer("t" + tmpId, "_Prodname" + step, "", "", "", "") + "</div>";
+
+  var pprice = returnContainer("t" + tmpId, "_ProdPrice" + step, "befs16", "", "", "") + "<span id='t" + tmpId + "_price" + step + "'></span ><span id='t" + tmpId + "_unit" + step + "'></span > " + "</div > ";
+
+  var pcom = returnContainer("t" + tmpId, "_Compname" + step, "befs16", "", "", "") + "</div>";
+
+  var psold = returnContainer("t" + tmpId, "_soldBy" + step, "befs16", "", "", "") + "<span id='t" + tmpId + "_sold" + step + "'></span><span id='t" + tmpId + "_addr" + step + "'></span>" + "</div>";
+
+  var pnsno = isSet(ReqObj.Form[tmpId].pnsNumber) ? ReqObj.Form[tmpId].pnsNumber : "09XXXXXXXX";
+
+  if (currentISO() === "IN" )
+    pnsno = [pnsno.slice(0, 11), " ", pnsno.slice(11)].join('');   // no breathing space in pns number
+
+  var enqpns = returnContainer("t" + tmpId, "_pnsEnq" + step, "befs16", "", "", "") + "<span class='pnsEnq'  ><span id='pnsnoenq' class='pnsno'>" + pnsno + "</span></span>" + "</div>"; //pns on enq form
+
+  html += pdpenqImage(tmpId) ? "</div><div class='ibgc epLf30 epB10 epT10'>" : direnqImage(tmpId) ? "<div >" : "";
+
+  html = html + pprice + pcom + psold;
+
+  if (isPnsEnq(tmpId) )
+    //pns on enq form
+    html += enqpns;
+  if (pdpenqImage(tmpId) || direnqImage(tmpId)) {
+    var review = isSet(ReqObj.Form[tmpId].additionalDtls) && isSet(ReqObj.Form[tmpId].additionalDtls.reviewCount) && ReqObj.Form[tmpId].additionalDtls.reviewCount !== 0 ? ReqObj.Form[tmpId].additionalDtls.reviewCount : -1;
+
+    var starCount = isSet(ReqObj.Form[tmpId].additionalDtls) && isSet(ReqObj.Form[tmpId].additionalDtls.seller_rating) && ReqObj.Form[tmpId].additionalDtls.seller_rating !== 0 ? ReqObj.Form[tmpId].additionalDtls.seller_rating : 0;
+
+    if (starCount && review && !(parseInt(starCount) <= 0 && parseInt(review) <= 0)) {
+      html += '<div class="befs14 eqRC1 disp-inl bemt5">';
+      if (parseInt(starCount) > 0) {
+        var width_par = (starCount / 5) * 100;
+        html += '<span class="befwt">' + starCount + '</span>/5 <div class="eqsRt disp-inl e_f18 txtl bepr"><div class="eqflsRt eqd_l0 beabult" style="width:' + width_par + '%"><span>★★★★★</span></div><div class="eqemsRt"><span>★★★★★</span></div></div>';
+      }
+      html += parseInt(review) > 0 ? '<span class="eqRC2 epf12">(' + review + " Review)</span>" : "";
+      html += "</div>";
+    }
+    var verf = isSet(ReqObj.Form[tmpId].additionalDtls) && isSet(ReqObj.Form[tmpId].additionalDtls["verified"]) ? ReqObj.Form[tmpId].additionalDtls["verified"] : 0;
+    var supp = isSet(ReqObj.Form[tmpId].additionalDtls) && isSet(ReqObj.Form[tmpId].additionalDtls["supplier"]) ? ReqObj.Form[tmpId].additionalDtls["supplier"] : 0;
+
+    var verfexp = isSet(ReqObj.Form[tmpId].additionalDtls) && isSet(ReqObj.Form[tmpId].additionalDtls["VerifiedExporter"]) ? ReqObj.Form[tmpId].additionalDtls["VerifiedExporter"] : 0;
+
+    if (direnqImage(tmpId)) {
+      html += '<div class="idsf eflwp befs14 eqRC3 bemt5 sldby">';
+    }
+    else {
+      html += '<div class="idsf eflwp befs14 eqRC3 bemt5 ">';
+    }
+
+    if (supp === "1" || supp === "2")
+      html += '<div class="idsf id_aic emr10"><i class="imFsp oef0 ' + supplier[supp]["class"] + '"></i>' + supplier[supp]["name"] + "</div>";
+
+    if (verf === "1" || verf === "2")
+      html += '<div class="idsf id_aic emr10"><i class="imFsp oef0 ' + verified[verf]["class"] + '"></i>' + verified[verf]["name"] + "</div>";
+    if (direnqImage(tmpId)) {
+      if (verfexp === "1")
+        html += '<div class="idsf id_aic emr10"><i class="imFsp oef0 ' + verifiedexporter[verfexp]["class"] + '"></i>' + verifiedexporter[verfexp]["name"] + "</div>";
+    }
+    //   if(verfexp === "1")
+    //     html +=
+    //       '<div class="idsf id_aic emr10"><i class="imFsp oef0 ' +
+    //       verifiedexporter[verfexp]["class"] +
+    //       '"></i>' +
+    //       verifiedexporter[verfexp]["name"] +
+    //       "</div>";
+
+    html += "</div>";
+    html += "</div>";
+  }
+  var isq_class = pdpenqImage(tmpId) ? "befs16 mt20 content-centre idsf epLf30" : "";
+  html += returnContainer("t" + tmpId, "_isqdetails" + step, isq_class, "", "", "") + "</div>";
+  return html;
+}
+
+function prodDetailsData(event) {
+  var datavalue = {};
+  datavalue["locality"] =
+    isSet(ReqObj.Form[event.initialdata.tmpId].rcvLocality) &&
+      ReqObj.Form[event.initialdata.tmpId].rcvLocality !== ""
+      ? ReqObj.Form[event.initialdata.tmpId].rcvLocality
+      : "";
+  datavalue["city"] =
+    isSet(ReqObj.Form[event.initialdata.tmpId].rcvCity) &&
+      ReqObj.Form[event.initialdata.tmpId].rcvCity !== ""
+      ? ReqObj.Form[event.initialdata.tmpId].rcvCity
+      : "";
+  datavalue["state"] =
+    isSet(ReqObj.Form[event.initialdata.tmpId].rcvState) &&
+      ReqObj.Form[event.initialdata.tmpId].rcvState !== ""
+      ? ReqObj.Form[event.initialdata.tmpId].rcvState
+      : "";
+  datavalue["comp_name"] =
+    isSet(ReqObj.Form[event.initialdata.tmpId].rcvName) &&
+      ReqObj.Form[event.initialdata.tmpId].rcvName !== ""
+      ? ReqObj.Form[event.initialdata.tmpId].rcvName
+      : "";
+  datavalue["prod_name"] =
+    isSet(ReqObj.Form[event.initialdata.tmpId].prodDispName) &&
+      ReqObj.Form[event.initialdata.tmpId].prodDispName !== ""
+      ? ReqObj.Form[event.initialdata.tmpId].prodDispName
+      : isSet(ReqObj.Form[event.initialdata.tmpId].prodName) &&
+        ReqObj.Form[event.initialdata.tmpId].prodName !== ""
+        ? ReqObj.Form[event.initialdata.tmpId].prodName
+        : "";
+
+  var price =
+    isSet(ReqObj.Form[event.initialdata.tmpId].price) &&
+      ReqObj.Form[event.initialdata.tmpId].price !== ""
+      ? ReqObj.Form[event.initialdata.tmpId].price
+      : "";
+  var pr = "";
+  var ut = "";
+  if (isSet(price) && price !== "") {
+    price = price.replace("₹", "");
+    price = price.replace(/Approx(.*?)Rs/, "");
+    price = price.replace(/Rs/, "");
+    price = price.trim();
+    //price = "Rs. " + price;
+    pr = price.substring(0, price.indexOf("/")).trim();
+    ut = price.substring(price.indexOf("/") + 1);
+    if (pr !== "") {
+      pr = "&#8377;" + " " + pr + "/"; // don't remove space or use char code
+    } else {
+      pr = "&#8377;" + ut;
+      ut = "";
+    }
+  }
+  //else price = price;
+
+  datavalue["price"] = pr;
+  datavalue["unit"] = ut;
+  datavalue["modrefType"] = isSet(ReqObj.Form[event.initialdata.tmpId].modrefType) && ReqObj.Form[event.initialdata.tmpId].modrefType !== "" ? ReqObj.Form[event.initialdata.tmpId].modrefType : "";
+
+  // datavalue["sellerIsq"] = (isSet(ReqObj.Form[event.initialdata.tmpId].sellerIsq) && ReqObj.Form[event.initialdata.tmpId].sellerIsq !== "") ? ReqObj.Form[event.initialdata.tmpId].sellerIsq : "";
+  datavalue["plsqArr"] = isSet(ReqObj.Form[event.initialdata.tmpId].plsqArr) && ReqObj.Form[event.initialdata.tmpId].plsqArr !== "" ? ReqObj.Form[event.initialdata.tmpId].plsqArr : "";
+
+  return datavalue;
+}
+
+function prodDetailsHtmlInsertion(event) {
+  prodDetailsHtmlDefautls(event);
+  prodNameHtmlInsertion(event);
+  compNameHtmlInsertion(event);
+  prodPriceHtmlInsertion(event);
+  soldByHtmlInsertion(event);
+
+  if (pdpenqImage(event.initialdata.tmpId) || (direnqImage(event.initialdata.tmpId))) {
+    isqQuestionHtmlInsertion(event);
+  } else if (event.initialdata.typeofform === "image" && isEcomProduct(event.initialdata.tmpId) && event.initialdata.step === "0R") {
+  } else if ((event.initialdata.typeofform === "image" || event.initialdata.typeofform === "video") && event.initialdata.step === "0R") {
+    if (imeshExist() !== "") {
+      $("#t" + event.initialdata.tmpId + "_isqdetails" + event.initialdata.step).html(msg_firimgvid("Enquire now", event.initialdata.tmpId));
+
+      if (ispdp(event.initialdata.tmpId) && isImageVidEnq(event.initialdata.tmpId) && isSet(ReqObj.Form[event.initialdata.tmpId].isNewImage) && ReqObj.Form[event.initialdata.tmpId].isNewImage === "1" && event.initialdata.step == "0R")
+        $("#t" + event.initialdata.tmpId + "_isqdetails" + event.initialdata.step).append('<div id="t' + event.initialdata.tmpId + '_vcd" class="btmarg"></div>');
+    }
+  } else {
+    isqQuestionHtmlInsertion(event);
+  }
+  if (ispdp(event.initialdata.tmpId) && isImageVidEnq(event.initialdata.tmpId) && isSet(ReqObj.Form[event.initialdata.tmpId].isNewImage) && ReqObj.Form[event.initialdata.tmpId].isNewImage === "1") {
+    viewCompleteHtmlInsertion(event);
+    $("#t" + event.initialdata.tmpId + "_vcd").on("click", function () {
+      let sample = ReqObj.Form[event.initialdata.tmpId].noSampling;
+      ReqObj.Form[event.initialdata.tmpId].noSampling = true;
+      blenqGATracking("VCD_ImgForm", "Redirect:ProductUrl", getEventLabel(), 0, event.initialdata.tmpId);
+      ReqObj.Form[event.initialdata.tmpId].noSampling = sample;
+    });
+  }
+  prodDetailshandleCSS(event);
+}
+
+function viewCompleteHtmlInsertion(event) {
+  if (isSet(ReqObj.Form[event.initialdata.tmpId].redirectUrl) && isSet(ReqObj.Form[event.initialdata.tmpId].redirectUrl["produrl"]) && ReqObj.Form[event.initialdata.tmpId].redirectUrl["produrl"] !== "") {
+
+    let vcdfrm = ReqObj.Form[event.initialdata.tmpId].redirectUrl["produrl"].endsWith(".html") ? ReqObj.Form[event.initialdata.tmpId].redirectUrl["produrl"] + '?vcdimgform=1': ReqObj.Form[event.initialdata.tmpId].redirectUrl["produrl"] + '&vcdimgform=1' ; 
+
+    let vcd = "<a target='_blank' href='" + vcdfrm + "' class='view-c-details'>View Complete Details</a>"
+    $("#t" + event.initialdata.tmpId + "_vcd").html(vcd);
+  }
+}
+
+function prodDetailsHtmlDefautls(event) {
+  // $('#t' + event.initialdata.tmpId + '_isqdetails' + event.initialdata.step).html("");
+  $("#t" + event.initialdata.tmpId + "_Prodname" + event.initialdata.step).html("");
+  $("#t" + event.initialdata.tmpId + "_Compname" + event.initialdata.step).html("");
+  $("#t" + event.initialdata.tmpId + "_price" + event.initialdata.step).html("");
+  $("#t" + event.initialdata.tmpId + "_unit" + event.initialdata.step).html("");
+  $("#t" + event.initialdata.tmpId + "_sold" + event.initialdata.step).html("");
+  $("#t" + event.initialdata.tmpId + "_addr" + event.initialdata.step).html("");
+  $("#t" + event.initialdata.tmpId + "_isqdetails" + event.initialdata.step).html("");
+}
+
+function enqImghandleBuutton(tmpId) {
+  var x = returnEnquireNowHtml(tmpId);
+  var html = x["OuterWrapper"] + x["Label"] + x["ClosingWrapper"];
+  $("#t" + tmpId + "_submitdiv").removeClass("befstgo2 bearrowN");
+  $("#t" + tmpId + "_submit").removeClass("form-btn").addClass("befstgo2 hovsub").val("Enquire Now");
+  $("#t" + tmpId + "_bl_form").html(html);
+}
+
+function prodNameHtmlInsertion(event) {
+  if (
+    event.datavalue["modrefType"] !== "company" &&
+    event.datavalue["prod_name"] !== ""
+  ) {
+    $("#t" + event.initialdata.tmpId + "_Prodname" + event.initialdata.step)
+      .html(
+        returnProdCnameUrlHtml(
+          event.initialdata.tmpId,
+          "produrl",
+          event.datavalue["prod_name"],
+          "_ie_prod_" + event.initialdata.step,
+          "enqprd"
+        ),
+        "enqprd"
+      )
+      .removeClass("bedsnone")
+      .addClass("be-pnm");
+  }
+}
+
+function compNameHtmlInsertion(event) {
+  if (
+    event.datavalue["modrefType"] === "company" ||
+    (event.datavalue["modrefType"] !== "company" &&
+      event.datavalue["prod_name"] === "")
+  ) {
+    var class_name =
+      event.datavalue["prod_name"] === "" ? "eprod be-pnm" : "be-pnm";
+    $("#t" + event.initialdata.tmpId + "_Compname" + event.initialdata.step)
+      .html(
+        returnProdCnameUrlHtml(
+          event.initialdata.tmpId,
+          "produrl",
+          event.datavalue["comp_name"]
+        ),
+        "_ie_prod_" + event.initialdata.step,
+        "enqprd"
+      )
+      .removeClass("bedsnone befs14 be-inbl")
+      .addClass(class_name);
+  }
+}
+
+function prodPriceHtmlInsertion(event) {
+  $("#t" + event.initialdata.tmpId + "_price" + event.initialdata.step).html(
+    event.datavalue["price"]
+  );
+  $("#t" + event.initialdata.tmpId + "_unit" + event.initialdata.step).html(
+    event.datavalue["unit"]
+  );
+}
+
+function soldByHtmlInsertion(event) {
+  // if (event.datavalue["modrefType"] !== "company" && event.datavalue["prod_name"] !== "") {
+  if (
+    event.datavalue["comp_name"] !== "" ||
+    event.datavalue["city"] !== "" ||
+    event.datavalue["state"] !== ""
+  ) {
+    $("#t" + event.initialdata.tmpId + "_sold" + event.initialdata.step).html(
+      "Sold By - "
+    );
+    if (event.datavalue["comp_name"] !== "") {
+      $("#t" + event.initialdata.tmpId + "_addr" + event.initialdata.step).html(
+        returnProdCnameUrlHtml(
+          event.initialdata.tmpId,
+          "cmpUrl",
+          event.datavalue["comp_name"],
+          "_ie_cmp_" + event.initialdata.step,
+          "enqcmp"
+        )
+      );
+    }
+    if (event.datavalue["city"] !== "") {
+      $(
+        "#t" + event.initialdata.tmpId + "_addr" + event.initialdata.step
+      ).append(", " + event.datavalue["city"]);
+    }
+    if (event.datavalue["state"] !== "") {
+      $(
+        "#t" + event.initialdata.tmpId + "_addr" + event.initialdata.step
+      ).append(", " + event.datavalue["state"]);
+    }
+  } else
+    $("#t" + event.initialdata.tmpId + "_sold" + event.initialdata.step).html(
+      ""
+    );
+
+  // }
+}
+
+function returnProdCnameUrlHtml(tmpId, key, val, id, cls) {
+  var svg = "";
+  if (glmodid == "PRODDTL" && key == "produrl") {
+    svg = `<svg fill="#2e3192" xmlns="http://www.w3.org/2000/svg"  viewBox="0 -3 24 24" width="17px" height="17px"><path d="M 5 3 C 3.9069372 3 3 3.9069372 3 5 L 3 19 C 3 20.093063 3.9069372 21 5 21 L 19 21 C 20.093063 21 21 20.093063 21 19 L 21 12 L 19 12 L 19 19 L 5 19 L 5 5 L 12 5 L 12 3 L 5 3 z M 14 3 L 14 5 L 17.585938 5 L 8.2929688 14.292969 L 9.7070312 15.707031 L 19 6.4140625 L 19 10 L 21 10 L 21 3 L 14 3 z"/></svg>`;
+  }
+  if (isImageVidEnq(tmpId) && isSet(ReqObj.Form[tmpId].redirectUrl) && isSet(ReqObj.Form[tmpId].redirectUrl[key]) && ReqObj.Form[tmpId].redirectUrl[key] !== "") {
+
+    let prdnmfrm = ReqObj.Form[tmpId].redirectUrl[key];
+    if(key == 'produrl')
+      prdnmfrm = ReqObj.Form[tmpId].redirectUrl[key].endsWith(".html") ? ReqObj.Form[tmpId].redirectUrl[key] + '?prdnmfrm=1': ReqObj.Form[tmpId].redirectUrl[key] + '&prdnmfrm=1' ; 
+
+    return ("<a href = '" + prdnmfrm + "' target = '_blank' class='enqa " + cls + "'id = 't" + tmpId + id + "'>" + val + " " + svg + "</a>");
+  } else {
+    return val;
+  }
+}
+
+function urlTrack(tmpId, msg) {
+  if (glmodid == "PRODDTL" && msg == "Redirect:ProductUrl") {
+    var sampling = ReqObj.Form[tmpId].noSampling;
+    ReqObj.Form[tmpId].noSampling = true;
+    blenqGATracking("Product_Name_Clicked", msg, getEventLabel(), 0, tmpId);
+    ReqObj.Form[tmpId].noSampling = sampling;
+
+    return true;
+  }
+  var formtype = isSet(ReqObj.Form[tmpId].formType) && ReqObj.Form[tmpId].formType.toLowerCase() === "bl" ? "Post Buy Leads" : "Send Enquiry";
+  blenqGATracking(formtype, msg, getEventLabel(), 1, tmpId);
+  return true;
+}
+
+function addZoomImageEvent(event) {
+  var tmpId = event.target.id.substring(1, 5);
+
+  var magnifying_area = $("#t" + tmpId + "_prodimg");
+  var magnifying_img = $("#t" + tmpId + "_zoomimage");
+
+  var offsetCor = magnifying_area.position();
+
+  if (!isSet(offsetCor) || !isSet(offsetCor.left) || !isSet(offsetCor.top)) {
+    return;
+  }
+
+  clientX = event.clientX - offsetCor.left;
+  clientY = event.clientY - offsetCor.top;
+
+  mWidth = magnifying_area.outerWidth();
+  mHeight = magnifying_area.outerHeight();
+
+  clientX = (clientX / mWidth) * 100;
+  clientY = (clientY / mHeight) * 100;
+
+  magnifying_img.css(
+    "transform",
+    "translate(-" + clientX + "%, -" + clientY + "%) scale(2)"
+  );
+}
+
+function removeZoomImageEvent(event) {
+  var tmpId = event.target.id.substring(1, 5);
+
+  var magnifying_img = $("#t" + tmpId + "_zoomimage");
+
+  magnifying_img.css("transform", "translate(-50%, -50%) scale(1)");
+}
+
+function addEventZoom(tmpId) {
+  ReqObj.Form[tmpId].clicked = true;
+  var magnifying_area = $("#t" + tmpId + "_prodimg");
+  var magnifying_img = $("#t" + tmpId + "_zoomimage");
+
+  magnifying_area.css("cursor", "zoom-out");
+  magnifying_img.css("transform", "translate(-50%, -50%) scale(2)");
+
+  magnifying_area.on("mousemove", addZoomImageEvent);
+  magnifying_area.on("mouseleave", removeZoomImageEvent);
+}
+
+function removeEventZoom(tmpId) {
+  ReqObj.Form[tmpId].clicked = false;
+  var magnifying_area = $("#t" + tmpId + "_prodimg");
+  var magnifying_img = $("#t" + tmpId + "_zoomimage");
+
+  magnifying_area.css("cursor", "zoom-in");
+  magnifying_img.css("transform", "translate(-50%, -50%) scale(1)");
+
+  magnifying_area.off("mousemove", addZoomImageEvent);
+  magnifying_area.off("mouseleave", removeZoomImageEvent);
+}
+
+function attachEvents(event) {
+  var step = event.initialdata.step;
+  var tmpId = event.initialdata.tmpId;
+  $("a#t" + tmpId + "_ie_prod_" + step).on("click", function () {
+    urlTrack(tmpId, "Redirect:ProductUrl", step);
+  });
+  $("a#t" + tmpId + "_ie_cmp_" + step).on("click", function () {
+    urlTrack(tmpId, "Redirect:CompanyUrl");
+  });
+
+  var magnifying_area = $("#t" + tmpId + "_prodimg");
+  if (isSet(magnifying_area) && step[1] === "L" && (pdpenqImage(tmpId) || direnqImage(tmpId))) {
+    magnifying_area.css("cursor", "zoom-in");
+    ReqObj.Form[tmpId].clicked = false;
+
+    magnifying_area.on("click", function (event) {
+      if(isImageVidEnq(tmpId) && typeof ReqObj.Form[tmpId].zoomtrack === "undefined"){  //image track
+        blenqGATracking("Send Enquiry","Zoom Clicked", getEventLabel(), 1, tmpId);
+        ReqObj.Form[tmpId].zoomtrack = true;
+      }
+      if (
+        event.target.id === "" ||
+        event.target.id.substring(5) === "_beleft" ||
+        event.target.id.substring(5) === "_beright"
+      ) {
+      } else if (!ReqObj.Form[tmpId].clicked) {
+        addEventZoom(tmpId);
+      } else {
+        removeEventZoom(tmpId);
+      }
+    });
+  }
+}
+
+//fsdgsdgsdhgs
+function isqQuestionHtmlInsertion(event) {
+  var plsqArr = decodeURIComponent(event.datavalue["plsqArr"]);
+  if (isSet(plsqArr) && plsqArr !== "" ) {
+    var count = 0;
+    var keyVal = plsqArr.split("#");
+    var len = keyVal.length;
+    var total = 225;
+    if (ispdp(event.initialdata.tmpId) && isImageVidEnq(event.initialdata.tmpId) && isSet(ReqObj.Form[event.initialdata.tmpId].isNewImage) && ReqObj.Form[event.initialdata.tmpId].isNewImage === "1" && event.initialdata.step == "0R") {
+      $("#t" + event.initialdata.tmpId + "_isqdetails" + event.initialdata.step).append("<div id='enqImgIsq'></div>");
+    }
+    for (var i = 0; i < len; i++) {
+      var selisq = keyVal[i].split(":");
+      var ques = selisq[0];
+      var varr = selisq[1];
+      if (isSet(ques) && ques !== "" && isSet(varr) && varr !== "") {
+        var ans = ques + "" + varr;
+        var count_val = pdpenqImage(event.initialdata.tmpId) || direnqImage(event.initialdata.tmpId) ? 3 : 4;
+        var col_cls1 = pdpenqImage(event.initialdata.tmpId) || direnqImage(event.initialdata.tmpId) ? "eqRC4" : "col111";
+        var col_cls2 = pdpenqImage(event.initialdata.tmpId) || direnqImage(event.initialdata.tmpId) ? "eqRC3" : "col77";
+        if (ans.length < total && count < count_val) {
+          if (ispdp(event.initialdata.tmpId) && isImageVidEnq(event.initialdata.tmpId) && isSet(ReqObj.Form[event.initialdata.tmpId].isNewImage) && ReqObj.Form[event.initialdata.tmpId].isNewImage === "1" && event.initialdata.step == "0R") {
+            $("#enqImgIsq").append("<p class='" + col_cls1 + "'>" + returnSpan("t" + event.initialdata.tmpId, "_isqkey" + i, ques + ": ", col_cls2, "") + varr + "</p>");
+          } else {
+            $("#t" + event.initialdata.tmpId + "_isqdetails" + event.initialdata.step).append("<p class='" + col_cls1 + "'>" + returnSpan("t" + event.initialdata.tmpId, "_isqkey" + i, ques + ": ", col_cls2, "") + varr + "</p>");
+          }
+          total = total - ans.length;
+          count++;
+        }
+        else {
+          break;
+        }
+      }
+    }
+  }
+  if (ispdp(event.initialdata.tmpId) && isImageVidEnq(event.initialdata.tmpId) && isSet(ReqObj.Form[event.initialdata.tmpId].isNewImage) && ReqObj.Form[event.initialdata.tmpId].isNewImage === "1" && event.initialdata.step == "0R")
+    $("#t" + event.initialdata.tmpId + "_isqdetails" + event.initialdata.step).append('<div id="t' + event.initialdata.tmpId + '_vcd" class="btmarg"></div>');
+}
+
+function prodDetailshandleCSS(event) {
+  var cl = "eprod";
+  var ppricecl = "eqprodpr";
+  var pricecl = "eqpr";
+  var unitcl = "";
+  $("#t" + event.initialdata.tmpId + "_Prodname" + event.initialdata.step).addClass(cl);
+  $("#t" + event.initialdata.tmpId + "_price" + event.initialdata.step).addClass(pricecl);
+  $("#t" + event.initialdata.tmpId + "_unit" + event.initialdata.step).addClass(unitcl);
+  $("#t" + event.initialdata.tmpId + "_ProdPrice" + event.initialdata.step).removeClass().addClass(ppricecl);
+  $("#t" + event.initialdata.tmpId + "_sold" + event.initialdata.step).addClass("eqsold");
+  $("#t" + event.initialdata.tmpId + "_soldBy" + event.initialdata.step).removeClass().addClass("eqsoldby");
+  if (direnqImage(event.initialdata.tmpId)) {
+    $("#t" + event.initialdata.tmpId + "_sold" + event.initialdata.step).removeClass().addClass("sldby");
+    $("#t" + event.initialdata.tmpId + "_addr" + event.initialdata.step).addClass("sldby");
+  }
+}
 
 function LeftSide(tmpId, typeofform, step) {
   this.sectionName = [];
@@ -8237,6 +8710,19 @@ LeftSide.prototype.prodChangeArrowUI = function (event) {
 };
 
 /*--------------------------------------------------------------ARROW UI and EVENTS--------------------------------------------------------- */
+function hideAllArrows(event, type) {
+  var clickeve = event;
+  var append =
+    isSet(clickeve.cttype) && clickeve.cttype.toLowerCase() === "video"
+      ? "Video"
+      : "";
+  $("#t" + event.initialdata.tmpId + "_bedown").addClass("bedsnone");
+  $("#t" + event.initialdata.tmpId + "_beup").addClass("bedsnone");
+  $("#t" + event.initialdata.tmpId + "_beright" + append).addClass("bedsnone");
+  $("#t" + event.initialdata.tmpId + "_beleft" + append).addClass("bedsnone");
+  $("#t" + event.initialdata.tmpId + "_berightVideo").addClass("bedsnone");
+  $("#t" + event.initialdata.tmpId + "_beleftVideo").addClass("bedsnone");
+}
 
 function showHideArrow(clickeve, todo) {
   var append =
