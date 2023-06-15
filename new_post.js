@@ -13169,9 +13169,7 @@ ThankYou.prototype.fireServices = function (tmpId) {
     blenqGATracking(form_type, "Displayed_PayX|" + StepNumber + "|Thank You", getEventLabel(), 0, tmpId);
   }
 };
-function PostBlEnqUpdate() {
-  this.className = "PostBlEnqUpdate";
-}
+
 PostBlEnqUpdate.prototype.onSubmit = function (tmpId) {
   if (isSet(tmpId)) {
     var postblenq = PreAjax("PostBlEnqUpdate", tmpId);

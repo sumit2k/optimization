@@ -9626,6 +9626,9 @@ function isPnsEnq(tmpId) {
     return true;
   else return false;
 }
+function PostBlEnqUpdate() {
+  this.className = "PostBlEnqUpdate";
+}
 
 function FormSeq() {
   this.arraySeq = [];
