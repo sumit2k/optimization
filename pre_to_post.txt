@@ -40,6 +40,8 @@ ContactDetail.prototype.SaveDetails
 ContactDetail.prototype.onSubmit 
 ContactDetail.prototype.validateUserDetails
 ContactDetail.prototype.validate
+ContactDetail.prototype.getData 
+ContactDetail.prototype.sendRequest
 
 UserLogin.prototype.displayAnswer
 function googleSigninFr(element, tmpId, userlogin)
@@ -48,3 +50,8 @@ UserLogin.prototype.checkEmailExistOrNotFR
 UserLogin.prototype.EventIfScreenPresent
 UserLogin.prototype.SaveDetails
 UserLogin.prototype.onSubmit
+
+
+
+sendrequest
+postblenqupdate prototype
