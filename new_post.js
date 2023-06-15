@@ -11670,40 +11670,6 @@ function isRadioOtherClicked(revent) {
   RadioBoxEl.children().children(".bechk-in").children().hide();
 }
 
-function CheckBoxClick(tmpId) {
-  setTimeout(function () {
-    $(".cbl_chekbx").focus();
-  }, 1800);
-  $(".cbl_chekbx_btn ")
-    .off("click")
-    .on("click", function () {
-      if (IsChatbl(tmpId)) {
-        $("#t" + tmpId + "_submitNo1") //chat bl bug
-          .parent()
-          .addClass("dn");
-      }
-    });
-  $(".CheckboxClick")
-    .off("click")
-    .on("click", function () {
-      if (IsChatbl(tmpId)) {
-        $("#t" + tmpId + "_submitNo1") //chat bl bug
-          .parent()
-          .addClass("bedsnone");
-      }
-      var checkBox = $(this);
-      if (checkBox.siblings("input").prop("checked")) {
-        checkBox.children(".bechk-in").children().hide();
-        checkBox.parent().removeClass("chksl");
-      } else {
-        checkBox.children(".bechk-in").children().show();
-        IsChatbl(tmpId) || isSSB(tmpId)
-          ? ""
-          : checkBox.parent().addClass("chksl");
-      }
-    });
-}
-
 function radCheck(el) {
   if (isSet(el)) {
     var id = $(el).children("span").attr("id");
@@ -12251,43 +12217,6 @@ function getHtmlPlaWidget(res, val) {
   prolist += list + "<ul>";
   pwhtml += prolist + "</div></div>";
   return pwhtml;
-}
-
-function plawidget(val) {
-  $.ajax({
-    cache: true,
-    url: "//apps.imimg.com/" + "index.php?r=Newreqform/WidgetData",
-    // url: appsServerName + 'index.php?r=Newreqform/WidgetData',
-    type: "GET",
-    crossOrigin: true,
-    crossDomain: true,
-    data: {
-      modid: ReqObj.Form[val].modId,
-      mcatid: ReqObj.Form[val].mcatId,
-    },
-    dataType: "json",
-    timeout: 3000,
-    success: function (res) {
-      if (
-        isSet(res) &&
-        res["Status"] == 200 &&
-        isSet(res["RECOMMENDED DATA"])
-      ) {
-        // sessionStorage.setItem("plaWidget-" + ReqObj.Form[val].mcatId, JSON.stringify(res["RECOMMENDED DATA"]));
-        try {
-          sessionStorage.setItem(
-            "plaWidget-" + ReqObj.Form[val].mcatId,
-            JSON.stringify(res["RECOMMENDED DATA"])
-          );
-        } catch (err) {
-          // quota_exceeded_error
-        }
-      }
-    },
-    error: function (XMLHttpRequest, textStatus, errorThrown) {
-      console.log(XMLHttpRequest + textStatus + errorThrown);
-    },
-  });
 }
 
 ThankYou.prototype.payNumber = function (data) {
