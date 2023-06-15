@@ -3697,6 +3697,7 @@ UserLogin.prototype.displayAnswer = function (tmpId) {
     name,
   ];
 };
+
 UserLogin.prototype.registerForm = function (tmpId) {
   var meta2 = document.createElement("script");
   meta2.src = "https://apis.google.com/js/platform.js";
@@ -3731,6 +3732,7 @@ UserLogin.prototype.registerForm = function (tmpId) {
     }
   };
 };
+
 function googleSigninFr(element, tmpId, userlogin) {
   auth2.attachClickHandler(
     element,
@@ -3753,6 +3755,7 @@ function googleSigninFr(element, tmpId, userlogin) {
     function (error) { }
   );
 }
+
 UserLogin.prototype.checkEmailExistOrNotFR = function (gusremail, id_token, gusrname, tmpId, userlogin) {
   var that = userlogin;
   var iso = currentISO();
@@ -3915,12 +3918,14 @@ UserLogin.prototype.checkEmailExistOrNotFR = function (gusremail, id_token, gusr
     },
   });
 };
+
 UserLogin.prototype.EventIfScreenPresent = function (tmpId) {
   if (isOtherEnq(tmpId)) {
     this.handleHeading(tmpId);
     ButtonNameUI("isq", tmpId);
   }
 };
+
 UserLogin.prototype.SaveDetails = function (tmpId, event) {
   if (IsChatbl(tmpId)) {
     ReqObj.Form[tmpId].UserInputs["PrimaryInfo"] = $(
@@ -3930,6 +3935,7 @@ UserLogin.prototype.SaveDetails = function (tmpId, event) {
       ReqObj.Form[tmpId].UserInputs["toChange"] = event.target.textContent;
   }
 };
+
 UserLogin.prototype.onSubmit = function (tmpId) {
   // $("#yajaca").hide(); // click away message on pns form
   // pns login screen changes
@@ -3992,6 +3998,7 @@ ContactDetail.prototype.EventIfScreenPresent = function (tmpId) {
     ButtonNameUI("isq", tmpId);
   }
 };
+
 ContactDetail.prototype.SaveDetails = function (tmpId, event) {
   if (IsChatbl(tmpId) || isSSB(tmpId)) {
     ReqObj.Form[tmpId].UserInputs["Name"] = $(
@@ -4020,11 +4027,13 @@ ContactDetail.prototype.SaveDetails = function (tmpId, event) {
     /* OptiNeeded-this change is not related to save details functions - write it in appropriate place */
   }
 };
+
 ContactDetail.prototype.onSubmit = function (tmpId) {
   // $("#yajaca").hide(); // click away message
   var CDObject = PreAjax("ContactDetail", tmpId);
   this.sendRequest(CDObject, tmpId);
 };
+
 ContactDetail.prototype.validate = function (tmpId) {
   this.classCount = returnObjectSize(ReqObj.Form[tmpId].ContactDetail);
   ReqObj.Form[tmpId].nec.classCount = this.classCount;
@@ -4033,6 +4042,7 @@ ContactDetail.prototype.validate = function (tmpId) {
   if (isValid === true) this.captureDetails(tmpId);
   return isValid;
 };
+
 ContactDetail.prototype.validateUserDetails = function (tmpId) {
   if (!isSet(validation)) createGlobalObject();
   var validate = "";
@@ -4207,6 +4217,7 @@ ContactDetail.prototype.validateUserDetails = function (tmpId) {
   if (isSet(err_obj) && !err_obj["type"]) return false;
   else return true;
 };
+
 ContactDetail.prototype.sendRequest = function (CDObject, tmpId, type) {
   var data = this.getData(tmpId);
   var iso = currentISO();
@@ -4266,6 +4277,7 @@ ContactDetail.prototype.sendRequest = function (CDObject, tmpId, type) {
     }
   }
 };
+
 ContactDetail.prototype.getData = function (tmpId, which) {
   var that = this;
   this.cookies(tmpId);
@@ -4388,6 +4400,7 @@ ContactDetail.prototype.getData = function (tmpId, which) {
   return ObjectTrim(data);
 };
 
+
 Isq.prototype.displayAnswer = function (tmpId) {
   if (
     IsChatbl(tmpId) &&
@@ -4405,12 +4418,14 @@ Isq.prototype.displayAnswer = function (tmpId) {
     ];
   }
 };
+
 Isq.prototype.EventIfScreenPresent = function (tmpId) {
   if (isOtherEnq(tmpId)) {
     this.handleHeading(tmpId);
     ButtonNameUI("isq", tmpId);
   }
 };
+
 Isq.prototype.SaveDetails = function (tmpId) {
   var IsqScreen = this.IsqScreen;
   SaveIsq(tmpId, "isq", IsqScreen);
@@ -4421,6 +4436,7 @@ Isq.prototype.SaveDetails = function (tmpId) {
   )
     toFireGeneration(tmpId);
 };
+
 Isq.prototype.onSubmit = function (tmpId, after) {
   var IsqObject = isSet(after) && after === true ? "" : PreAjax("Isq", tmpId);
   var hitfinserv = "";
@@ -4500,6 +4516,7 @@ Isq.prototype.onSubmit = function (tmpId, after) {
   }
 };
 
+
 ProductName.prototype.displayAnswer = function (tmpId) {
   var classtotest = chatBlClass(tmpId, "right");
   var leftright = IsChatbl(tmpId) ? "cbl_ansr" : "";
@@ -4510,6 +4527,7 @@ ProductName.prototype.displayAnswer = function (tmpId) {
     }),
   ];
 };
+
 ProductName.prototype.selectTitle = function (event, ui) {
   var that = ReqObj.Form[$(this).attr("templateId")].productObject;
   if (isSet(that)) {
@@ -4561,6 +4579,7 @@ ProductName.prototype.selectTitle = function (event, ui) {
     }
   }
 };
+
 ProductName.prototype.SaveDetails = function (tmpId, event) {
   if (IsChatbl(tmpId)) {
     ReqObj.Form[tmpId].UserInputs["ProductName"] = $(
@@ -4569,6 +4588,7 @@ ProductName.prototype.SaveDetails = function (tmpId, event) {
   }
   //
 };
+
 ProductName.prototype.getMcatImage = function (tmpId) {
   if (
     isSet(tmpId) &&
@@ -4815,6 +4835,7 @@ ProductName.prototype.validate = function (tmpId, event) {
     return true;
   }
 };
+
 ProductName.prototype.checkMcatIDJquery = function (event) {
   event.data.pnObject.checkMcatID(event.data);
 };
@@ -4872,6 +4893,7 @@ RequirementDtl.prototype.getPrefilledText = function (tmpId) {
 
   return text;
 };
+
 RequirementDtl.prototype.resetClass = function (tmpId) {
   ReqObj.Form[tmpId].flags.isDescDivShown = false;
   if (ReqObj.Form[tmpId].flags.isDescDivShown) {
@@ -4880,6 +4902,7 @@ RequirementDtl.prototype.resetClass = function (tmpId) {
     ReqObj.Form[tmpId].prevCount -= ReqObj.Form[tmpId].IsqStep1; //isqstep1
   }
 };
+
 RequirementDtl.prototype.EventIfScreenPresent = function (tmpId) {
   if (isOtherEnq(tmpId)) {
     this.handleHeading(tmpId);
@@ -4887,6 +4910,7 @@ RequirementDtl.prototype.EventIfScreenPresent = function (tmpId) {
   }
   //onCName(tmpId);
 };
+
 RequirementDtl.prototype.validate = function (tmpId) {
   if (isSet(tmpId) && isSet(ReqObj.Form[tmpId])) {
     var sel = $("#t" + tmpId + "_reqBoxTemplates");
@@ -4944,6 +4968,7 @@ RequirementDtl.prototype.validate = function (tmpId) {
 
   return true;
 };
+
 RequirementDtl.prototype.fireTracking = function (event) {
   var todo = event.data.todo;
   var tmpId = event.data.tmpId;
@@ -4963,6 +4988,7 @@ RequirementDtl.prototype.fireTracking = function (event) {
     blenqGATracking(form_type, "|Suggselected-" + text + "|mcat-" + prodName, getEventLabel(), 0, tmpId);
   }
 };
+
 RequirementDtl.prototype.SaveDetails = function (tmpId) {
   if (isSet(tmpId)) {
     ReqObj.Form[tmpId].ReqDtlBox = $("#t" + tmpId + "_reqBoxTemplates").val();
@@ -4973,6 +4999,7 @@ RequirementDtl.prototype.SaveDetails = function (tmpId) {
       toFireGeneration(tmpId, type);
   }
 };
+
 RequirementDtl.prototype.displayAnswer = function (tmpId) {
   var ReqBoxAns = NotFilled;
   if (isSet(ReqObj.Form[tmpId].ReqDtlBox) && ReqObj.Form[tmpId].ReqDtlBox)
@@ -4986,6 +5013,7 @@ RequirementDtl.prototype.displayAnswer = function (tmpId) {
     }),
   ];
 };
+
 RequirementDtl.prototype.getData = function (tmpId) {
   var data = {
     offer_id: ReqObj.Form[tmpId].generationId,
@@ -5032,6 +5060,7 @@ RequirementDtl.prototype.getData = function (tmpId) {
   }
   return ObjectTrim(data);
 };
+
 RequirementDtl.prototype.onSubmit = function (tmpId, after) {
   if (isSet(tmpId)) {
     var data = this.getData(tmpId);
@@ -5100,6 +5129,7 @@ MoreDetails.prototype.hasHtml = function (mdObj) {
   } else this.ifHtmlNotPresent(mdObj);
   return true;
 };
+
 MoreDetails.prototype.ifHtmlPresent = function (mdObj) {
   if (mdObj.md.key === 0) ReqObj.Form[mdObj.tmpId].cName.isShown = true;
   if (mdObj.md.key === 2) ReqObj.Form[mdObj.tmpId].url.html = true;
@@ -5112,11 +5142,13 @@ MoreDetails.prototype.ifHtmlPresent = function (mdObj) {
   }
   if (mdObj.that.NumberofClassCalled === 0) makeFinalSeq(mdObj, mdObj.tmpId);
 };
+
 MoreDetails.prototype.ifHtmlNotPresent = function (mdObj) {
   if (mdObj.hasFallback) {
     CreateSeq(mdObj.FallbackObj);
   }
 };
+
 MoreDetails.prototype.displayHtml = function (tmpId) {
   if (!IsChatbl(tmpId)) {
     var odiv =
@@ -5162,6 +5194,7 @@ MoreDetails.prototype.displayHtml = function (tmpId) {
   }
   return [this.mdhtml];
 };
+
 MoreDetails.prototype.defaultEvents = function (tmpId) {
   var that = this;
   var id =
@@ -5283,9 +5316,11 @@ MoreDetails.prototype.defaultEvents = function (tmpId) {
   if (isSSB(tmpId) && ReqObj.gst.toask === false)
     $("#t" + tmpId + "_gst").addClass("bedsnone");
 };
+
 MoreDetails.prototype.handleButton = function (tmpId) {
   ButtonNameUI(ReqObj.Form[tmpId].currentScreen, tmpId);
 };
+
 MoreDetails.prototype.validate = function (tmpId) {
   var that = this;
   var id =
@@ -5372,6 +5407,7 @@ MoreDetails.prototype.validate = function (tmpId) {
     }
   }
 };
+
 MoreDetails.prototype.onSubmit = function (tmpId) {
   var that = this;
   var mdObject = PreAjax("MoreDetails", tmpId);
@@ -5424,6 +5460,7 @@ MoreDetails.prototype.onSubmit = function (tmpId) {
   }
   if (isEnq(tmpId)) ReqObj.Form[tmpId].ServiceSequence.pop();
 };
+
 MoreDetails.prototype.handleHeading = function (tmpId) {
   var that = this;
   var append = that.mdObj.md.key === 0 ? "companyname" : that.mdObj.md.key === 1 ? "gst" : "url";
@@ -5435,10 +5472,12 @@ MoreDetails.prototype.handleHeading = function (tmpId) {
     $("#t" + tmpId + "_hdg").removeClass("bedsnone").html(getFormHeading(tmpId, ReqObj.Form[tmpId].currentScreen));
   }
 };
+
 MoreDetails.prototype.EventIfScreenPresent = function (tmpId) {
   this.handleHeading(tmpId);
   ButtonNameUI(ReqObj.Form[tmpId].currentScreen, tmpId);
 };
+
 MoreDetails.prototype.displayAnswer = function (tmpId) {
   var classtotest = chatBlClass(tmpId, "right");
   var leftright = IsChatbl(tmpId) ? "cbl_ansr" : "";
@@ -5522,6 +5561,7 @@ function pnsSubmitTrack(tmpId){
 }
 ReqObj.Form[tmpId].noSampling = sampling;
 }
+
 function inactiveblSubmitTrack(tmpId){    //inactive changes
 var that = ReqObj.Form[tmpId].FormSequence || {};
 var sampling = ReqObj.Form[tmpId].noSampling;
@@ -5568,6 +5608,7 @@ function mobEnteredTrack(tmpId,el){   //mob track
   ReqObj.Form[tmpId].noSampling = sampling;
   ReqObj.Form[tmpId].mobEntered=0;         
 } 
+
 function emailEnteredTrack(tmpId,el){   
     var sampling = ReqObj.Form[tmpId].noSampling;
     ReqObj.Form[tmpId].noSampling = true;
@@ -5600,6 +5641,7 @@ function hideClickMsg(tmpId) {
     ReqObj.Form[tmpId].msgFromOtp = 0;
   }
 }
+
 FormSeq.prototype.OnCloseSeq = function (tmpId) {
   var LastScreen = ""; //PBRENQFORM - 3621
   this.OnCloseServiceArray = [];

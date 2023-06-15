@@ -55,3 +55,4 @@ UserLogin.prototype.onSubmit
 
 sendrequest
 postblenqupdate prototype
+userlogin prototype
