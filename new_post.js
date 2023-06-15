@@ -5542,6 +5542,65 @@ MoreDetails.prototype.MoreDetailsTracking = function (tmpId, toappend) {
   ReqObj.Form[tmpId].noSampling = sampling;
 };
 
+
+/**-------------------new seq----------------------------- */
+function EnquireNow() {
+  this.className = "EnquireNow";
+  this.enquirehtml = "";
+}
+EnquireNow.prototype.hasHtml = function (EnquireObj) {
+  var IsqBoxSuffixHtmlObj = {
+    SuffixOuterHtml: "<div  id='t" + EnquireObj.tmpId + "_enqnow'>",
+    SuffixClosingHtml: "</div>",
+    suffix: "_isqBox",
+  };
+  this.enquirehtml = MakeWrapper(
+    [[returnEnquireNowHtml(EnquireObj.tmpId)]],
+    EnquireObj.tmpId,
+    IsqBoxSuffixHtmlObj,
+    ""
+  );
+  EnquireObj.that.NumberofClassCalled -= 1;
+  if (this.enquirehtml !== "") {
+    ReqObj.Form[EnquireObj.tmpId].currentclassCount++;
+    this.ifHtmlPresent(EnquireObj);
+  } else {
+    this.ifHtmlNotPresent(EnquireObj);
+  }
+  if (this.enquirehtml !== "") return true;
+  else return false;
+};
+EnquireNow.prototype.ifHtmlPresent = function (EnquireObj) {
+  AttachObject(EnquireObj.object, EnquireObj.tmpId);
+  if (isSet(EnquireObj.AfterService)) {
+    for (var i = 0; i < EnquireObj.AfterService.length; i++) {
+      EnquireObj.that.MakeSeq(EnquireObj.AfterService[i], EnquireObj.tmpId);
+    }
+  }
+  if (EnquireObj.that.NumberofClassCalled === 0) {
+    makeFinalSeq(EnquireObj, EnquireObj.tmpId);
+  }
+};
+EnquireNow.prototype.ifHtmlNotPresent = function (EnquireObj) {
+  if (EnquireObj.hasFallback) {
+    CreateSeq(EnquireObj.FallbackObj);
+  }
+};
+EnquireNow.prototype.displayHtml = function (tmpId) {
+  return this.enquirehtml;
+};
+EnquireNow.prototype.onSubmit = function (tmpId) {
+  var enqNow = PreAjax("EnquireNow", tmpId);
+};
+EnquireNow.prototype.validate = function (tmpId) {
+  return true;
+};
+EnquireNow.prototype.handleButton = function (tmpId) {
+  ButtonNameUI("enquirenow", tmpId);
+};
+
+/**-------------------new seq----------------------------- */
+
 function get_message() {
   return {
     msg: "Become a verified free seller in 2 min & <br>Connect with 100+ Buyers from your city",
