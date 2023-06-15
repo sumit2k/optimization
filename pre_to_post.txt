@@ -54,7 +54,7 @@ UserLogin.prototype.onSubmit
 function EnquireNow() and all prototypes
 PostBlEnqUpdate.prototype all prototypes
 
-
+ContactDetail all prototypes of email/mobile and city
 
 
 sendrequest

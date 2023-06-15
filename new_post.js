@@ -4042,6 +4042,464 @@ ContactDetail.prototype.displayAnswer = function (tmpId) {
   ];
 };
 
+ContactDetail.prototype.returnKey = function (tmpId) {
+  var key = "";
+  if (this.name === 1 && this.email === 0 && this.city === 0) {
+    key = "Name";
+  }
+  if (this.name === 0 && this.email === 1 && this.city === 0) {
+    if (currentISO() === "IN") {
+      key = "Email";
+    } else {
+      key = "Mobile";
+    }
+  }
+  if (this.name === 0 && this.email === 0 && this.city === 1) {
+    key = "City";
+  }
+  return key;
+};
+
+
+ContactDetail.prototype.showEmailOrMobile = function (tmpId) {
+  var that = this;
+  var changeiso = currentISO();
+  var formType = ReqObj.Form[tmpId].formType.toLowerCase();
+
+  that.getLabelEmailMobile(tmpId, formType, changeiso);
+  that.getInputEmailMobile(tmpId, formType, changeiso);
+  that.ContactDetailHtmlEmailObj["OuterWrapper"] = "";
+  that.ContactDetailHtmlEmailObj["ClosingWrapper"] = "";
+  if (changeiso === "IN") that.shownHtml.push("email");
+  else that.shownHtml.push("phone");
+  return that.ContactDetailHtmlEmailObj;
+};
+
+ContactDetail.prototype.getLabelEmailMobile = function (tmpId, formType, changeiso) {
+  var that = this;
+  var label = "";
+  if (changeiso === "IN") {
+    label = "Email";
+  } else {
+    if (currentISO() !== "IN" && (tmpId.substring(0, 2) === "09" || IsChatbl(tmpId)))
+      label = "Phone Number";
+    else if (isInactiveBL(tmpId)) {
+      label = "Mobile <span class='redc'>*</span>";
+    }
+    else label = "Mobile";
+  }
+  let labcheck = label == "Phone Number" ? "" : " ID ";
+  var labelelement = changeiso === "IN" ? "_email-lb" : "_mobile-lb";  // chatbl fmob
+  var labeltext = IsChatbl(tmpId) ? "Please share your " + returnSpan("t" + tmpId, "login_span_bold" + this.classCount, label + labcheck, "befwt") : label;
+  var labelclass = IsChatbl(tmpId) ? "" : isSSB(tmpId) ? ssbClass("label", tmpId) : "be-lbl";
+  that.phonecalled = changeiso === "IN" ? false : true;
+  that.ContactDetailHtmlEmailObj["Label"] = returnLabel("t" + tmpId, labeltext, labelelement + this.classCount, labelclass);
+};
+
+ContactDetail.prototype.getInputEmailMobile = function (
+  tmpId,
+  formType,
+  changeiso
+) {
+  var that = this;
+  var inputelement = changeiso === "IN" ? "_q_email_in" : "_q_mobile_f";
+  var emvalue = isSSB(tmpId)
+    ? changeiso === "IN"
+      ? rvalue(tmpId, "evalue")
+      : rvalue(tmpId, "mobval")
+    : "";
+  let fmobc = inputelement == "_q_mobile_f" ? "blchat-inpt cbl_fmob" : "blchat-inpt"; // chatbl fmob
+  var inputclass = IsChatbl(tmpId)
+    ? fmobc
+    : isSSB(tmpId)
+      ? ""
+      : changeiso === "IN"
+        ? "be-slbox inpt_errorbx"
+        : "be-input benords beW3 beh32";
+  if (isOtherEnq(tmpId)) {
+    inputclass = inputclass + " inPlace";
+  }
+  if (changeiso === "IN") {
+    label = "Email";
+  } else {
+    if (
+      currentISO() !== "IN" &&
+      (tmpId.substring(0, 2) === "09" || IsChatbl(tmpId))
+    )
+      label = "Phone";
+    else label = "Mobile";
+  }
+  if (isInactiveBL(tmpId)) {
+    if (inputelement == "_q_mobile_f")
+      inputclass = "be-slbox inpt_errorbx bed-input benords cpNm";
+    else {
+      inputclass = "be-slbox inpt_errorbx bed_input cpNm";
+    }
+  }
+  // var label = (changeiso === "IN") ? "Email" : "Phone";
+  var emailmobilehtml = "";
+
+  if (!isSSB(tmpId) && changeiso !== "IN") {
+    ReqObj.isoFlag = usercookie.getParameterValue(that.imeshCookie, "phcc");
+    //ReqObj.isoFlag = (ReqObj.isoFlag !== "") ? ReqObj.isoFlag : usercookie.getParameterValue(that.imeshCookie, "phcc"); //iso reload error
+    ReqObj.isoFlag =
+      ReqObj.isoFlag.substring(0, 1) === "+"
+        ? ReqObj.isoFlag
+        : "+" + ReqObj.isoFlag;
+    var isoclass = IsChatbl(tmpId) ? IsChatBLInline(tmpId)? "beiso isocenter" : "beiso isocenhcbl": (isInactiveBL(tmpId)) ? "be-flisq iso brdlft8" : "be-flisq iso"; //chatbl fmob
+    emailmobilehtml += returnIsoHtml(tmpId, isoclass, ReqObj.isoFlag);
+  }
+
+  var placeholder = changeiso === "IN" && (IsChatbl(tmpId) || isInactiveBL(tmpId))
+    ? "Enter your Email"
+    : changeiso !== "IN" && !isOtherEnq(tmpId)
+      ? "Enter your Phone"
+      : "";
+  // emailmobilehtml += (isSSB(tmpId)) ? '<div class="mb-wdIn">' : ""
+  var instyle =
+    Bl09(tmpId) && imeshExist() === "" ? "width: calc(100% - 52px);" : "";
+
+  var limit = (changeiso === "IN") ? "" : "20";
+
+  emailmobilehtml += returnInput(
+    "t" + tmpId,
+    inputelement + this.classCount,
+    "text",
+    inputelement + this.classCount,
+    placeholder,
+    inputclass,
+    emvalue,
+    instyle,
+    limit //f mob bug
+  );
+  if (IsChatbl(tmpId)) {
+    var html = "";
+    emailmobilehtml += html;
+    var errorhtml = this.getChatblEmailMobileErrorDiv(tmpId, changeiso);
+    emailmobilehtml += errorhtml;
+  } else {
+    if (
+      changeiso === "IN" &&
+      ReqObj.Form[tmpId].typeofform.toLowerCase() !== "bl"
+    ) {
+      emailmobilehtml +=
+        returnContainer(
+          "t" + tmpId,
+          "_helpmsg",
+          "be-msghlp",
+          "",
+          "Supplier will contact you on this email",
+          ""
+        ) + "</div>";
+    }
+    var errorhtml = this.getEmailMobileErrorDiv(tmpId, changeiso);
+    emailmobilehtml += errorhtml;
+    emailmobilehtml += isSSB(tmpId) ? "</div>" : "";
+  }
+  that.ContactDetailHtmlEmailObj["UserInput"] = emailmobilehtml;
+};
+
+ContactDetail.prototype.getEmailMobileErrorDiv = function (tmpId, changeiso) {
+  if (isSSB(tmpId)) {
+    return emailMobileErrorDivSSB(tmpId, changeiso, this);
+  }
+  var html = "";
+  var errorconatiner = changeiso === "IN" ? "_err_email" : "_error_mobile";
+  html =
+    (isOtherEnq(tmpId) && tmpId.substring(0, 2) === "09") ||
+      (isOtherEnq(tmpId) && ReqObj.Form[tmpId].FormSequence.StepCounter > 0)
+      ? html +
+      returnContainer(
+        "t" + tmpId,
+        errorconatiner + this.classCount,
+        "be-erbx beerrp bedsnone",
+        "",
+        ""
+      )
+      : html +
+      returnContainer(
+        "t" + tmpId,
+        errorconatiner + this.classCount,
+        "beerrp1 be-erbx bedsnone error_blck",
+        "",
+        ""
+      );
+  errorconatiner = changeiso === "IN" ? "_email_errmsg" : "_mobile_errmsg";
+  html += returnContainer(
+    "t" + tmpId,
+    errorconatiner + this.classCount,
+    "",
+    "content",
+    ""
+  );
+  html += "</div>";
+  html =
+    (isOtherEnq(tmpId) && tmpId.substring(0, 2) === "09") ||
+      (isOtherEnq(tmpId) && ReqObj.Form[tmpId].FormSequence.StepCounter > 0)
+      ? html + "</div>"
+      : html + '<a class="be-erarw" data-role="arrow"></a></div>';
+  return html;
+};
+
+ContactDetail.prototype.getChatblEmailMobileErrorDiv = function (
+  tmpId,
+  changeiso
+) {
+  var html = "";
+  var errorconatiner = changeiso === "IN" ? "_err_email" : "_error_mobile";
+  html += returnContainer(
+    "t" + tmpId,
+    errorconatiner + this.classCount,
+    "beerrp1 be-erbx bedsnone error_blck",
+    "",
+    ""
+  );
+  errorconatiner = changeiso === "IN" ? "_email_errmsg" : "_mobile_errmsg";
+  html += returnContainer(
+    "t" + tmpId,
+    errorconatiner + this.classCount,
+    "",
+    "content",
+    ""
+  );
+  html += "</div>";
+  html += "</div>";
+  return html;
+};
+
+ContactDetail.prototype.showCity = function (tmpId) {
+  var that = this;
+  if (!usercookie.getParameterValue(this.imeshCookie, "ctid")) {
+    /* City Already Exists. */
+    var formType = ReqObj.Form[tmpId].formType.toLowerCase();
+    that.getLabelCity(tmpId, formType);
+    that.getInputCity(tmpId, formType);
+    that.ContactDetailHtmlCityObj["OuterWrapper"] = IsChatbl(tmpId) ? "" : "";
+    that.ContactDetailHtmlCityObj["ClosingWrapper"] = IsChatbl(tmpId) ? "" : "";
+    that.shownHtml.push("city");
+    var form_type =
+      ReqObj.Form[tmpId].formType === "Enq" ? "Send Enquiry" : "Post Buy Leads";
+    blenqGATracking(form_type, "Cityshown", getEventLabel(), 1, tmpId);
+    return that.ContactDetailHtmlCityObj;
+  }
+};
+
+ContactDetail.prototype.getPrefillCity = function (tmpId, formType) {
+  var city = "";
+  if (ReqObj.Form[tmpId].OnCloseStep !== true) {
+    city =
+      ReqObj.UserDetail["ipcityname"] !== "" &&
+        ReqObj.UserDetail["ipcityname"] !== "null"
+        ? ReqObj.UserDetail["ipcityname"]
+        : ReqObj.Form[tmpId].cityOth !== ""
+          ? ReqObj.Form[tmpId].cityOth
+          : "";
+    if (
+      usercookie.getCookie("xnHist") !== "" &&
+      (!isSet(city) || city === "")
+    ) {
+      var xnHistCity = usercookie.getParameterValue(
+        usercookie.getCookie("xnHist"),
+        "city"
+      );
+      xnHistCity = xnHistCity.charAt(0).toUpperCase() + xnHistCity.slice(1);
+      city = xnHistCity;
+    }
+    if (city.toLowerCase() === "undefined") city = "";
+    return city;
+  }
+  city =
+    ReqObj.Form[tmpId].cityOth !== ""
+      ? ReqObj.Form[tmpId].cityOth
+      : ReqObj.UserDetail["ipcityname"] !== "" &&
+        ReqObj.UserDetail["ipcityname"] !== "null"
+        ? ReqObj.UserDetail["ipcityname"]
+        : "";
+  return city;
+};
+
+ContactDetail.prototype.getLabelCity = function (tmpId, formType) {
+  var that = this;
+  var citybold = returnSpan("", "", "City", "befwt");
+  var labeltext = IsChatbl(tmpId) ? "Tell us your " + citybold + " to connect you to nearby sellers" : (isInactiveBL(tmpId)) ? "City <span class='redc'>*</span>" : "City";
+  var labelclass = IsChatbl(tmpId) ? "" : isSSB(tmpId) ? ssbClass("label", tmpId) : "be-lbl";
+  that.ContactDetailHtmlCityObj["Label"] = returnLabel("t" + tmpId, labeltext, "_for-city-lb" + this.classCount, labelclass);
+};
+
+ContactDetail.prototype.getInputCity = function (tmpId, formType) {
+  var that = this;
+  var prefilCity = that.getPrefillCity(tmpId, formType);
+  prefilCity = isSet(prefilCity) ? prefilCity : "";
+  if (isSet(prefilCity) && prefilCity !== "")
+    ReqObj.Form[tmpId].cityTracking = 1;
+  var inputclass = IsChatbl(tmpId)
+    ? "blchat-inpt"
+    : isSSB(tmpId)
+      ? "ui-autocomplete-input"
+      : "be-slbox inpt_errorbx ui-autocomplete-input";
+  if (isOtherEnq(tmpId)) {
+    inputclass = inputclass + " inPlace";
+  }
+  if (isInactiveBL(tmpId)) {
+    inputclass = inputclass + " bed_input cpNm wid_285";
+  }
+  var placeholder = IsChatbl(tmpId)
+    ? "Enter your City"
+    : isOtherEnq(tmpId)
+      ? ""
+      : "Enter City Name";
+  var spantext = IsChatBLInline(tmpId) ? "Detect City" : "Detect My City";
+  // var spantext = (IsChatbl(tmpId) || isSSB(tmpId)) ? "" : "Detect My City";
+  // var spantext = (IsChatbl(tmpId) || isSSB(tmpId)) ? "" : "Change Your City";
+  // var spanclass = (IsChatbl(tmpId)|| isSSB(tmpId)) ? "" : "beChtxt";
+  var spanclass = isBl(tmpId)
+    ? (isInactiveBL(tmpId)) ? "dml" : "beChtxt dc_mid"
+    : "beChtxt";
+  spanclass =
+    (isImageVidEnq(tmpId) &&
+      ReqObj.Form[tmpId].FormSequence._stepCounter === 0) || 
+      pdpenqImage(tmpId)
+      ? "clr_blue befs13 bemt5 disp-inl crP enq_ct"
+      : spanclass;
+  // var cityhtml = (isSSB(tmpId) ) ? '<div class="mb-wdIn">' : "";
+  var cityhtml = "";
+  if (isSSB(tmpId) && prefilCity == "") prefilCity = rvalue(tmpId, "cvalue");
+  cityhtml +=
+    '<input type="text" templateId="' +
+    tmpId +
+    '" name="q_city_oth' +
+    that.classCount +
+    '" id="t' +
+    tmpId +
+    "_q_city_oth" +
+    that.classCount +
+    '"' +
+    'placeholder="' +
+    placeholder +
+    '" value="' +
+    prefilCity +
+    '" class="' +
+    inputclass +
+    '" maxlength = "100" autocomplete = "off" role = "textbox" aria-autocomplete="list" aria-haspopup="true"';
+  if (IsChatbl(tmpId) || isSSB(tmpId)) {
+    cityhtml += ">";
+  } else {
+    cityhtml += ">";
+    // cityhtml += ' readonly="" disabled="disabled">';
+  }
+  if (isSSB(tmpId)) {
+    cityhtml += returnInput(
+      "t" + tmpId,
+      "city_id_sugg" + that.classCount,
+      "hidden",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    );
+    cityhtml += returnSpan(
+      "t" + tmpId,
+      "_detect_city" + that.classCount,
+      spantext,
+      spanclass
+    );
+    cityhtml +=
+      that.getCityErrorDiv(tmpId) + "</div>" + that.getCitySuggDiv(tmpId);
+  } else if (IsChatbl(tmpId)) {
+    var html = "";
+    cityhtml += html;
+    // cityhtml +=returnSpan("t" + tmpId, "_detect_city" + that.classCount, spantext, spanclass);
+    that.ContactDetailHtmlCityObj["suggCity"] = that.getCitySuggDiv(tmpId);
+    that.ContactDetailHtmlCityObj["appendExtra"] = returnSpan(
+      "t" + tmpId,
+      "_detect_city" + that.classCount,
+      spantext,
+      spanclass
+    );
+  } else {
+    cityhtml += returnInput(
+      "t" + tmpId,
+      "city_id_sugg" + that.classCount,
+      "hidden",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+    );
+    cityhtml += returnSpan(
+      "t" + tmpId,
+      "_detect_city" + that.classCount,
+      spantext,
+      spanclass
+    );
+    var errorhtml = that.getCityErrorDiv(tmpId);
+    cityhtml += that.getCitySuggDiv(tmpId) + errorhtml;
+  }
+  if (ReqObj.Form[tmpId].FormSequence._stepCounter === 0)
+    ReqObj.Form[tmpId]._NCOnFrstScrn = true;
+  that.ContactDetailHtmlCityObj["UserInput"] = cityhtml;
+
+  $(document).bind('click', function (event) {
+    if (!($(event.target).parents().andSelf().is('#t'+tmpId+'_q_city_oth'+that.classCount))) {
+        $('.t'+tmpId+'_CitySuggestor .ui-autocomplete').hide('');
+    }
+});
+};
+
+ContactDetail.prototype.getCityErrorDiv = function (tmpId) {
+  var html = "";
+  if (isSSB(tmpId)) {
+    return cityErrorDivSSB(tmpId, this);
+  }
+  var cityerrcls = "beerrp1";
+  if (isInactiveBL(tmpId)) {
+    cityerrcls = "cityerr2";
+    if (ReqObj.Form[tmpId].currentclassCount == 1) {
+      cityerrcls = " cityerr"
+    }
+  }
+
+  html = (isOtherEnq(tmpId) && tmpId.substring(0, 2) === "09") || (isOtherEnq(tmpId) && ReqObj.Form[tmpId].FormSequence.StepCounter > 0)
+    ? html + returnContainer("t" + tmpId, "_error_city" + this.classCount, "be-erbx beerrp bedsnone", "", "")
+    : html + returnContainer("t" + tmpId, "_error_city" + this.classCount, cityerrcls + " be-erbx bedsnone", "", "");
+  html += returnContainer("t" + tmpId, "_city_errmsg" + this.classCount, "", "content", "");
+  html = (isOtherEnq(tmpId) && tmpId.substring(0, 2) === "09") || (isOtherEnq(tmpId) && ReqObj.Form[tmpId].FormSequence.StepCounter > 0)
+    ? html + "</div>"
+    : html + '</div><a class="be-erarw" data-role="arrow"></a>';
+  html += "</div>";
+  return html;
+};
+
+ContactDetail.prototype.getCitySuggDiv = function (tmpId) {
+  var ipLoc = iplocExist();
+  var html = "";
+  var cityArr = {};
+  var hdCt = usercookie.getParameterValue(
+    usercookie.getCookie("xnHist"),
+    "city"
+  );
+  hdCt = hdCt.charAt(0).toUpperCase() + hdCt.slice(1);
+  cityArr[usercookie.getParameterValue(ipLoc, "lg_ct")] =
+    usercookie.getParameterValue(ipLoc, "lg_ctid");
+  cityArr[hdCt] = "";
+  cityArr[usercookie.getParameterValue(ipLoc, "gctnm")] =
+    usercookie.getParameterValue(ipLoc, "gctid");
+  var count = 0;
+  for (var ct in cityArr) {
+    if ( (ct.toLowerCase() !== "all india" || ct.toLowerCase() !== "undefined") && ct.toLowerCase() !== "" ) {
+      html += count > 0 ? " | " : "";
+      html += "<span class = 'suggClr clr_blue' onClick='return prefilSuggCity(\"" + tmpId + '","' + this.classCount + '" ,"' + cityArr[ct] + '", "' + ct + "\")'>" + ct + "</span>";
+      count += 1;
+    }
+  }
+  let citySugg = (isInactiveBL(tmpId)) ? "mt-12" : pdpenq(tmpId)? "mt5" : "";
+  return count > 0 ? "<div class = 'citySuggClr "+ citySugg +"'>Suggestions: " + html + "</div>" : "";
+};
+
 ContactDetail.prototype.EventIfScreenPresent = function (tmpId) {
   if (isOtherEnq(tmpId)) {
     this.handleHeading(tmpId);
