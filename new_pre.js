@@ -2095,37 +2095,6 @@ getTimeZone();
 
 /**
  *
- * @description
- * @param {*} fName constructor name of the class
- * @returns object which is found in service sequence and inserted in hitarray
- * @usage takes object from the service sequence and inserts the same into hit array
- */
-function PreAjax(fName, tmpId) {
-  if (isSet(fName) && isSet(tmpId) && isSet(ReqObj.Form[tmpId].ServiceSequence)) {
-    var CalledObj = RemoveObjFromService(fName, tmpId, ReqObj.Form[tmpId].ServiceSequence);
-    if (checkblockedUser() && imeshExist() === "" && fName.toLowerCase() === "userlogin" && ReqObj.Form[tmpId].FormSequence.ServiceSequenceBlocked.length === 0 && isSSB(tmpId)) {
-      ReqObj.Form[tmpId].FormSequence.ServiceSequenceBlocked.push(CalledObj);
-      var cb = ReqObj.Form[tmpId].FormSequence.ServiceSequenceBlocked[0].cb;
-      var len = cb.length - 1;
-      var index = tofindindexfn(cb, "userverification", "fn");
-      while (len >= 0) {
-        if (isSet(cb[len].fn) && ConstructorName(cb[len].fn) !== "UserVerification") {
-          var popCatch = cb.pop();
-          ConstructorName(popCatch.fn) !== "Generation" ? cb[index].cb.push(popCatch) : "";
-        }
-        len -= 1;
-      }
-    }
-    if (isSet(ReqObj.Form[tmpId].HitArray))
-      ReqObj.Form[tmpId].HitArray.push(CalledObj);
-    if (isSet(CalledObj) && CalledObj !== "") {
-      return CalledObj;
-    }
-  }
-}
-
-/**
- *
  *
  * @param {*} fName constructor name of the class
  * @param {*} tmpId
@@ -2147,25 +2116,6 @@ function SpliceObject(fName, array) {
     }
     return DetachObject;
   }
-}
-
-/**
- *
- *
- * @param {*} fName object which to be removed from the service sequence
- * @param {*} tmpId
- * @returns removed object from the service sequence
- */
-function RemoveObjFromService(fName, tmpId) {
-  var ServiceArrayObj = "";
-  if (isSet(tmpId)) {
-    ServiceArrayObj = RemoveObjFromArray(
-      fName,
-      tmpId,
-      ReqObj.Form[tmpId].ServiceSequence
-    );
-  }
-  return ServiceArrayObj;
 }
 
 /**

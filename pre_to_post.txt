@@ -52,11 +52,13 @@ UserLogin.prototype.SaveDetails
 UserLogin.prototype.onSubmit
 
 function EnquireNow() and all prototypes
+PostBlEnqUpdate.prototype all prototypes
 
 
 
 
 sendrequest
 userlogin prototype
-format services and all
-call generation
+format services and all---
+call generation------
+formseq prototypes-----
