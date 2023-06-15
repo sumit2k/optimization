@@ -2963,6 +2963,52 @@ function mdtlUI(tmpId, md, oldui) {
     maxlength: md.key === 1 ? "15" : "",
   };
 }
+function ShowUserAns(tmpId) {
+  if (isSet(tmpId)) {
+    removeBLLoader(tmpId, "center");
+    var array = [];
+    var that = ReqObj.Form[tmpId].FormSequence;
+    if (that.OnCloseCounter > -1) {
+      if (that.OnCloseCounter > 0)
+        array = ReqObj.Form[tmpId].OnCloseArray[that.OnCloseCounter - 1];
+      else array = [];
+    } else {
+      if (that.StepCounter > 0)
+        array = ReqObj.Form[tmpId].UiArray[that.StepCounter - 1];
+      else array = [];
+    }
+    for (var i = 0; i < array.length; i++) {
+      if (isSet(array[i].Obj)) {
+        var FormId = IsChatbl(tmpId)
+          ? "#t" + tmpId + "_new_chatbl"
+          : "#t" + tmpId + "_bl_form";
+        var IdToHide = "";
+        if (isSet(array[i].Obj.idToAppend) && array[i].Obj.idToAppend !== "") {
+          FormId = array[i].Obj.idToAppend;
+        }
+        if (isSet(array[i].Obj.idToHide) && array[i].Obj.idToHide !== "") {
+          IdToHide = array[i].Obj.idToHide;
+        }
+        // console.log(array[i].Obj.idToAppend);
+        if (typeof array[i].Obj.displayAnswer === "function") {
+          // removeBLLoader(tmpId, "center");
+          var FormIdSel = $(FormId);
+          var HtmlArray = array[i].Obj.displayAnswer(tmpId);
+          RenderHtml(FormIdSel, HtmlArray, tmpId);
+          // FormIdSel
+          //   .append(array[i].Obj.displayAnswer(tmpId));
+          if (FormIdSel.hasClass("bedsnone")) {
+            FormIdSel.removeClass("bedsnone");
+          }
+          if (isSet(IdToHide) && IdToHide !== "")
+            $(IdToHide).css({
+              display: "none",
+            });
+        }
+      }
+    }
+  }
+}
 
 function SaveIsq(tmpId, type, IsqScreen) {
   if (type.toLowerCase() === "isq") {
@@ -3636,6 +3682,644 @@ function ValidateQuestions(tmpId, staticQues, IsqScreen) {
   }
   return true;
 }
+
+UserLogin.prototype.displayAnswer = function (tmpId) {
+  var name = this.toChange === true ? "" : ReturnBlUserName(tmpId);
+  var toget = this.toChange === true ? "toChange" : "PrimaryInfo";
+  var classtotest = chatBlClass(tmpId, "right");
+  var leftright = IsChatbl(tmpId) ? "cbl_ansr" : "";
+  $("#t" + tmpId + "mflag").css("display", "none");
+  return [
+    ConversationRightWrapper(tmpId, returnAnswer(tmpId, toget), {
+      classtotest: classtotest,
+      leftright: leftright,
+    }),
+    name,
+  ];
+};
+UserLogin.prototype.registerForm = function (tmpId) {
+  var meta2 = document.createElement("script");
+  meta2.src = "https://apis.google.com/js/platform.js";
+  document.getElementsByTagName("head")[0].appendChild(meta2);
+  var clientID = "";
+  var that = this;
+  if (
+    appsServerName == "//dev-apps.imimg.com/" ||
+    appsServerName == "//stg-apps.imimg.com/"
+  ) {
+    clientID =
+      "335658149809-o25hpstdu2tdo43j8ppg8l6n6i0dtfl0.apps.googleusercontent.com";
+  } else {
+    clientID =
+      "432055510365-4for8jpqviklkgt2lssm41sfhhfo0ovs.apps.googleusercontent.com";
+  }
+  meta2.onload = function () {
+    if (typeof gapi !== "undefined") {
+      gapi.load("auth2", function () {
+        auth2 = gapi.auth2.init({
+          client_id: clientID,
+          //cookiepolicy: 'single_host_origin',
+          // Request scopes in addition to 'profile' and 'email'
+          //scope: 'additional_scope'
+        });
+        googleSigninFr(
+          document.getElementById("t" + tmpId + "signinBtnFr"),
+          tmpId,
+          that
+        );
+      });
+    }
+  };
+};
+function googleSigninFr(element, tmpId, userlogin) {
+  auth2.attachClickHandler(
+    element,
+    {},
+
+    function (googleUser) {
+      var form_type =
+        ReqObj.Form[tmpId].formType === "Enq"
+          ? "Send Enquiry"
+          : "Post Buy Leads";
+
+      var id_token = googleUser.getAuthResponse().id_token;
+      gusrname = googleUser.getBasicProfile().getName();
+      gusremail = googleUser.getBasicProfile().getEmail();
+      blenqGATracking(form_type, "GoogleSigninClicked", getEventLabel(), 1, tmpId);
+      if (gusremail != "") {
+        userlogin.checkEmailExistOrNotFR(gusremail, id_token, gusrname, tmpId, userlogin);
+      }
+    },
+    function (error) { }
+  );
+}
+UserLogin.prototype.checkEmailExistOrNotFR = function (gusremail, id_token, gusrname, tmpId, userlogin) {
+  var that = userlogin;
+  var iso = currentISO();
+  var ph_country = ReqObj.isoFlag;
+  var url = this.getGoogleLoginAjaxURL();
+  if (typeof country_ip === "undefined" || country_ip === null) {
+    // country_ip not defined
+    var iploc = usercookie.getCookie("iploc");
+    var country_ip = usercookie.getParameterValue(iploc, "gip");
+  }
+  var params_request = {
+    username: gusremail,
+    iso: iso,
+    modid: modIdf,
+    format: "JSON",
+    create_user: 1,
+    originalreferer: window.location.href,
+    GEOIP_COUNTRY_ISO: iso,
+    ip: country_ip,
+    screen_name: "BL/Enq Forms",
+    id_token: id_token,
+    gusername: gusrname,
+    guseremail: gusremail,
+    ph_country: ph_country,
+  };
+  var form_type = ReqObj.Form[tmpId].formType === "Enq" ? "Send Enquiry" : "Post Buy Leads";
+  var msg_ga = "failure";
+  $.ajax({
+    url: url,
+    type: "POST",
+    data: params_request,
+    jsonpCallback: "create_callback",
+    crossDomain: true,
+    success: function (jsonResult) {
+      // if(gusremail == "manisince1999@gmail.com"){
+      //     jsonResult = '{"code":"204","message":"We have multiple account linked with this Email ID","access":"0","data_num":"7008439239,8456093931,1946948846,1658845666,7978532529","msg":"Multiple accounts are linked with this Email ID.  Please enter your registered mobile number to continue"}'
+      // }
+
+      // remove if error already present
+      if (!$("#t" + tmpId + "_msg_primary_info_err_login").hasClass("bedsnone")) {
+        that.handleUI({
+          data: {
+            tmpId: tmpId,
+            todo: "removeError",
+            obj: that,
+          },
+        });
+      }
+      if (!$("#t" + tmpId + "_error_first_name1").hasClass("bedsnone")) {
+        $("#t" + tmpId + "_q_first_nm" + "1")
+          .removeClass("highlight-err mb-erbrd nb-erbrd")
+          .siblings(".redc")
+          .removeClass("redc");
+        $("#t" + tmpId + "_error_first_name" + "1").addClass("bedsnone");
+      }
+
+      $("#t" + tmpId + "_login_field").val(gusremail);
+      $("#t" + tmpId + "_q_first_nm1").val(gusrname);
+      $("#t" + tmpId + "_q_first_nm1").parent().addClass("eqfcsed");
+      var jsonResult = $.parseJSON(jsonResult);
+      if (jsonResult["code"] == 200) {
+        var access = jsonResult.access;
+        if (access != undefined && access == "2") {
+          document.cookie = "ImeshVisitor=; domain=.indiamart.com; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+          window.location.reload();
+          return;
+        }
+        if (isSet(jsonResult.DataCookie.iso) && jsonResult.DataCookie.iso == "IN") {
+          that.handleUI({
+            data: {
+              tmpId: tmpId,
+              todo: "tryagain",
+              obj: userlogin,
+              msg: "You seem to be from India. Select India as Country",
+            },
+          });
+        } else {
+          var msg = jsonResult["msg"];
+          if (msg == "Unique Email found in Primary Email") {
+            var glid = jsonResult["GLID"];
+            var data1 = jsonResult.DataCookie;
+            verifyEmailViaLWG(gusremail, glid);
+            var loginSet = jsonResult.LoginCookie;
+            var tokenSet = jsonResult.im_iss;
+            imesh_obj.set(data1, "ImeshVisitor");
+            v4iilex_obj.set(loginSet, "v4iilex");
+            im_iss_obj.set(tokenSet, "im_iss");
+            msg_ga = "success";
+            UpdateAfterLogin("fn");
+            UpdateAfterLogin("em");
+            UpdateAfterLogin("ctid");
+            UpdateAfterLogin("mb1");
+            UpdateAfterLogin("uv");
+            if (
+              imeshExist() !== "" &&
+              usercookie.getParameterValue(imeshExist(), "ctid") === ""
+            ) {
+              ReqObj.UserDetail.cityname = "";
+              ReqObj.UserDetail.ctoth = "";
+            }
+            $("#t" + tmpId + "_q_first_nm1")
+              .parent()
+              .addClass("eqfcsed");
+            ReqObj.Form[tmpId].FormSequence.FormSubmit(tmpId, {
+              source: "google-login",
+              target: "google",
+            });
+          }
+        }
+      } else {
+        if (jsonResult["code"] == "204") {
+          var err_msg = jsonResult["msg"];
+          if (jsonResult["message"] == "ISO MisMatch") {
+            invalidMsgLogin(err_msg);
+            $("#country-dropdown").css("pointer-events", "auto");
+          } else if (jsonResult["message"].match(/suspicious/g)) {
+            var msg = jsonResult["message"];
+            invalidMsgLogin(err_msg);
+          } else if (
+            jsonResult["message"] ==
+            "We have multiple account linked with this Email ID"
+          ) {
+            var var_msg = jsonResult["message"];
+            var mobile_numbers = jsonResult["data_num"];
+            that.handleUI({
+              data: {
+                tmpId: tmpId,
+                todo: "tryagain",
+                obj: userlogin,
+                msg: var_msg,
+              },
+            });
+          } else if (
+            jsonResult["message"] == "No Email found in Primary Email"
+          ) {
+            $("#t" + tmpId + "_q_first_nm1")
+              .parent()
+              .addClass("eqfcsed");
+            if (!isGDPRCountry()) {
+              ReqObj.Form[tmpId].FormSequence.FormSubmit(tmpId, {
+                source: "google-login",
+                target: "google",
+                code: "204",
+              });
+              msg_ga = "success";
+            }
+          } else if (jsonResult["message"] == "Invalid Token ID") {
+            invalidMsgLogin("Invalid token request");
+          } else {
+            invalidMsgLogin(err_msg);
+          }
+        }
+      }
+    },
+    error: function (event) {
+      msg_ga = "failure";
+    },
+    complete: function (event) {
+      blenqGATracking(form_type, "GoogleSignin : " + msg_ga, getEventLabel(), 1, tmpId);
+    },
+  });
+};
+UserLogin.prototype.EventIfScreenPresent = function (tmpId) {
+  if (isOtherEnq(tmpId)) {
+    this.handleHeading(tmpId);
+    ButtonNameUI("isq", tmpId);
+  }
+};
+UserLogin.prototype.SaveDetails = function (tmpId, event) {
+  if (IsChatbl(tmpId)) {
+    ReqObj.Form[tmpId].UserInputs["PrimaryInfo"] = $(
+      "#t" + tmpId + "_login_field"
+    ).val(); /* change using event target Id */
+    if (isSet(event.target.textContent) && event.target.textContent !== "")
+      ReqObj.Form[tmpId].UserInputs["toChange"] = event.target.textContent;
+  }
+};
+UserLogin.prototype.onSubmit = function (tmpId) {
+  // $("#yajaca").hide(); // click away message on pns form
+  // pns login screen changes
+  if (isSet(tmpId)) {
+    if(isPnsEnq(tmpId)){
+      if(isSet(ReqObj.Form[tmpId].ctaName) && ReqObj.Form[tmpId].ctaName.toLowerCase() == "view mob e")
+      $("#pnsnoenq").html(ReqObj.Form[tmpId].pnsNumber);
+    }
+  }
+  if (isSet(tmpId)) {
+    //mob track
+    if(currentISO() === "IN"){    
+         ReqObj.Form[tmpId].mobEntered=1;
+        //  console.log("mob entered");
+    }
+    else{
+      ReqObj.Form[tmpId].emailEntered=1;
+      // console.log("email entered");
+    }
+
+    var logObject = PreAjax("UserLogin", tmpId);
+    if (this.toChange === false) {
+      this.sendRequest({
+        data: {
+          logObject: logObject,
+          tmpId: tmpId,
+          userlogin: this,
+          blureve: false,
+          todo: "login",
+        },
+      });
+    } else {
+      PostAjax(logObject, tmpId);
+    }
+  }
+};
+
+
+ContactDetail.prototype.displayAnswer = function (tmpId) {
+  var key = this.returnKey(tmpId);
+  var name = "";
+
+  if (this.name === 1 && this.email === 0 && this.city === 0) {
+    name = ReturnBlUserName(tmpId);
+  }
+  var classtotest = chatBlClass(tmpId, "right");
+  var leftright = IsChatbl(tmpId) ? "cbl_ansr" : "";
+  return [
+    ConversationRightWrapper(tmpId, returnAnswer(tmpId, key), {
+      classtotest: classtotest,
+      leftright: leftright,
+    }),
+    name,
+  ];
+};
+
+ContactDetail.prototype.EventIfScreenPresent = function (tmpId) {
+  if (isOtherEnq(tmpId)) {
+    this.handleHeading(tmpId);
+    ButtonNameUI("isq", tmpId);
+  }
+};
+ContactDetail.prototype.SaveDetails = function (tmpId, event) {
+  if (IsChatbl(tmpId) || isSSB(tmpId)) {
+    ReqObj.Form[tmpId].UserInputs["Name"] = $(
+      "#t" + tmpId + "_q_first_nm" + this.classCount
+    ).val();
+    ReqObj.Form[tmpId].UserInputs["Mobile"] = $(
+      "#t" + tmpId + "_q_mobile_f" + this.classCount
+    ).val();
+    ReqObj.Form[tmpId].UserInputs["Email"] = $(
+      "#t" + tmpId + "_q_email_in" + this.classCount
+    ).val()
+      ? $("#t" + tmpId + "_q_email_in" + this.classCount)
+        .val()
+        .trim()
+      : "";
+    ReqObj.Form[tmpId].UserInputs["City"] =
+      isSet(ReqObj.Form[tmpId].UserInputs["City"]) &&
+        ReqObj.Form[tmpId].UserInputs["City"] !== ""
+        ? ReqObj.Form[tmpId].UserInputs["City"]
+        : $("#t" + tmpId + "_q_city_oth" + this.classCount).val();
+    IsChatBLInline(tmpId) &&
+      isSet($("#t" + tmpId + "_q_city_oth" + this.classCount).val()) &&
+      isSet($(".t0801_CitySuggestor"))
+      ? $(".t0801_CitySuggestor").css("display", "none")
+      : "";
+    /* OptiNeeded-this change is not related to save details functions - write it in appropriate place */
+  }
+};
+ContactDetail.prototype.onSubmit = function (tmpId) {
+  // $("#yajaca").hide(); // click away message
+  var CDObject = PreAjax("ContactDetail", tmpId);
+  this.sendRequest(CDObject, tmpId);
+};
+ContactDetail.prototype.validate = function (tmpId) {
+  this.classCount = returnObjectSize(ReqObj.Form[tmpId].ContactDetail);
+  ReqObj.Form[tmpId].nec.classCount = this.classCount;
+  this.cookies(tmpId);
+  var isValid = this.validateUserDetails(tmpId);
+  if (isValid === true) this.captureDetails(tmpId);
+  return isValid;
+};
+ContactDetail.prototype.validateUserDetails = function (tmpId) {
+  if (!isSet(validation)) createGlobalObject();
+  var validate = "";
+  var that = this;
+  var form_type =
+    ReqObj.Form[tmpId].formType === "Enq" ? "Send Enquiry" : "Post Buy Leads";
+  var StepNumber =
+    ReqObj.Form[tmpId].OnCloseStep && isSet(ReqObj.Form[tmpId].FormSequence)
+      ? ReqObj.Form[tmpId].FormSequence.StepCounter +
+      1 +
+      ReqObj.Form[tmpId].FormSequence.OnCloseCounter +
+      1
+      : ReqObj.Form[tmpId].FormSequence.StepCounter + 1;
+  ReqObj.Form[tmpId].errorDivId = "";
+  if (
+    $("#t" + tmpId + "_q_first_nm" + that.classCount).length > 0 &&
+    (that.nonMandatory === "" ||
+      (isSet(that.nonMandatory) && that.nonMandatory["name"] === false) ||
+      $("#t" + tmpId + "_q_first_nm" + that.classCount).val() !== "" ||
+      isSSB(tmpId))
+  ) {
+    validate = validation.isNameValid(
+      $("#t" + tmpId + "_q_first_nm" + that.classCount).val()
+    );
+    if (!validate["type"]) {
+      ReqObj.Form[tmpId].validateArray.push(
+        "t" + tmpId + "_q_first_nm" + that.classCount
+      );
+      var nametypeele =
+        isOtherEnq(tmpId) &&
+          tmpId.substring(0, 2) !== "09" &&
+          ReqObj.Form[tmpId].FormSequence.StepCounter < 1
+          ? "inline"
+          : "";
+      blenqGATracking(form_type, "Validation_Error_Name|" + StepNumber + "|ContactDetail", getEventLabel(), 0, tmpId);
+      that.handleUI({
+        data: {
+          tmpId: tmpId,
+          elementhtml: "_fname_errmsg" + that.classCount,
+          elementremoveClass: "_error_first_name" + that.classCount,
+          elementaddClass: "_q_first_nm" + that.classCount,
+          validate: validate,
+          todo: "showError",
+          formType: ReqObj.Form[tmpId].formType.toLowerCase(),
+          chatelement: "_name-lb" + that.classCount,
+          isinline: nametypeele,
+        },
+      });
+      if (isSet(validate["specialcase"]) && validate["specialcase"] === true) {
+        ReqObj.UserDetail["fn"] = "";
+      }
+      var err_obj = validate;
+    }
+  }
+
+  if (that.usercountry === "IN") {
+    if ($("#t" + tmpId + "_q_email_in" + that.classCount).length > 0) {
+      var email_val = $("#t" + tmpId + "_q_email_in" + that.classCount).val();
+      validate = validation.isEmailValid(email_val);
+      if (!validate["type"]) {
+        ReqObj.Form[tmpId].validateArray.push(
+          "t" + tmpId + "_q_email_in" + that.classCount
+        );
+        var nametypeele =
+          isOtherEnq(tmpId) &&
+            tmpId.substring(0, 2) !== "09" &&
+            ReqObj.Form[tmpId].FormSequence.StepCounter < 1
+            ? "inline"
+            : "";
+        blenqGATracking(form_type, "Validation_Error_Email|" + StepNumber + "|ContactDetail", getEventLabel(), 0, tmpId);
+        that.handleUI({
+          data: {
+            tmpId: tmpId,
+            elementhtml: "_email_errmsg" + that.classCount,
+            elementremoveClass: "_err_email" + that.classCount,
+            elementaddClass: "_q_email_in" + that.classCount,
+            validate: validate,
+            todo: "showError",
+            formType: ReqObj.Form[tmpId].formType.toLowerCase(),
+            chatelement: "_email-lb" + that.classCount,
+            isinline: nametypeele,
+          },
+        });
+        if (
+          isSet(validate["specialcase"]) &&
+          validate["specialcase"] === true
+        ) {
+          ReqObj.UserDetail["em"] = "";
+        }
+        err_obj = validate;
+      }
+    }
+    if ($("#t" + tmpId + "_q_city_oth" + that.classCount).length > 0) {
+      if (
+        isSSB(tmpId) &&
+        $("#t" + tmpId + "_q_city_oth" + that.classCount)
+          .parent()
+          .parent()
+          .hasClass("cbl_vh")
+      ) {
+        return true;
+      }
+      validate = validation.isCityValid(
+        $("#t" + tmpId + "_q_city_oth" + that.classCount).val()
+      );
+      if (!validate["type"]) {
+        ReqObj.Form[tmpId].validateArray.push(
+          "t" + tmpId + "_q_city_oth" + that.classCount
+        );
+        var nametypeele =
+          isOtherEnq(tmpId) &&
+            tmpId.substring(0, 2) !== "09" &&
+            ReqObj.Form[tmpId].FormSequence.StepCounter < 1
+            ? "inline"
+            : "";
+        blenqGATracking(form_type, "Validation_Error_City |" + StepNumber + "|ContactDetail", getEventLabel(), 0, tmpId);
+        that.handleUI({
+          data: {
+            tmpId: tmpId,
+            elementhtml: "_city_errmsg" + that.classCount,
+            elementremoveClass: "_error_city" + that.classCount,
+            elementaddClass: "_q_city_oth" + that.classCount,
+            validate: validate,
+            todo: "showError",
+            formType: ReqObj.Form[tmpId].formType.toLowerCase(),
+            chatelement: "_for-city-lb" + that.classCount,
+            isinline: nametypeele,
+          },
+        });
+        if (
+          isSet(validate["specialcase"]) &&
+          validate["specialcase"] === true
+        ) {
+          ReqObj.UserDetail["cityname"] = "";
+        }
+        err_obj = validate;
+      }
+    }
+  } else {
+    if ($("#t" + tmpId + "_q_mobile_f").length > 0) {
+      validate = validation.isMobileChValid(
+        $("#t" + tmpId + "_q_mobile_f").val()
+      );
+      if (!validate["type"]) {
+        var nametypeele =
+          isOtherEnq(tmpId) && ReqObj.Form[tmpId].FormSequence.StepCounter < 1
+            ? "inline"
+            : "";
+        that.handleUI({
+          data: {
+            tmpId: tmpId,
+            elementhtml: "_mobile_errmsg" + that.classCount,
+            elementremoveClass: "_error_mobile" + that.classCount,
+            elementaddClass: "_q_mobile_f" + that.classCount,
+            validate: validate,
+            todo: "showError",
+            formType: ReqObj.Form[tmpId].formType.toLowerCase(),
+            chatelement: "_mobile-lb" + that.classCount,
+            isinline: nametypeele,
+          },
+        });
+        if (
+          isSet(validate["specialcase"]) &&
+          validate["specialcase"] === true
+        ) {
+          ReqObj.UserDetail["mb1"] = "";
+        }
+        err_obj = validate;
+      }
+    }
+  }
+  if (isSet(err_obj) && !err_obj["type"]) return false;
+  else return true;
+};
+
+
+Isq.prototype.displayAnswer = function (tmpId) {
+  if (
+    IsChatbl(tmpId) &&
+    isSet(ReqObj.Form[tmpId].isqans) &&
+    ReqObj.Form[tmpId].isqans === false
+  ) {
+  } else {
+    var classtotest = chatBlClass(tmpId, "right");
+    var leftright = IsChatbl(tmpId) ? "cbl_ansr" : "";
+    return [
+      ConversationRightWrapper(tmpId, GetAnswer(tmpId, "isq"), {
+        classtotest: classtotest,
+        leftright: leftright,
+      }),
+    ];
+  }
+};
+Isq.prototype.EventIfScreenPresent = function (tmpId) {
+  if (isOtherEnq(tmpId)) {
+    this.handleHeading(tmpId);
+    ButtonNameUI("isq", tmpId);
+  }
+};
+Isq.prototype.SaveDetails = function (tmpId) {
+  var IsqScreen = this.IsqScreen;
+  SaveIsq(tmpId, "isq", IsqScreen);
+  if (
+    !isSSB(tmpId) &&
+    ReqObj.Form[tmpId].intentCalled === false &&
+    imeshExist() !== ""
+  )
+    toFireGeneration(tmpId);
+};
+Isq.prototype.onSubmit = function (tmpId, after) {
+  var IsqObject = isSet(after) && after === true ? "" : PreAjax("Isq", tmpId);
+  var hitfinserv = "";
+
+  var isq_data = {
+    modid: modIdf,
+    ofr_id: ReqObj.Form[tmpId].generationId,
+    b_response: ReqObj.Form[tmpId].optionsValue,
+    q_desc: ReqObj.Form[tmpId].questionsDesc,
+    UPDIP: "India",
+    UPDURL: window.document.URL.toString().substr(0, 450),
+    UPDIP_COUNTRY: "India",
+    UPDATESCREEN:
+      ReqObj.Form[tmpId].formType.toLowerCase() === "enq"
+        ? "DESKTOP ENQUIRY FORM"
+        : "DESKTOP BL FORM",
+    glusr_id: usercookie.getParameterValue(imeshExist(), "glid"),
+    q_id: ReqObj.Form[tmpId].questionsId,
+    b_id: ReqObj.Form[tmpId].optionsId,
+  };
+
+  // $("#yajaca").hide(); // click away message on pns form
+
+  if (ReqObj.Form[tmpId].mcatId === "-1" || ReqObj.Form[tmpId].mcatId === "") {
+    isq_data.mcat_id = ReqObj.Form[tmpId].catId;
+  } else {
+    isq_data.mcat_id = ReqObj.Form[tmpId].mcatId;
+  }
+  isq_data.glusr_email = "";
+  if (ReqObj.Form[tmpId].formType === "Enq") {
+    isq_data.enq = 1;
+    isq_data.funcToCall = "Enq";
+  }
+  if (
+    (!isSet(ReqObj.Form[tmpId].toFireIsq) || ReqObj.Form[tmpId].toFireIsq) &&
+    isSet(ReqObj.Form[tmpId].optionsValue) &&
+    (ReqObj.Form[tmpId].IsqUpdated ||
+      ReqObj.Form[tmpId].optionsValue.length > 0) &&
+    isSet(ReqObj.Form[tmpId].Isq.newIsqAdded) &&
+    ReqObj.Form[tmpId].Isq.newIsqAdded &&
+    ValidGenId(ReqObj.Form[tmpId].generationId)
+  ) {
+    ReqObj.Form[tmpId].waitFinServ += 1;
+    if (ReqObj.Form[tmpId].typeofform === "bl")
+      ReqObj.Form[tmpId].Isq.newIsqAdded = false;
+    fireAjaxRequest({
+      data: {
+        ga: {
+          gatype: "saveIsqBlEnq",
+          source: "",
+          s: true,
+          f: true,
+        },
+        tmpId: tmpId,
+        ajaxObj: {
+          obj: IsqObject,
+          s: {
+            ss: 1,
+            sf: {
+              af: 0,
+              pa: 0,
+            },
+            f: 1,
+          },
+          f: {
+            f: 1,
+          },
+        },
+        ajaxtimeout: 0,
+        ajaxdata: isq_data,
+        hitfinserv: hitfinserv,
+        type: 3,
+      },
+    });
+  } else {
+    PostAjax(IsqObject, tmpId);
+  }
+};
 
 ProductName.prototype.displayAnswer = function (tmpId) {
   var classtotest = chatBlClass(tmpId, "right");

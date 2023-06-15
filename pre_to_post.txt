@@ -7,7 +7,7 @@ RequirementDtl.prototype.validate
 RequirementDtl.prototype.EventIfScreenPresent
 RequirementDtl.prototype.resetClass
 RequirementDtl.prototype.getPrefilledText
-function IsBlEnqProdNameChanged(tmpId)   // DOUBTS
+
 ProductName.prototype.checkMcatID
 ProductName.prototype.checkMcatIDJquery
 ProductName.prototype.validate
@@ -17,6 +17,8 @@ ProductName.prototype.getMcatImage
 ProductName.prototype.SaveDetails
 ProductName.prototype.selectTitle
 ProductName.prototype.displayAnswer
+
+function IsBlEnqProdNameChanged(tmpId)   // DOUBTS
 function CallGeneration(tmpId)
 function ShowIsq(tmpId)
 function ChatBlMsgs(QuestionText, type)
@@ -26,3 +28,23 @@ function ConversationRightWrapper(tmpId, message, classObj)
 function termNcdata(tmpId)
 function ValidateQuestions(tmpId, staticQues, IsqScreen)
 function SaveIsq(tmpId, type, IsqScreen)
+function ShowUserAns(tmpId)
+Isq.prototype.displayAnswer
+Isq.prototype.EventIfScreenPresent
+Isq.prototype.SaveDetails
+Isq.prototype.onSubmit
+
+ContactDetail.prototype.displayAnswer
+ContactDetail.prototype.EventIfScreenPresent
+ContactDetail.prototype.SaveDetails
+ContactDetail.prototype.onSubmit 
+ContactDetail.prototype.validateUserDetails
+ContactDetail.prototype.validate
+
+UserLogin.prototype.displayAnswer
+function googleSigninFr(element, tmpId, userlogin)
+UserLogin.prototype.registerForm
+UserLogin.prototype.checkEmailExistOrNotFR
+UserLogin.prototype.EventIfScreenPresent
+UserLogin.prototype.SaveDetails
+UserLogin.prototype.onSubmit
