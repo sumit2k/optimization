@@ -78,8 +78,12 @@ FormSeq.prototype.InlineOpenForm
 
               
 
-format services and all---
-call generation------
+format services
+GenOnClick
+GenerationOnClick
+isSecondBlEnq(tmpId) 
+isSecondBl()
+isSecondEnq()
 
 ////
 
