@@ -80,7 +80,6 @@ FormSeq.prototype.InlineOpenForm
 
 format services and all---
 call generation------
-formseq prototypes-----
 
 ////
 
