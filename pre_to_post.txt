@@ -42,6 +42,7 @@ ContactDetail.prototype.validateUserDetails
 ContactDetail.prototype.validate
 ContactDetail.prototype.getData 
 ContactDetail.prototype.sendRequest
+ContactDetail.prototype.detectCity
 
 UserLogin.prototype.displayAnswer
 function googleSigninFr(element, tmpId, userlogin)
@@ -50,15 +51,26 @@ UserLogin.prototype.checkEmailExistOrNotFR
 UserLogin.prototype.EventIfScreenPresent
 UserLogin.prototype.SaveDetails
 UserLogin.prototype.onSubmit
+UserLogin.prototype.validate
+UserLogin.prototype.captureDetails
+UserLogin.prototype.getNewSSbInput
+UserLogin.prototype.getmobhtml
+
 
 function EnquireNow() and all prototypes
 PostBlEnqUpdate.prototype all prototypes
-
 ContactDetail all prototypes of email/mobile and city
+function prefilSuggCity(tmpId, classCount, ctid, city)
+function fireCityTracking(tmpId, data)
+userlogin prtotypes after sendrequest
 
 
-sendrequest
-userlogin prototype
+
+
+
+
+
+
 format services and all---
 call generation------
 formseq prototypes-----

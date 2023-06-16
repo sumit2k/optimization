@@ -4023,6 +4023,783 @@ UserLogin.prototype.onSubmit = function (tmpId) {
   }
 };
 
+UserLogin.prototype.validate = function (tmpId, event) {
+  /* terms and condition if required */
+  if (isSet(tmpId)) {
+    var that = this;
+    if (isSet(event.target.textContent) && event.target.textContent !== "") {
+      ReqObj.Form[tmpId].UserInputs["toChange"] = event.target.textContent; //  to test
+      that.toChange = true;
+    } else that.toChange = false;
+    if (that.toChange === false) {
+      var iso_change = currentISO();
+      that.captureDetails(iso_change, tmpId);
+      if (!isSet(validation)) createGlobalObject();
+      that.username = $("#t" + tmpId + "_login_field").val();
+      var validlogin =
+        iso_change === "IN"
+          ? validation.isMobileValid(that.username)
+          : validation.isEmailFilled(that.username);
+      // remove if error already present
+      if (
+        !$("#t" + tmpId + "_msg_primary_info_err_login").hasClass("bedsnone")
+      ) {
+        that.handleUI({
+          data: {
+            tmpId: tmpId,
+            todo: "removeError",
+            obj: that,
+          },
+        });
+      }
+      if (
+        $("#t" + tmpId + "_login").html() !== "" &&
+        validlogin["type"] === false
+      ) {
+        if (
+          !(ReqObj.Form[tmpId].typeofform === "image" && isEcomProduct(tmpId))
+        ) {
+          that.handleUI({
+            data: {
+              tmpId: tmpId,
+              errormsg: validlogin["error"],
+              todo: "validationError",
+              obj: that,
+            },
+          });
+        }
+        ButtonNameUI(ReqObj.Form[tmpId].currentScreen, tmpId);
+        return false;
+      } else if (isGDPRCountry() && imeshExist() === "") {
+        if (isSet(event.data) && event.data.todo.toLowerCase() === "blurlogin")
+          return true;
+        if (
+          isSet(ReqObj.Form[tmpId].IsCheckboxChecked) &&
+          ReqObj.Form[tmpId].IsCheckboxChecked !== ""
+        ) {
+          if (ReqObj.Form[tmpId].IsCheckboxChecked === false) {
+            ButtonNameUI(ReqObj.Form[tmpId].currentScreen, tmpId);
+            return false;
+          } else {
+            return true;
+          }
+        } else return false;
+      }
+      return true;
+    } else return true;
+  }
+};
+
+UserLogin.prototype.captureDetails = function (iso_change, tmpId) {
+  if (iso_change === "IN") {
+    ReqObj.UserDetail["mb1"] = $("#t" + tmpId + "_login_field").val();
+    ReqObj.TempMobile = ReqObj.UserDetail["mb1"];
+  } else {
+    ReqObj.UserDetail["em"] = $("#t" + tmpId + "_login_field").val();
+    ReqObj.TempEmail = ReqObj.UserDetail["em"];
+  }
+};
+
+UserLogin.prototype.getNewSSbInput = function (
+  tmpId,
+  formType,
+  iso_change,
+  inputLogin
+) {
+  var that = this;
+  var flagDiv = "";
+  var html = '<div class="nb-flex">';
+  html += isnewSSB(tmpId)
+    ? currentISO() === "IN"
+      ? "<div class='nb-w80 nb-lgn'>"
+      : "<div class='nb-w80 nb-lgn nb-lgnf'>"
+    : "";
+  html += "<div id='t" + tmpId + "jsflagdiv'>" + flagDiv + "</div>";
+  html += "<div id='t" + tmpId + "_dliso' class='mb-mIso'>";
+  if (iso_change === "IN")
+    html += isSSB(tmpId)
+      ? isnewSSB(tmpId)
+        ? returnIsoHtml(tmpId, "") + "</div></div>"
+        : returnIsoHtml(tmpId, "") + "</div>"
+      : returnIsoHtml(tmpId, "be-flisq iso") + "</div>";
+  else html += "</div></div>";
+  html += "<div class='nb-frm nb-ml5 nb-flx1'>" + inputLogin + "</div>";
+  //that.UserloginHtmlObj["Label"] = "";
+  return html;
+};
+
+UserLogin.prototype.getmobhtml = function (tmpId, formType, iso_change) {
+  var html = "";
+  var style = iso_change !== "IN" && !IsChatbl(tmpId) ? "width :282px" : "";
+  var classTobeAdded = iso_change === "IN" ? "bedsnone" : "cbl_flag";
+  html = returnContainer("t" + tmpId, "_flagC", classTobeAdded, "", html, "");
+  html += "</div>";
+  var brdlft = (isInactiveBL(tmpId)) ? "be-flisq iso brdlft8" : "be-flisq iso";
+  if (iso_change === "IN") {
+    html +=
+      returnContainer(
+        "t" + tmpId,
+        "_isoC",
+        "cbl_iso",
+        "",
+        returnIsoHtml(tmpId, brdlft),
+        ""
+      ) + "</div>";
+  }
+
+  var maxlength = iso_change === "IN" ? "10" : "";
+  html += returnInput(
+    "t" + tmpId,
+    "_login_field",
+    "text",
+    "login_field",
+    this.returnText(iso_change, tmpId),
+    this.returnLoginFieldClass(iso_change, tmpId),
+    this.returnLoginValue(iso_change, tmpId),
+    style,
+    maxlength,
+    "request"
+  );
+  if (IsChatbl(tmpId)) ReqObj.Form[tmpId].flags.isCountryFlagSuggSet = true;
+  return html;
+};
+
+UserLogin.prototype.getData = function (tmpId, userlogin, todo) {
+  var what = isSet(todo) ? todo : "";
+  var iso = currentISO();
+  var loginflag = new LoginFlag().returnLoginFlag(what);
+
+  if (typeof imesh_obj === "undefined" && typeof userDataCookie === "function")
+    /*  imesh_obj global var of header.js */
+    imesh_obj = new userDataCookie();
+
+  var data = {
+    s_country_iso: iso,
+    modid: modIdf,
+    curr_page_url: window.location.href,
+    s_ip_address: usercookie.getParameterValue(userlogin.iplocCookie, "gip"),
+    s_ip_country: usercookie.getParameterValue(userlogin.iplocCookie, "gcnnm"),
+    s_ip_country_iso: usercookie.getParameterValue(
+      userlogin.iplocCookie,
+      "gcniso"
+    ),
+    loginflag: loginflag,
+  };
+
+  data["flag"] = ReqObj.Form[tmpId].formType;
+  if (IsChatbl(tmpId)) data["flag"] = "BL";
+
+  if (typeof userlogin.username === "undefined" || userlogin.username === "") {
+    data["username"] =
+      iso === "IN"
+        ? usercookie.getParameterValue(userlogin.imeshCookie, "mb1")
+        : usercookie.getParameterValue(userlogin.imeshCookie, "em");
+  } else data["username"] = userlogin.username;
+
+  return ObjectTrim(data);
+};
+
+UserLogin.prototype.getLoginAjaxURL = function () {
+  var url = "";
+  if (
+    appsServerName == "//dev-apps.imimg.com/" ||
+    appsServerName == "//stg-apps.imimg.com/"
+  )
+    url = "//dev1-login.indiamart.com/user/identify/";
+  else url = "//login.indiamart.com/user/identify/";
+  return url;
+};
+ 
+UserLogin.prototype.getajaxData = function (data) {
+  var ajaxData = {
+    username: ReturnCorrectVal(data["username"], ""),
+    iso: ReturnCorrectVal(data["s_country_iso"], ""),
+    identified: 1,
+    modid: ReturnCorrectVal(data["modid"], ""),
+    token: "imobile@15061981",
+    format: "JSON",
+    screen_name:
+      ReturnCorrectVal(data["flag"], "") +
+      " Form on " +
+      ReturnCorrectVal(data["modid"], ""),
+    IP: ReturnCorrectVal(data["s_ip_address"], ReqObj.IPDetails["ipaddress"]),
+    USER_IP: ReturnCorrectVal(
+      data["s_ip_address"],
+      ReqObj.IPDetails["ipaddress"]
+    ),
+    ip: ReturnCorrectVal(data["s_ip_address"], ReqObj.IPDetails["ipaddress"]),
+    USER_IP_COUNTRY: ReturnCorrectVal(
+      data["s_ip_country"],
+      ReqObj.IPDetails["countryname"]
+    ),
+    GEOIP_COUNTRY_ISO: ReturnCorrectVal(
+      data["s_ip_country_iso"],
+      ReqObj.IPDetails["countryiso"]
+    ),
+    IPADDRESS: ReturnCorrectVal(
+      data["s_ip_country"],
+      ReqObj.IPDetails["countryname"]
+    ),
+  };
+
+  if (
+    data["loginflag"] === 1 ||
+    data["loginflag"] === 4 ||
+    data["loginflag"] === 5
+  ) {
+    ajaxData["originalreferer"] = ReturnCorrectVal(data["curr_page_url"], "");
+    ajaxData["create_user"] = 1;
+  }
+  return ajaxData;
+};
+
+UserLogin.prototype.returnBool = function (event) {
+  var tmpId = event.data.tmpId;
+  var userlogin = event.data.userlogin;
+  var blureve = event.data.blureve;
+  if (isSet(event.data.iso)) var iso = event.data.iso;
+  var bool = blureve === true && (isEnq(tmpId) || Bl09(tmpId)) && iso === "IN" ? false : isSet(blureve) && blureve === true ? userlogin.validate(tmpId, event) : true;
+  return bool;
+};
+
+UserLogin.prototype.beforHitDefaults = function (logObject, todo, tmpId, userlogin) {
+  if ((isSet(logObject) && logObject !== "") || (logObject === "" && todo === "blurlogin")) {
+    if (IsChatbl(tmpId)) {
+      userlogin.handleUI({
+        data: {
+          tmpId: tmpId,
+          todo: "chatblur",
+          fromwhere: "beforehit",
+          obj: userlogin,
+        },
+      });
+    } else {
+      userlogin.handleUI({
+        data: {
+          tmpId: tmpId,
+          todo: "disableNameField",
+          fromwhere: "beforehit",
+          obj: userlogin,
+        },
+      });
+      isSSB(tmpId) ? addBlLoaderSSB(tmpId, "ssblogin") : addBlLoader(tmpId, "left");
+    }
+  }
+};
+UserLogin.prototype.reAuthenticate = function (event) {
+  var tmpId = event.data.tmpId;
+  var userlogin = event.data.userlogin;
+  var imesh = imeshExist();
+  var iploc = iplocExist();
+  var data = {
+    imesh: imesh,
+    im_iss: im_issExist(),
+    v4iilex: v4iilexExist(),
+    s_glusrid: usercookie.getParameterValue(imesh, "glid"),
+    username:
+      currentISO() === "IN"
+        ? ReqObj.UserDetail["mb1"]
+        : ReqObj.UserDetail["em"],
+    country: usercookie.getParameterValue(iploc, "gcnm"),
+    IP: usercookie.getParameterValue(iploc, "gip"),
+    loginmode:
+      ReqObj.loginMode !== 0
+        ? ReqObj.loginMode
+        : new LoginMode().getLoginMode(),
+    ph_country: usercookie.getParameterValue(imesh, "phcc"),
+    iso: currentISO(),
+    modid: modIdf,
+  };
+  $.ajax({
+    cache: false,
+    url: appsServerName + "index.php?r=Newreqform/Reauthenticate",
+    type: "GET",
+    crossOrigin: true,
+    crossDomain: true,
+    data: data,
+    dataType: "json",
+    success: function (res) {
+      userlogin.updateUserDetails(data.loginmode, res, "reauth");
+      userlogin.updateFlagDetails(data.loginmode, res);
+      callToIdentifiedQ(tmpId, "from-Form", 0);
+    },
+  });
+};
+
+UserLogin.prototype.sendRequest = function (event) {
+  var that = this;
+  var logObject = event.data.logObject;
+  var tmpId = event.data.tmpId;
+  var userlogin = event.data.userlogin;
+  var todo = event.data.todo;
+  var form_type =
+    ReqObj.Form[tmpId].formType === "Enq" ? "Send Enquiry" : "Post Buy Leads";
+  var bool = userlogin.returnBool(event);
+  that.userBlocked = 0;
+  if (
+    isSSB(tmpId) &&
+    !isSet(event.data.source) &&
+    $.inArray(ConstructorName(this), ReqObj.Form[tmpId].servicecalled) !== -1
+  ) {
+    PostAjax(logObject, tmpId);
+    return;
+  }
+  if (bool === true) {
+    if (isSet(ReqObj.Form[tmpId].defSubmit))
+      ReqObj.Form[tmpId].defSubmit.blurfired =
+        todo === "blurlogin" ? true : false;
+    if (todo === "blurlogin" && isSet(ReqObj.Form[tmpId].defSubmit))
+      ReqObj.Form[tmpId].defSubmit.loginfval = $(
+        "#t" + tmpId + "_login_field"
+      ).val();
+    userlogin.classCount = returnObjectSize(ReqObj.Form[tmpId].ContactDetail);
+    userlogin.beforHitDefaults(logObject, todo, tmpId, userlogin);
+    var data = userlogin.getData(tmpId, userlogin, todo);
+    var ajaxdata = userlogin.getajaxData(data);
+    var ajaxURL = userlogin.getLoginAjaxURL();
+    $.ajax({
+      cache: false,
+      url: ajaxURL,
+      type: "POST",
+      crossOrigin: true,
+      crossDomain: true,
+      data: ajaxdata,
+      dataType: "json",
+      success: function (res) {
+        // if(data.username == "manisince1999@gmail.com"){
+        //     res = {"message":"ISO MisMatch","access":"0","code":"204","msg":"You seem to be from India. Select India as Country"};
+        // }
+        // res={"DataCookie":{"fn":"","em":"","phcc":"","iso":"IN","mb1":"","ctid":"","glid":"","cd":"","cmid":"","utyp":"","ev":"","uv":"","usts":"2","admln":"","admsales":""},"access":"0","code":"204","msg":"User blocked for Identification"}
+        if (isSet(res)) {
+          /* ::If response set ::*/
+          if (data.loginflag === 3) {
+            userlogin.handleUI({
+              data: {
+                tmpId: tmpId,
+                todo: "defaultFlag3",
+                obj: userlogin,
+              },
+            });
+          }
+          if (
+            (isSet(logObject) && logObject !== "") ||
+            (logObject === "" && todo === "blurlogin")
+          ) {
+            /* logObject not empty - Login Hit :: blurlogin - blur Hit */
+            IsChatbl(tmpId)
+              ? removeBLLoader(tmpId, "left")
+              : isSSB(tmpId)
+                ? removeBLLoaderSSB(tmpId, "ssblogin")
+                : removeBLLoader(tmpId, "center");
+            userlogin.handleUI({
+              data: {
+                tmpId: tmpId,
+                todo: "enableNameField",
+                obj: userlogin,
+              },
+            });
+          }
+
+          // ecom, first we have to save details and then redirect, before handling ui part
+          if (
+            ReqObj.Form[tmpId].typeofform === "image" &&
+            isEcomProduct(tmpId)
+          ) {
+            if (isSet(res.code) && parseInt(res.code) === 200) {
+              userlogin.updateUserDetails(data.loginflag, res);
+              userlogin.updateFlagDetails(data.loginflag, res);
+
+              if (isSet(logObject) && isSet(tmpId) && logObject !== "") {
+                callToIdentifiedQ(tmpId, "from-Form");
+              } else {
+                callToIdentifiedQ(tmpId, "from-Form", 0); /* Blur Hit */
+              }
+            }
+            var isUserBlocked = 0;
+            if (
+              isSet(res.msg) &&
+              res.msg.toLowerCase().trim() ===
+              "user blocked for identification" &&
+              res.DataCookie["iso"] === "IN"
+            ) {
+              isUserBlocked = 1;
+            }
+            var isIsoMismatch = 0;
+            if (
+              isSet(res.message) &&
+              res.message.toLowerCase().trim() === "iso mismatch"
+            ) {
+              isIsoMismatch = 1;
+            }
+            if (
+              imeshExist() !== "" ||
+              isUserBlocked === 1 ||
+              isIsoMismatch === 1
+            ) {
+              CloseForm(tmpId);
+              window.open(ReqObj.Form[tmpId].ecomUrl, "_blank");
+            }
+          }
+          userlogin.afterLoginHit({
+            data: {
+              tmpId: tmpId,
+              res: res,
+              obj: userlogin,
+            },
+          }); /* The Ui part is handled in afterLoginHit for 200/204 with saving necessary details  */
+          if (
+            (isSet(res.code) && parseInt(res.code) === 200) ||
+            (isSet(that.userBlocked) && that.userBlocked === 1)
+          ) {
+            userlogin.updateUserDetails(data.loginflag, res);
+            userlogin.updateFlagDetails(data.loginflag, res);
+
+            if (isSet(logObject) && isSet(tmpId) && logObject !== "") {
+              /* Post Ajax */
+              if (isSSB(tmpId)) afterLoginSSBstep(tmpId, todo, that);
+              PostAjax(logObject, tmpId);
+              callToIdentifiedQ(tmpId, "from-Form");
+            } else {
+              callToIdentifiedQ(tmpId, "from-Form", 0); /* Blur Hit */
+            }
+          } else if (isSet(res.code) && parseInt(res.code) === 204) {
+            blenqGATracking(form_type, "service:EtoGlusrLogin:" + res.message, res, 1, tmpId);
+            userlogin.logObjectNoPostAjax(logObject, tmpId); /* no blur hit*/
+            userlogin.handleUI({
+              data: {
+                tmpId: tmpId,
+                todo: "showemail",
+                obj: userlogin,
+              },
+            });
+            userlogin.handleUI({
+              data: {
+                tmpId: tmpId,
+                todo: "showcity",
+                obj: userlogin,
+              },
+            });
+          } else {
+            /* Track Error if code not 200/204 */
+            blenqGATracking(form_type, "service:EtoGlusrLogin:failure", res, 1, tmpId);
+            userlogin.logObjectNoPostAjax(logObject, tmpId); /* no blur hit*/
+          }
+        } else {
+          /* If response not set :: empty/null/undefined */
+          blenqGATracking(form_type, "service:EtoGlusrLogin:failure", "response undefined", 1, tmpId);
+          userlogin.logObjectNoPostAjax(logObject, tmpId); /* no blur hit*/
+        }
+      },
+      error: function (res) {
+        if (ReqObj.Form[tmpId].typeofform === "image" && isEcomProduct(tmpId)) {
+          CloseForm(tmpId);
+          window.open(ReqObj.Form[tmpId].ecomUrl, "_blank");
+        }
+        userlogin.handleUI({
+          data: {
+            tmpId: tmpId,
+            todo: "tryagain",
+            obj: userlogin,
+            msg: "",
+          },
+        });
+        res = isSet(res) ? JSON.stringify(res) : "response undefined";
+        blenqGATracking(form_type, "service:EtoGlusrLogin:failure", res, 1, tmpId);
+        userlogin.logObjectNoPostAjax(logObject, tmpId); /* no blur hit */
+        if (logObject === "" && todo === "blurlogin") {
+          // removeBLLoader(tmpId, "center");
+          userlogin.handleUI({
+            data: {
+              tmpId: tmpId,
+              todo: "enableNameField",
+              obj: userlogin,
+            },
+          });
+        }
+      },
+      complete: function (res) {
+        if (IsChatbl(tmpId))
+          userlogin.handleUI({
+            data: {
+              tmpId: tmpId,
+              todo: "chatblur",
+              fromwhere: "aftercomplete",
+              obj: userlogin,
+            },
+          });
+        if (logObject === "" && todo === "blurlogin") {
+          removeBLLoader(tmpId, "center");
+        }
+      },
+    });
+  } else {
+    if (
+      $("#t" + tmpId + "_tCondCheckBox").length > 0 &&
+      isSet(ReqObj.Form[tmpId].defSubmit)
+    ) {
+      ReqObj.Form[tmpId].defSubmit.blurfired = true;
+      ReqObj.Form[tmpId].defSubmit.loginfval = $(
+        "#t" + tmpId + "_login_field"
+      ).val();
+    }
+  }
+};
+
+UserLogin.prototype.afterLoginHit = function (event) {
+  var tmpId = event.data.tmpId;
+  var userlogin = event.data.obj;
+  var res = event.data.res;
+
+  if (parseInt(res.code) === 200) {
+    if (isSet(res.DataCookie) && Object.keys(res.DataCookie).length > 0) {
+      if ($("#t" + tmpId + "_q_first_nm" + userlogin.classCount).length > 0) {
+        if (isSet(res.DataCookie["fn"]) && res.DataCookie["fn"] !== "") {
+          if (IsChatbl(tmpId))
+            ReqObj.Form[tmpId].UserInputs["Name"] = res.DataCookie["fn"];
+          userlogin.handleUI({
+            data: {
+              tmpId: tmpId,
+              value: res.DataCookie["fn"],
+              todo: "disableNameField",
+              fromwhere: "afterhit",
+              obj: userlogin,
+            },
+          });
+          if (
+            ReqObj.Form[tmpId].defSubmit.todo === false &&
+            ReqObj.Form[tmpId].defSubmit.subfired === false
+          ) {
+            ReqObj.Form[tmpId].defSubmit.subfired = true;
+            ReqObj.Form[tmpId].FormSequence.FormSubmit(
+              tmpId,
+              ReqObj.Form[tmpId].defSubmit.eve
+            );
+          }
+        } else if (isSet(res.DataCookie["fn"]) && res.DataCookie["fn"] === "") {
+          userlogin.handleUI({
+            data: {
+              tmpId: tmpId,
+              todo: "enableNameField",
+              fromwhere: "emptyTempName",
+              obj: userlogin,
+            },
+          });
+          if (
+            ReqObj.Form[tmpId].defSubmit.todo === false &&
+            ReqObj.Form[tmpId].defSubmit.subfired === false
+          ) {
+            ReqObj.Form[tmpId].defSubmit.subfired = true;
+            ReqObj.Form[tmpId].FormSequence.FormSubmit(
+              tmpId,
+              ReqObj.Form[tmpId].defSubmit.eve
+            );
+          }
+        } else if (Object.keys(res.DataCookie).length === 0) {
+          userlogin.handleUI({
+            data: {
+              tmpId: tmpId,
+              todo: "enableNameField",
+              fromwhere: "code",
+              obj: userlogin,
+            },
+          });
+        }
+      }
+      if ($("#t" + tmpId + "_q_email_in" + userlogin.classCount).length > 0) {
+        if (isSet(res.DataCookie["em"]) && res.DataCookie["em"] !== "") {
+          userlogin.handleUI({
+            data: {
+              tmpId: tmpId,
+              value: res.DataCookie["em"],
+              todo: "hideemail",
+              fromwhere: "afterhit",
+              obj: userlogin,
+            },
+          });
+        } else if (isSet(res.DataCookie["em"]) && res.DataCookie["em"] === "") {
+          userlogin.handleUI({
+            data: {
+              tmpId: tmpId,
+              value: res.DataCookie["em"],
+              todo: "showemail",
+              fromwhere: "afterhit",
+              obj: userlogin,
+            },
+          });
+        }
+      }
+      if ($("#t" + tmpId + "_q_city_oth" + userlogin.classCount).length > 0) {
+        if (isSet(res.DataCookie["ctid"]) && res.DataCookie["ctid"] !== "") {
+          userlogin.handleUI({
+            data: {
+              tmpId: tmpId,
+              value: res.DataCookie["ctid"],
+              todo: "hidecity",
+              fromwhere: "afterhit",
+              obj: userlogin,
+            },
+          });
+        } else if (
+          isSet(res.DataCookie["ctid"]) &&
+          res.DataCookie["ctid"] === ""
+        ) {
+          userlogin.handleUI({
+            data: {
+              tmpId: tmpId,
+              value: res.DataCookie["ctid"],
+              todo: "showcity",
+              fromwhere: "afterhit",
+              obj: userlogin,
+            },
+          });
+        }
+      }
+      if ($("#t" + tmpId + "_q_mobile_f" + userlogin.classCount).length > 0) {
+        if (isSet(res.DataCookie["mb1"]) && res.DataCookie["mb1"] !== "") {
+          userlogin.handleUI({
+            data: {
+              tmpId: tmpId,
+              value: res.DataCookie["mb1"],
+              todo: "hidemobile",
+              fromwhere: "afterhit",
+              obj: userlogin,
+            },
+          });
+        } else if (
+          isSet(res.DataCookie["ctid"]) &&
+          res.DataCookie["ctid"] === ""
+        ) {
+          userlogin.handleUI({
+            data: {
+              tmpId: tmpId,
+              value: res.DataCookie["ctid"],
+              todo: "showmobile",
+              fromwhere: "afterhit",
+              obj: userlogin,
+            },
+          });
+        }
+      }
+    } else
+      userlogin.handleUI({
+        data: {
+          tmpId: tmpId,
+          todo: "tryagain",
+          obj: userlogin,
+          msg: "Something went wrong.Please try again.",
+        },
+      });
+
+    if (isSet(res.DataCookie["glid"]) && res.DataCookie["glid"] !== "") {
+      ReqObj.glid = res.DataCookie["glid"];
+      !isSet(ReqObj.CNSerCalled) || !ReqObj.CNSerCalled
+        ? toCallMiniDetails(tmpId)
+        : "";
+    }
+  } else if (parseInt(res.code) === 204) {
+    $("#t" + tmpId + "_q_first_nm" + userlogin.classCount).val("");
+    $("#t" + tmpId + "_q_mobile_f" + userlogin.classCount).val("");
+    if (
+      isSet(res.msg) &&
+      (res.msg.trim() === "Email is not registered with Indiamart." ||
+        res.msg.trim() === "Mobile Number is not registered with Indiamart.") &&
+      isSet(ReqObj.Form[tmpId].defSubmit.todo) &&
+      ReqObj.Form[tmpId].defSubmit.todo === false &&
+      ReqObj.Form[tmpId].defSubmit.subfired === false
+    ) {
+      ReqObj.Form[tmpId].defSubmit.subfired = true;
+      ReqObj.Form[tmpId].FormSequence.FormSubmit(
+        tmpId,
+        ReqObj.Form[tmpId].defSubmit.eve
+      );
+    }
+    userlogin.handleUI({
+      data: {
+        tmpId: tmpId,
+        todo: "enableNameField",
+        fromwhere: "emptyTempName",
+        obj: userlogin,
+      },
+    });
+    userlogin.handleUI({
+      data: {
+        tmpId: tmpId,
+        value: "",
+        todo: "showcity",
+        fromwhere: "afterhit",
+        obj: userlogin,
+      },
+    });
+    userlogin.handleUI({
+      data: {
+        tmpId: tmpId,
+        value: "",
+        todo: "showemail",
+        fromwhere: "afterhit",
+        obj: userlogin,
+      },
+    });
+    if (
+      isSet(res.msg) &&
+      ((isSet(res.message) && res.message.trim() === "ISO MisMatch".trim()) ||
+        res.msg.trim() === "Unable to Create User".trim() ||
+        res.msg.trim() ===
+        "Please use your registered Mobile Number to Login".trim() ||
+        res.msg.trim() === "Invalid mobile Number".trim() ||
+        res.msg.trim() === "GLUSER creation service unavailable".trim())
+    ) {
+      if (
+        !(ReqObj.Form[tmpId].typeofform === "image" && isEcomProduct(tmpId))
+      ) {
+        userlogin.handleUI({
+          data: {
+            tmpId: tmpId,
+            todo: "tryagain",
+            obj: userlogin,
+            msg: res.msg,
+          },
+        });
+      }
+    }
+    if (
+      isSet(res.msg) &&
+      res.msg.toLowerCase().trim() === "user blocked for identification" &&
+      res.DataCookie["iso"] === "IN"
+    ) {
+      this.userBlocked = 1;
+      ReqObj.UserDetail["blusrdtl"] = {
+        blkUsr: 1,
+        blk_mb: event.data.obj.username,
+        blk_iso: "91",
+      };
+    }
+  }
+};
+
+UserLogin.prototype.updateUserDetails = function (loginflag, res, mode) {
+  if (loginflag !== 3 && isSet(res.DataCookie) && res.DataCookie !== "") {
+    if (
+      mode === "reauth" ||
+      !(isSet(res.DataCookie["usts"]) && res.DataCookie["usts"] === "2")
+    ) {
+      if (typeof imesh_obj !== "undefined")
+        imesh_obj.set(res.DataCookie); /* to set imesh cookie */
+    }
+  }
+  UpdateAfterLogin("fn");
+  UpdateAfterLogin("em");
+  UpdateAfterLogin("ctid");
+  UpdateAfterLogin("mb1");
+  UpdateAfterLogin("uv");
+  if (
+    imeshExist() !== "" &&
+    usercookie.getParameterValue(imeshExist(), "ctid") === ""
+  ) {
+    ReqObj.UserDetail.cityname = "";
+    ReqObj.UserDetail.ctoth = "";
+  }
+};
+
 
 ContactDetail.prototype.displayAnswer = function (tmpId) {
   var key = this.returnKey(tmpId);
@@ -4499,6 +5276,68 @@ ContactDetail.prototype.getCitySuggDiv = function (tmpId) {
   let citySugg = (isInactiveBL(tmpId)) ? "mt-12" : pdpenq(tmpId)? "mt5" : "";
   return count > 0 ? "<div class = 'citySuggClr "+ citySugg +"'>Suggestions: " + html + "</div>" : "";
 };
+
+ContactDetail.prototype.selectCity = function (event, ui) {
+  var tmpId = $(this).attr("templateId");
+  var classCount = returnObjectSize(ReqObj.Form[tmpId].ContactDetail);
+  $("#t" + tmpId + "_q_city_oth" + classCount).val(ui.item.value);
+  $("#t" + tmpId + "city_id_sugg" + classCount).val(ui.item.data.id);
+  ReqObj.UserDetail["statename"] = ui.item.data.state;
+  ReqObj.UserDetail["stateid"] = ui.item.data.stateid;
+  ReqObj.UserDetail["ctid"] = ui.item.data.id;
+  ReqObj.UserDetail["cityname"] = ui.item.value;
+  if (IsChatbl(tmpId)) {
+    ReqObj.Form[tmpId].UserInputs["City"] = ui.item.value;
+    ReqObj.Form[tmpId].UserInputs["CityId"] = ui.item.data.id;
+  }
+  ReqObj.Form[tmpId].cityTracking = 3;
+};
+
+ContactDetail.prototype.detectCity = function (event) {
+  if (isSet(event) && isSet(event.data)) {
+    var obj = event.data.obj;
+    var tmpId = event.data.tmpId;
+    var form_type =
+      ReqObj.Form[tmpId].formType === "Enq" ? "Send Enquiry" : "Post Buy Leads";
+    blenqGATracking(form_type, "detectMyCity", getEventLabel(), 1, tmpId);
+    ReqObj.cityId = [];
+    ReqObj.cityId.push("#t" + tmpId + "_q_city_oth" + obj.classCount); //t0901city_id_sugg1
+    ReqObj.cityId.push("#t" + tmpId + "city_id_" + obj.classCount);
+    initGeolocationenq(tmpId);
+  }
+};
+
+function prefilSuggCity(tmpId, classCount, ctid, city) {
+  $("#t" + tmpId + "_q_city_oth" + classCount).val(city);
+  $("#t" + tmpId + "_q_city_oth" + classCount)
+    .parent()
+    .addClass("eqfcsed");
+  $("#t" + tmpId + "city_id_sugg" + classCount).val(ctid);
+  $("#t" + tmpId + "_q_city_oth" + classCount).focus();
+  ReqObj.Form[tmpId].cityTracking = 2;
+}
+
+function fireCityTracking(tmpId, data) {
+  var imesh = imeshExist();
+  var _case =
+    imesh === ""
+      ? 1
+      : usercookie.getParameterValue(imesh, "ctid") === ""
+        ? 1
+        : 0;
+  if (_case !== 0 && isSet(data["s_city_name"]) && data["s_city_name"] !== "" && isSet(ReqObj.Form[tmpId].cityTracking)) {
+    var form_type = ReqObj.Form[tmpId].formType === "Enq" ? "Send Enquiry" : "Post Buy Leads";
+    if (ReqObj.Form[tmpId].cityTracking === 1)
+      blenqGATracking(form_type, "City|Prefilled", getEventLabel(), 1, tmpId);
+    else if (ReqObj.Form[tmpId].cityTracking === 2)
+      blenqGATracking(form_type, "City|Suggestion", getEventLabel(), 1, tmpId);
+    else if (ReqObj.Form[tmpId].cityTracking === 3)
+      blenqGATracking(form_type, "City|Suggester", getEventLabel(), 1, tmpId);
+    else if (ReqObj.Form[tmpId].cityTracking === 4)
+      blenqGATracking(form_type, "City|GeoLocFilled", getEventLabel(), 1, tmpId);
+    else blenqGATracking(form_type, "City|Manual", getEventLabel(), 1, tmpId);
+  }
+}
 
 ContactDetail.prototype.EventIfScreenPresent = function (tmpId) {
   if (isOtherEnq(tmpId)) {
