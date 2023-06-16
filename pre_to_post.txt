@@ -30,6 +30,10 @@ function ValidateQuestions(tmpId, staticQues, IsqScreen)
 function SaveIsq(tmpId, type, IsqScreen)
 function ShowUserAns(tmpId)
 function BLEnqPopUpDefault(tmpId)
+function closeFormCond(tmpId)
+function FormCloseEnqBL(tmpId, event)
+function FormCloseStep(tmpId, event)
+function CloseForm(tmpId)
 
 Isq.prototype.displayAnswer
 Isq.prototype.EventIfScreenPresent
@@ -66,6 +70,7 @@ function fireCityTracking(tmpId, data)
 userlogin prtotypes after sendrequest
 FormSeq.prototype._returnLastScreen
 function FinishEnquiryService
+FormSeq.prototype.InlineOpenForm
 
 
 
@@ -79,5 +84,5 @@ formseq prototypes-----
 
 ////
 
-FormSeq.prototype.InlineOpenForm
+
 ////

@@ -64,9 +64,235 @@ function BLEnqPopUpDefault(tmpId) {
   OpenBLEnqPopup(tmpId);
 }
 
+function closeFormCond(tmpId) {
+  return (isEnq(tmpId) || isBl(tmpId)) &&
+    (!ReqObj.Form[tmpId].generationCalled ||
+      !$("#t" + tmpId + "_thankDiv").hasClass("bedsnone"))
+    ? true
+    : false;
+}
+
+function FormCloseEnqBL(tmpId, event) {
+  var form_type = ReqObj.Form[tmpId].formType === "Enq" ? "Send Enquiry" : (isInactiveBL(tmpId) && ispdp(tmpId)) ? "Post Buy Leads New" : "Post Buy Leads";   
+       //inactive changes
+  var that = ReqObj.Form[tmpId].FormSequence || {};
+  var ClassesforTracking = "CloseStep:";
+  ClassesforTracking += that.StepCounter + 1 + ":";
+  var constructor = "";
+  if (isSet(ReqObj.Form[tmpId].UiArray[that.StepCounter])) {
+    for (var i = 0;i < ReqObj.Form[tmpId].UiArray[that.StepCounter].length;i++) {
+      constructor += ConstructorName(ReqObj.Form[tmpId].UiArray[that.StepCounter][i].Obj);
+      if (i < ReqObj.Form[tmpId].UiArray[that.StepCounter].length && i > 0)
+        ClassesforTracking += "-";
+      ClassesforTracking += ConstructorName( ReqObj.Form[tmpId].UiArray[that.StepCounter][i].Obj );
+    }
+  }
+  pnsCloseTrack(tmpId); 
+  //inactive changes
+  if(isInactiveBL(tmpId) && !ispdp(tmpId) && modIdf.toLowerCase() != "pdfim" ){
+    inactiveblCloseTrack(tmpId);
+  }
+  
+  if(isImageVidEnq(tmpId) && (that.StepCounter == 0 || that.StepCounter == 1)){   //image track
+    var sampling = ReqObj.Form[tmpId].noSampling;
+    ReqObj.Form[tmpId].noSampling=true;
+    blenqGATracking(form_type, ClassesforTracking, getEventLabel(), 0, tmpId);
+    ReqObj.Form[tmpId].noSampling=sampling;
+  }
+  else
+  blenqGATracking(form_type, ClassesforTracking, getEventLabel(), 0, tmpId);
+  
+  if (constructor.toLowerCase() === "userverification" && Enq09(tmpId))
+    blenqGATracking(form_type, "OTP1NotFilled", getEventLabel(), 1, tmpId);
+  CloseForm(tmpId); // check !
+}
+
+function FormCloseStep(tmpId, event) {
+  var form_type = ReqObj.Form[tmpId].formType === "Enq" ? "Send Enquiry" : (isInactiveBL(tmpId) && ispdp(tmpId)) ? "Post Buy Leads New" : "Post Buy Leads";     //inactive changes
+  var that = ReqObj.Form[tmpId].FormSequence || {};
+  var hasBedsnone = $("#t" + tmpId + "_thankDiv").hasClass("bedsnone");
+  var ClassesforTracking = "CloseStep:";
+  ReqObj.Form[tmpId].IsthroughClosebtn = true;
+  if (ReqObj.Form[tmpId].IsbackClicked === true) {
+    ReqObj.Form[tmpId].IsbackClicked = false;
+    that.StepCounter += 1;
+  }
+  pnsCloseTrack(tmpId);
+  if (!ReqObj.Form[tmpId].generationCalled || !hasBedsnone) {
+    if (!ReqObj.Form[tmpId].generationCalled) {
+      if (that.StepCounter > -1) {
+        ClassesforTracking += that.StepCounter + 1 + ":";
+        if (isSet(ReqObj.Form[tmpId].UiArray[that.StepCounter])) {
+          for (var i = 0; i < ReqObj.Form[tmpId].UiArray[that.StepCounter].length; i++) {
+            if (i < ReqObj.Form[tmpId].UiArray[that.StepCounter].length && i > 0)
+              ClassesforTracking += "-";
+            ClassesforTracking += ConstructorName(ReqObj.Form[tmpId].UiArray[that.StepCounter][i].Obj);
+          }
+        }
+        blenqGATracking(form_type, ClassesforTracking, getEventLabel(), 0, tmpId);
+        CloseForm(tmpId);
+      } else {
+        CloseForm(tmpId);
+      }
+    } else if (!hasBedsnone) {
+      that.OnCloseCounter = parseInt(that.OnCloseCounter, 10);
+      that.StepCounter = parseInt(that.StepCounter, 10);
+      if (that.OnCloseCounter > -1) {
+        ClassesforTracking += that.StepCounter + 1 + (that.OnCloseCounter + 1) + ":";
+        if (isSet(ReqObj.Form[tmpId].OnCloseArray) && isSet(ReqObj.Form[tmpId].OnCloseArray[that.OnCloseCounter])) {
+          for (var i = 0; i < ReqObj.Form[tmpId].OnCloseArray[that.OnCloseCounter].length; i++) {
+            if (i < ReqObj.Form[tmpId].OnCloseArray[that.OnCloseCounter].length && i > 0)
+              ClassesforTracking += "-";
+            ClassesforTracking += ConstructorName(ReqObj.Form[tmpId].OnCloseArray[that.OnCloseCounter][i].Obj);
+          }
+        }
+        blenqGATracking(form_type, ClassesforTracking, getEventLabel(), 0, tmpId);
+        CloseForm(tmpId);
+      } else {
+        ClassesforTracking += that.StepCounter + 1 + 1 + ":ThankYou";
+        CloseForm(tmpId);
+      }
+    }
+  } else {
+    var constructor = "";
+    if (isSet(ReqObj.Form[tmpId].OnCloseStep) && !ReqObj.Form[tmpId].OnCloseStep) {
+      ClassesforTracking += that.StepCounter + 1 + ":";
+      if (isSet(ReqObj.Form[tmpId].UiArray[that.StepCounter])) {
+        for (var i = 0; i < ReqObj.Form[tmpId].UiArray[that.StepCounter].length; i++) {
+          if (i < ReqObj.Form[tmpId].UiArray[that.StepCounter].length && i > 0)
+            ClassesforTracking += "-";
+          constructor += ConstructorName(ReqObj.Form[tmpId].UiArray[that.StepCounter][i].Obj);
+          ClassesforTracking += ConstructorName(ReqObj.Form[tmpId].UiArray[that.StepCounter][i].Obj);
+        }
+      }
+      blenqGATracking(form_type, ClassesforTracking, getEventLabel(), 0, tmpId);
+      if (isBl(tmpId) || isEnq(tmpId)) {
+
+        // Get More Photos //new gmp
+        if(ReqObj.Form[tmpId].formType.toLowerCase() === "enq") {
+          if(ValidGenId(ReqObj.Form[tmpId].generationId)){
+            if(getMorePh(tmpId) && (new RegExp("userverification").test(ReqObj.Form[tmpId].currentScreen.toLowerCase()) || new RegExp("requirementdtl").test(ReqObj.Form[tmpId].currentScreen.toLowerCase()) || new RegExp("isq").test(ReqObj.Form[tmpId].currentScreen.toLowerCase()) || (currentISO() !== "IN" && ReqObj.UserDetail.mb1 == "" && ( ReqObj.Form[tmpId].currentScreen.toLowerCase() == "contactdetail"|| new RegExp("requirementdtl").test(ReqObj.Form[tmpId].currentScreen.toLowerCase()))))){
+              saveEnr(tmpId);
+          }
+        }          
+        
+      }
 
 
+        // Get More Photos
 
+
+        ReqObj.Form[tmpId].FormSequence._screen7(tmpId);
+      } else ReqObj.Form[tmpId].FormSequence.OnCloseSeq(tmpId);
+    } else {
+      ClassesforTracking += that.StepCounter + 1 + (that.OnCloseCounter + 1) + ":";
+      if (isSet(ReqObj.Form[tmpId].OnCloseArray) && isSet(ReqObj.Form[tmpId].OnCloseArray[that.OnCloseCounter])) {
+        if (isSet(ReqObj.Form[tmpId].OnCloseArray[that.OnCloseCounter])) {
+          for (var i = 0; i < ReqObj.Form[tmpId].OnCloseArray[that.OnCloseCounter].length; i++) {
+            if (i < ReqObj.Form[tmpId].OnCloseArray[that.OnCloseCounter].length && i > 0)
+              ClassesforTracking += "-";
+            ClassesforTracking += ConstructorName(ReqObj.Form[tmpId].OnCloseArray[that.OnCloseCounter][i].Obj);
+          }
+        }
+      }
+      blenqGATracking(form_type, ClassesforTracking, getEventLabel(), 0, tmpId);
+      ReqObj.Form[tmpId].FormSequence.OnClosegetStep(tmpId);
+    }
+  }
+}
+
+function CloseForm(tmpId) {
+  if (
+    (tmpId.substring(0, 2) === "09" &&
+      $("#t" + tmpId + "_bewrapper").css("display") === "block") ||
+    (tmpId.substring(0, 2) !== "09" &&
+      $("#t" + tmpId + "_enrichform_maindiv").css("display") !== "none")
+  ) {
+    if (
+      ReqObj.Form[tmpId].formType.toLowerCase() === "enq" &&
+      !ValidGenId(ReqObj.Form[tmpId].generationId)
+    ) {
+      ReqObj.finEnq = tmpId;
+    } else
+      ReqObj.Form[tmpId].formType.toLowerCase() === "enq" &&
+        ValidGenId(ReqObj.Form[tmpId].generationId) &&
+        !ReqObj.Form[tmpId].flags["isThankYouCalled"]
+        ? FinishEnquiryService(tmpId)
+        : "";
+    // (ReqObj.Form[tmpId].formType.toLowerCase() === "enq" && ((ValidGenId(ReqObj.Form[tmpId].generationId) && !ReqObj.Form[tmpId].flags["isThankYouCalled"]) || ReqObj.Form[tmpId].hitFinishEnquiryService)) ? FinishEnquiryService(tmpId): "";
+    if (!isEcomProduct(tmpId)) ServiceSequenceHit(tmpId, false);
+    ReqObj.TempMobile = "";
+    ReqObj.Form[tmpId].pvTrackingFired = false;
+    ReqObj.TempEmail = "";
+    ReqObj.ImageVideoIsqSeq = false;
+    closeVideo(tmpId);
+    SetUserDetails();
+    updateToAsk(tmpId);
+    addDetachedFlag();
+    //detachFlag2(tmpId);
+    if (tmpId.substring(0, 2) === "09") {
+      if (recomOnInactive(tmpId)) {       //inactive changes
+        $("#recommendProd").css({
+          display: "none",
+        });
+      }
+      $("#t" + tmpId + "_bewrapper").css({
+        display: "none",
+      });
+      ClearBLEnqPopUpUI(tmpId);
+    } else if (tmpId.substring(0, 2) === "08") {
+      if (IsChatBLInline(tmpId)) {
+        $("#t" + tmpId + "_chatBL")
+          .addClass("cbl_vh")
+          .removeClass("cbl_vv");
+        updateChatWidgetGlobalVar(tmpId);
+        chatwidgetTransitions(tmpId);
+      } else {
+        $("#t" + tmpId + "_chatBL").css({
+          display: "none",
+        });
+      }
+      ClearBLEnqPopUpUI(tmpId);
+      $(".t" + tmpId + "blk_scrn").addClass("dn");
+    } else {
+      $("#t" + tmpId + "_enrichform_maindiv")
+        .html("")
+        .css({
+          display: "none",
+        });
+      $("#t" + tmpId + "_q_send_req_button").html(ReqObj.Form[tmpId].btn);
+      isSet(ReqObj.Form[tmpId].InlineformParentEl)
+        ? ReqObj.Form[tmpId].InlineformParentEl.html(
+          ReqObj.Form[tmpId].InlineformHtml
+        )
+        : "";
+      $("#t" + tmpId + "_q_send_req_button")
+        .parent()
+        .removeClass("bedsnone");
+      ReqObj.Form[tmpId].btn = "";
+    }
+
+    if (!IsChatbl(tmpId)) {
+      HideSuggester();
+      var HitArray = ReqObj.Form[tmpId].HitArray;
+      var enqclose = ReqObj.Form[tmpId].enqSentCallBack;
+      if (!(tmpId.substr(0, 2) === "01" && isGlIdEven(tmpId)))
+        ReqObj.Form[tmpId] = CopyObject(ReqObj.Original[tmpId]);
+      ReqObj.Form[tmpId].HitArray = HitArray;
+      ReqObj.Form[tmpId].enqSentCallBack = enqclose;
+    }
+    ReqObj.ipLoc.onClose = true;
+    UpdateSeq();
+    ReqObj.loginMode = 0;
+    ReqObj.userType = "";
+    resumeBgScroll();
+    SetUserDetails();
+    isBLFormOpen = false;
+    $(document).trigger(FormCloseEvent, [ReqObj.Form[tmpId].ordr_qnty_index]);
+    $(document).trigger(OnBlEnqClose);
+    if (checkblockedUser()) ReqObj.UserDetail.blusrdtl = {};
+  }
+}
 
 
 
@@ -1405,6 +1631,32 @@ FormSeq.prototype.BLChatThankYou = function (tmpId) {
     FallbackObj: null,
   };
   this.MakeSeq(ThankYouObj);
+};
+
+FormSeq.prototype.InlineOpenForm = function (tmpId) {
+  if (isSet(tmpId)) {
+    var that = this;
+    ClearInlineBlTag(tmpId);
+
+    $("#t" + tmpId + "_enrichform_maindiv").html(GetPopUpHtml(tmpId)).css({
+      display: "table",
+    });
+
+    // InlineDefault(tmpId);
+
+    ReqObj.Form[tmpId].btn = $("#t" + tmpId + "_q_send_req_button").html();
+    $("#t" + tmpId + "_q_send_req_button").html("");
+    if ( ReqObj.Form[tmpId].formType.toLowerCase() === "bl" && isSet(ReqObj.Form[tmpId].displayImage) && ReqObj.Form[tmpId].displayImage === "" && isSet(ReqObj.Form[tmpId].zoomImage) && ReqObj.Form[tmpId].zoomImage === "" ) {
+      ReqObj.Form[tmpId].displayImage = isSet(ReqObj.mcatImage) && ReqObj.mcatImage !== "" ? ReqObj.mcatImage : "";
+    }
+
+    // leftSideTransition(1, tmpId);
+
+    // $("#t" + tmpId + "_hdg").text(ReturnCorrectVal(ReqObj.Form[tmpId].heading, StaticMessage()));
+    OpenBLEnqPopup(tmpId);
+
+    FormCloseButtons(tmpId);
+  }
 };
 
 function FinishEnquiryService(tmpId, data_arr) {
