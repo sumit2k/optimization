@@ -10478,6 +10478,7 @@ FormSeq.prototype.FireQtUtTracking = function (tmpId, eventt) {
     blenqGATracking(form_type, tracking, getEventLabel(), 0, tmpId);
   }
 };
+
 FormSeq.prototype.FormSubmit = function (tmpId, event) {
   ReqObj.Form[tmpId].currentclassCount = 0;
   ReqObj.Form[tmpId].toFireEscTracking = true;
@@ -10698,6 +10699,24 @@ FormSeq.prototype.FormSubmit = function (tmpId, event) {
 
   return true;
 };
+
+FormSeq.prototype._returnLastScreen = function (tmpId) {
+  var _that = this;
+  var LastScreen = "";
+  if (isSet(ReqObj.Form[tmpId].UiArray[_that.StepCounter])) {
+    for (
+      var j = 0;
+      j < ReqObj.Form[tmpId].UiArray[_that.StepCounter].length;
+      j++
+    ) {
+      LastScreen =
+        LastScreen +
+        ConstructorName(ReqObj.Form[tmpId].UiArray[_that.StepCounter][j].Obj);
+    }
+  }
+  return LastScreen;
+};
+
 function tofireImgEnqTracking(tmpId, msg) {
   var form_type = ReqObj.Form[tmpId].formType === "Enq" ? "Send Enquiry" : "Post Buy Leads";
   blenqGATracking(form_type, msg, getEventLabel(), 1, tmpId);

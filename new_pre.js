@@ -4401,23 +4401,6 @@ FormSeq.prototype._screen1 = function (tmpId, typeOfForm) {
   } else _that._switchNext(tmpId, typeOfForm);
 };
 
-
-FormSeq.prototype._returnLastScreen = function (tmpId) {
-  var _that = this;
-  var LastScreen = "";
-  if (isSet(ReqObj.Form[tmpId].UiArray[_that.StepCounter])) {
-    for (
-      var j = 0;
-      j < ReqObj.Form[tmpId].UiArray[_that.StepCounter].length;
-      j++
-    ) {
-      LastScreen =
-        LastScreen +
-        ConstructorName(ReqObj.Form[tmpId].UiArray[_that.StepCounter][j].Obj);
-    }
-  }
-  return LastScreen;
-};
 /*-------------------------------new Seq----------------------------------------- */
 
 function FinishEnquiryService(tmpId, data_arr) {
