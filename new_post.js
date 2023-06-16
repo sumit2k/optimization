@@ -1406,6 +1406,58 @@ FormSeq.prototype.BLChatThankYou = function (tmpId) {
   };
   this.MakeSeq(ThankYouObj);
 };
+
+function FinishEnquiryService(tmpId, data_arr) {
+  if (
+    isSet(ReqObj.Form[tmpId].flags) &&
+    ReqObj.Form[tmpId].flags.isFinishEnquiryHit
+  )
+    return;
+  if (isSet(data_arr) && data_arr.sr === "gen") {
+    var data = data_arr.data_res;
+  } else {
+    var ofr_id = ReqObj.Form[tmpId].generationId;
+    var rfq_queryDestination = ReqObj.Form[tmpId].query_destination;
+    var modId = modIdf;
+    var data = {
+      ofr_id: ofr_id,
+      rfq_queryDestination: rfq_queryDestination,
+      modId: modId,
+    };
+  }
+  if (!(isSet(data_arr) && data_arr.sr === "gen"))
+    ReqObj.Form[tmpId].flags.isFinishEnquiryHit = true;
+  fireAjaxRequest({
+    data: {
+      ga: {
+        s: true,
+        f: true,
+        gatype: "FinishEnqService",
+        source: "",
+      },
+      tmpId: tmpId,
+      ajaxObj: {
+        obj: "",
+        s: {
+          ss: 0,
+          sf: {
+            af: 0,
+            pa: 0,
+          },
+          f: 0,
+        },
+        f: {
+          f: 0,
+        },
+      },
+      ajaxdata: data,
+      ajaxtimeout: 0,
+      type: 5,
+      hitfinserv: "",
+    },
+  });
+}
+
 function ShowIsq(tmpId) {
   //|| (tmpId.substring(0, 2) === "09" && currentISO() !== "IN")
   if (
@@ -1423,6 +1475,7 @@ function ShowIsq(tmpId) {
     return true;
   else return false;
 }
+
 function ChatBlMsgs(QuestionText, type) {
   if (isSet(QuestionText)) {
     var defaultmsg = "What is your preferred";
@@ -1452,6 +1505,7 @@ function ChatBlMsgs(QuestionText, type) {
     }
   }
 }
+
 function ssbClass(type, tmpId) {
   if (type === "label") return isnewSSB(tmpId) ? "nb-fmlbl" : "mb-lbl";
   if (type === "reqBxLbl")
@@ -1490,6 +1544,7 @@ function ssbClass(type, tmpId) {
   if (type === "htmli") return isnewSSB(tmpId) ? "nb-SbHd" : "mb-SbHd";
   if (type === "disable") return isnewSSB(tmpId) ? "nb-inpDisb" : "mb-inpDisb";
 }
+
 function ConversationLeftWrapper(tmpId, message, classObj, name) {
   /* add attributes at end  */
   if (isSet(message) && message !== "") {
@@ -1543,6 +1598,7 @@ function BlStaticQues(tmpId) {
   this.attachmentCalled = false;
   this.staticCalled = false;
 }
+
 BlStaticQues.prototype.hasHtml = function (StaticObj) {
   if (isSet(StaticObj)) {
     // ReqObj.Form[StaticObj.tmpId].Isq.CurrentPageQuestions = [];
@@ -1731,6 +1787,7 @@ BlStaticQues.prototype.displayHtml = function (tmpId) {
   }
   return [this.StaticHtml];
 };
+
 BlStaticQues.prototype.attachFiles = function (tmpId) {
   if (isSSB(tmpId)) return SSBAttachFile(tmpId);
   // var div = '<div><ul class="be-att">';
@@ -1774,6 +1831,7 @@ BlStaticQues.prototype.attachFiles = function (tmpId) {
     '" class = "myUL" ' + inline + '></ul>';
   return div;
 };
+
 BlStaticQues.prototype.SaveDetails = function (tmpId) {
   SaveIsq(tmpId, "static", 0);
 
@@ -1999,6 +2057,7 @@ BlStaticQues.prototype.defaultEventsForAttach = function (tmpId) {
     ); //attachfilesellers
   }
 };
+
 BlStaticQues.prototype.deleteFileOg = function (event) {
   //attachfilesellers
   if (isSet(event) && isSet(event.data)) {
@@ -2265,8 +2324,6 @@ function deleteAttachedFile(event) {
   BlStaticQues.prototype.deleteFile(event);
 }
 
-
-
 var attachcounter = 0;
 var attachnumber = [0, 1, 2, 3];
 BlStaticQues.prototype.uploadFile = function (event, mode) {
@@ -2417,6 +2474,7 @@ BlStaticQues.prototype.uploadFile = function (event, mode) {
     }
   }
 };
+
 BlStaticQues.prototype.handleUI = function (event) {
   var todo = event.data.todo;
   var tmpId = event.data.tmpId;
@@ -2466,6 +2524,7 @@ BlStaticQues.prototype.handleUI = function (event) {
     $("#t" + tmpId + "myfile_doc_" + i).val("");
   }
 };
+
 BlStaticQues.prototype.deleteFile = function (event) {
   // var tmpId = event.data.tmpId;
   var tmpId = ReqObj["Temp_Id"];

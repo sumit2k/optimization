@@ -4403,56 +4403,6 @@ FormSeq.prototype._screen1 = function (tmpId, typeOfForm) {
 
 /*-------------------------------new Seq----------------------------------------- */
 
-function FinishEnquiryService(tmpId, data_arr) {
-  if (
-    isSet(ReqObj.Form[tmpId].flags) &&
-    ReqObj.Form[tmpId].flags.isFinishEnquiryHit
-  )
-    return;
-  if (isSet(data_arr) && data_arr.sr === "gen") {
-    var data = data_arr.data_res;
-  } else {
-    var ofr_id = ReqObj.Form[tmpId].generationId;
-    var rfq_queryDestination = ReqObj.Form[tmpId].query_destination;
-    var modId = modIdf;
-    var data = {
-      ofr_id: ofr_id,
-      rfq_queryDestination: rfq_queryDestination,
-      modId: modId,
-    };
-  }
-  if (!(isSet(data_arr) && data_arr.sr === "gen"))
-    ReqObj.Form[tmpId].flags.isFinishEnquiryHit = true;
-  fireAjaxRequest({
-    data: {
-      ga: {
-        s: true,
-        f: true,
-        gatype: "FinishEnqService",
-        source: "",
-      },
-      tmpId: tmpId,
-      ajaxObj: {
-        obj: "",
-        s: {
-          ss: 0,
-          sf: {
-            af: 0,
-            pa: 0,
-          },
-          f: 0,
-        },
-        f: {
-          f: 0,
-        },
-      },
-      ajaxdata: data,
-      ajaxtimeout: 0,
-      type: 5,
-      hitfinserv: "",
-    },
-  });
-}
 function finishEnqDependents(tmpId, etype) {
   var type = [1, 3, 8];
   if (isSet(ReqObj) && isSet(ReqObj.Form) && isSet(ReqObj.Form[tmpId]) && isEnq(tmpId) && type.includes(etype)) {
