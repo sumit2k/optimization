@@ -65,6 +65,7 @@ function prefilSuggCity(tmpId, classCount, ctid, city)
 function fireCityTracking(tmpId, data)
 userlogin prtotypes after sendrequest
 FormSeq.prototype._returnLastScreen
+function FinishEnquiryService
 
 
 
@@ -77,6 +78,6 @@ call generation------
 formseq prototypes-----
 
 ////
-function FinishEnquiryService
+
 FormSeq.prototype.InlineOpenForm
 ////

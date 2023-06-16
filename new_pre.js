@@ -10091,6 +10091,7 @@ FormSeq.prototype.InlineOpenForm = function (tmpId) {
     FormCloseButtons(tmpId);
   }
 };
+
 function makeObj(Obj, hooks) {
   if (ConstructorName(Obj) !== "") {
     var returnObj = {};
