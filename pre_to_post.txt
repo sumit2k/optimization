@@ -75,3 +75,7 @@ userlogin prtotypes after sendrequest
 format services and all---
 call generation------
 formseq prototypes-----
+
+////
+function FinishEnquiryService
+////
