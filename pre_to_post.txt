@@ -78,4 +78,5 @@ formseq prototypes-----
 
 ////
 function FinishEnquiryService
+FormSeq.prototype.InlineOpenForm
 ////
