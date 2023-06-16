@@ -10522,21 +10522,6 @@ function OpenBLEnqPopup(tmpId) {
   stopBgScroll();
 }
 
-function BLEnqPopUpDefault(tmpId) {
-  ReqObj.updateImage = 0;
-  window.googletag = window.googletag || {
-      cmd: [],
-    };
-    var conv = usercookie.getCookie("conv");
-    var adult = isSet(ReqObj.Form[tmpId].isAdult) && ReqObj.Form[tmpId].isAdult !== "" ? ReqObj.Form[tmpId].isAdult: 2;
-    var gtag = window.googletag && googletag.apiReady && googletag.pubadsReady && typeof (googletag.defineSlot) === "function";
-    if(isInactiveBL(tmpId) && conv === "true"  &&
-    (parseInt(adult) === 2 || parseInt(adult) === 0) && ReqObj.Form[tmpId].ctaName.toLowerCase() !== "lightbox" && document.visibilityState !== "hidden" && gtag){
-    showAdInact(tmpId);
-    }
-    else
-  OpenBLEnqPopup(tmpId);
-}
 function ClearBLEnqFormUI(tmpId) {
   if (tmpId.substring(0, 2) === "09") ClearBLEnqPopUpUI(tmpId);
   else ClearBLEnqInlineUI(tmpId);

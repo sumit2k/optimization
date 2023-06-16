@@ -29,6 +29,7 @@ function termNcdata(tmpId)
 function ValidateQuestions(tmpId, staticQues, IsqScreen)
 function SaveIsq(tmpId, type, IsqScreen)
 function ShowUserAns(tmpId)
+function BLEnqPopUpDefault(tmpId)
 Isq.prototype.displayAnswer
 Isq.prototype.EventIfScreenPresent
 Isq.prototype.SaveDetails
@@ -69,7 +70,7 @@ userlogin prtotypes after sendrequest
 
 
 
-
+              
 
 format services and all---
 call generation------

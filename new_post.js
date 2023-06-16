@@ -48,6 +48,29 @@ function RemoveObjFromService(fName, tmpId) {
   return ServiceArrayObj;
 }
 
+function BLEnqPopUpDefault(tmpId) {
+  ReqObj.updateImage = 0;
+  window.googletag = window.googletag || {
+      cmd: [],
+    };
+    var conv = usercookie.getCookie("conv");
+    var adult = isSet(ReqObj.Form[tmpId].isAdult) && ReqObj.Form[tmpId].isAdult !== "" ? ReqObj.Form[tmpId].isAdult: 2;
+    var gtag = window.googletag && googletag.apiReady && googletag.pubadsReady && typeof (googletag.defineSlot) === "function";
+    if(isInactiveBL(tmpId) && conv === "true"  &&
+    (parseInt(adult) === 2 || parseInt(adult) === 0) && ReqObj.Form[tmpId].ctaName.toLowerCase() !== "lightbox" && document.visibilityState !== "hidden" && gtag){
+    showAdInact(tmpId);
+    }
+    else
+  OpenBLEnqPopup(tmpId);
+}
+
+
+
+
+
+
+
+
 //please correct this code for ecom product
 FormSeq.prototype._screen2 = function (tmpId, typeOfForm) {
   currentscreen_no = 2;
