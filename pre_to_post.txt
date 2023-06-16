@@ -75,3 +75,7 @@ FormSeq.prototype._returnLastScreen
 format services and all---
 call generation------
 formseq prototypes-----
+
+////
+function FinishEnquiryService
+////
